@@ -45,10 +45,6 @@ HTMLWidgets.widget({
 
     // get params from R
     vizObj.userConfig = x;
-    if (typeof(vizObj.userConfig.patient_ids) == "string") { // only one patient
-        vizObj.userConfig.patient_ids = [vizObj.userConfig.patient_ids];
-    }
-    var numPatients = vizObj.userConfig.patient_ids.length; 
 
     // VIEW ID
     var view_id = el.id;
