@@ -5,7 +5,7 @@
 #' @import htmlwidgets
 #'
 #' @param clonal_prev Clonal prevalence data frame.
-#'   Format: columns are (1) {String} "space_id" - id for the anatomic site
+#'   Format: columns are (1) {String} "site_id" - id for the anatomic site
 #'                       (2) {String} "clone_id" - clone id
 #'                       (3) {Number} "clonal_prev" - clonal prevalence.
 #' @param tree_edges Tree edges data frame. The root of the tree (id: "Root") must be specified as a source.
@@ -35,15 +35,15 @@ spacesweep <- function(clonal_prev,
   # CLONAL PREVALENCE DATA
 
   # ensure column names are correct
-  if (!("space_id" %in% colnames(clonal_prev)) ||
+  if (!("site_id" %in% colnames(clonal_prev)) ||
       !("clone_id" %in% colnames(clonal_prev)) ||
       !("clonal_prev" %in% colnames(clonal_prev))) {
     stop(paste("Clonal prevalence data frame must have the following column names: ", 
-        "\"space_id\", \"clone_id\", \"clonal_prev\"", sep=""))
+        "\"site_id\", \"clone_id\", \"clonal_prev\"", sep=""))
   }
 
   # ensure data is of the correct type
-  clonal_prev$space_id <- as.character(clonal_prev$space_id)
+  clonal_prev$site_id <- as.character(clonal_prev$site_id)
   clonal_prev$clone_id <- as.character(clonal_prev$clone_id)
   clonal_prev$clonal_prev <- as.numeric(as.character(clonal_prev$clonal_prev))
 

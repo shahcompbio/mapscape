@@ -232,3 +232,77 @@ function _getLinearTreeSegments(curNode, chains, base) {
 
     return chains;
 }
+
+// COLOUR FUNCTIONS
+
+function _getColours(vizObj) {
+    var dim = vizObj.generalConfig,
+        colour_assignment = {}, // standard colour assignment
+        alpha_colour_assignment = {}, // alpha colour assignment
+        greyscale_assignment = {}, // standard greyscale assignment
+        alpha_greyscale_assignment = {}, // alpha greyscale assignment
+        patient_id = vizObj.patient_id,
+        cur_colours = vizObj.userConfig.clone_cols;
+
+    // get colour assignment - use specified colours
+    // handling different inputs -- TODO should probably be done in R
+    cur_colours.forEach(function(col, col_idx) {
+        var col_value = col.colour;
+        if (col_value[0] != "#") { // append a hashtag if necessary
+            col_value = "#".concat(col_value);
+        }
+        if (col_value.length > 7) { // remove any alpha that may be present in the hex value
+            col_value = col_value.substring(0,7);
+        }
+        colour_assignment[col.clone_id] = col_value;
+    });
+    colour_assignment['Root'] = dim.rootColour;
+    vizObj.view.colour_assignment = colour_assignment;
+
+    // get the alpha colour assignment
+    Object.keys(colour_assignment).forEach(function(key, key_idx) {
+        alpha_colour_assignment[key] = (key == "Root") ? 
+            dim.rootColour : _increase_brightness(colour_assignment[key], 50);
+    });
+    vizObj.view.alpha_colour_assignment = alpha_colour_assignment;
+}
+
+// function to increase brightness of hex colour
+// from: http://stackoverflow.com/questions/6443990/javascript-calculate-brighter-colour
+function _increase_brightness(hex, percent){
+    // strip the leading # if it's there
+    hex = hex.replace(/^\s*#|\s*$/g, '');
+
+    // convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
+    if(hex.length == 3){
+        hex = hex.replace(/(.)/g, '$1$1');
+    }
+
+    var r = parseInt(hex.substr(0, 2), 16),
+        g = parseInt(hex.substr(2, 2), 16),
+        b = parseInt(hex.substr(4, 2), 16);
+
+    return '#' +
+       ((0|(1<<8) + r + (256 - r) * percent / 100).toString(16)).substr(1) +
+       ((0|(1<<8) + g + (256 - g) * percent / 100).toString(16)).substr(1) +
+       ((0|(1<<8) + b + (256 - b) * percent / 100).toString(16)).substr(1);
+}
+
+// CELLULAR PREVALENCE FUNCTIONS
+
+/* function to get the cellular prevalence data in a better format 
+* (properties at level 1 is site, at level 2 is gtype)
+*/
+function _getCPData(vizObj) {
+    var clonal_prev = vizObj.userConfig.clonal_prev;
+
+    // for each time point, for each genotype, get cellular prevalence
+    var cp_data = {};
+    $.each(clonal_prev, function(idx, hit) { // for each hit (genotype/site_id combination)
+
+        cp_data[hit["site_id"]] = cp_data[hit["site_id"]] || {};
+        cp_data[hit["site_id"]][hit["clone_id"]] = parseFloat(hit["clonal_prev"]); 
+    });
+
+    vizObj.data.cp_data = cp_data;
+}
