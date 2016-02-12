@@ -46,6 +46,8 @@ HTMLWidgets.widget({
 
         // get params from R
         vizObj.userConfig = x;
+        dim.gridCellWidth = 120;
+        dim.gridCellHeight = 120;
 
         // VIEW ID
         var view_id = el.id;
@@ -77,10 +79,9 @@ HTMLWidgets.widget({
         console.log("vizObj");
         console.log(vizObj);
 
+
         // GRIDSTER
 
-        dim.gridCellWidth = 120;
-        dim.gridCellHeight = 120;
 
         var gridster_ul = containerDIV.append("div") // unordered list
             .attr("class", "gridster")
@@ -186,7 +187,15 @@ HTMLWidgets.widget({
                     })
                     .attr("id", function(d) { return d.sc_id; })
                     .attr("r", function(d) {
-                        return Math.sqrt(vizObj.data.cp_data[site][d.id])*10; 
+                        // if the CP data for this genotype is present
+                        if (vizObj.data.cp_data[site][d.id]) {
+                            return Math.sqrt(vizObj.data.cp_data[site][d.id])*10; 
+                        }
+                        // CP not present
+                        else {
+                            return 0;
+                        }
+                        
                     });
             }
         });
