@@ -1,7 +1,17 @@
-# (uncomment to add a dependency)
-# dependencies:
-#  - name:
-#    version:
-#    src:
-#    script:
-#    stylesheet:
+dependencies:
+ - name: d3
+   version: 3.5.14
+   src: "htmlwidgets/lib"
+   script: d3.min.js
+ - name: jquery
+   version: 2.1.4
+   src: "htmlwidgets/lib"
+   script: jquery-2.1.4.js
+ - name: colorbrewer
+   version: 0.0.1
+   src: "htmlwidgets/lib"
+   script: colorbrewer.js
+ - name: underscore
+   version: 1.8.3
+   src: "htmlwidgets/lib"
+   script: underscore.js
