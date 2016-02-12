@@ -28,6 +28,9 @@ spacesweep <- function(clonal_prev,
   if (missing(tree_edges)) {
     stop("Tree edge data frame must be provided.")
   }
+  if (missing(clone_colours)) {
+    stop("Clonal colours frame must be provided.")
+  }
 
   # CLONAL PREVALENCE DATA
 
