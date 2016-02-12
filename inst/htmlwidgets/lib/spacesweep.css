@@ -2,3 +2,10 @@ ul {
     list-style: none;
     -webkit-padding-start: 0px; /* override user agent stylesheet */
 }
+
+.treeTitle {
+	text-anchor: middle;
+	font-family: sans-serif;
+	font-size: 15px;
+	font-weight: bold;
+}
