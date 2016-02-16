@@ -8,12 +8,10 @@ HTMLWidgets.widget({
 
         // defaults
         var defaults = {
-            treeHeight: 290,
-            treeWidth: 290,
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
-            max_r: 10 // max radius for tree nodes
+            max_r: 15 // max radius for tree nodes
         };
 
         // global variable vizObj
@@ -34,7 +32,7 @@ HTMLWidgets.widget({
     renderValue: function(el, x, instance) {
 
         var dim = vizObj.generalConfig;
-        var viewType = "voronoi"; // choose from: "voronoi", "tree"
+        var viewType = "tree"; // choose from: "voronoi", "tree"
 
         // get params from R
         vizObj.userConfig = x;
@@ -196,9 +194,13 @@ HTMLWidgets.widget({
             // PLOT TREE
 
             if (viewType == "tree") {
-                var treeType = "varied"; // choose from c("simple", "varied")
 
-                
+                // type of tree, choose from:
+                //      "simple" - all nodes present, all same radius
+                //      "varied" - node area in proportion to its cellular prevalence
+                //      "binary" - all nodes same radius, on/off depending on presence at this site
+                var treeType = "binary"; 
+
                 // plot tree title
                 var treeTitle = gridSVG
                     .append('text')
@@ -209,10 +211,10 @@ HTMLWidgets.widget({
                     .text(site); 
 
                 // d3 tree layout
-                var treePadding = 10,
+                var treePadding = dim.max_r + 2, // keep 1 pixel free on either side of tree
                     treeTitleHeight = treeTitle.node().getBBox().height,
                     treeLayout = d3.layout.tree()           
-                        .size([dim.treeHeight - treePadding - treeTitleHeight, dim.treeWidth - treePadding]); 
+                        .size([dim.gridCellHeight - treePadding*2 - treeTitleHeight, dim.gridCellWidth - treePadding*2]); 
 
                 // get nodes and links
                 var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
@@ -222,8 +224,8 @@ HTMLWidgets.widget({
                 // swap x and y direction
                 nodes.forEach(function(node) {
                     node.tmp = node.y;
-                    node.y = node.x + (treePadding/2) + treeTitleHeight;
-                    node.x = node.tmp + (treePadding/2);
+                    node.y = node.x + treePadding + treeTitleHeight;
+                    node.x = node.tmp + treePadding;
                     delete node.tmp;
                 });
 
@@ -247,19 +249,51 @@ HTMLWidgets.widget({
                     .attr("cy", function(d) { return d.y})              
                     .classed("treeNode", true) 
                     .attr("fill", function(d) {
+                        // all nodes same radius, on/off depending on presence at this site
+                        if (treeType == "binary") {
+
+                            // clone present at this site
+                            if (vizObj.data[site].genotypes_to_plot.indexOf(d.id) != -1) {
+                                return colour_assignment[d.id];
+                            }
+
+                            // clone absent at this site
+                            else {
+                                return "#FFFFFF"; // white
+                            }
+                        } 
+
+                        // any other view has colour assignment for each node
                         return colour_assignment[d.id];
                     })
-                    .attr('stroke', function(d) {
+                    .attr("stroke", function(d) {
+                        // all nodes same radius, on/off depending on presence at this site
+                        if (treeType == "binary") {
+
+                            // clone present at this site
+                            if (vizObj.data[site].genotypes_to_plot.indexOf(d.id) != -1) {
+                                return colour_assignment[d.id];
+                            }
+
+                            // clone absent at this site
+                            else {
+                                return "#C7C5C5"; // white
+                            }
+                        } 
+
+                        // any other view has colour assignment for each node
                         return colour_assignment[d.id];
                     })
                     .attr("id", function(d) { return d.sc_id; })
-                    .attr("r", 9)
                     .attr("r", function(d) {
+                        // all nodes present, all same radius
                         if (treeType == "simple") {
                             return dim.max_r;
                         }
-                        else {
-                            // if the CP data for this genotype is present
+
+                        // node area in proportion to its cellular prevalence
+                        else if (treeType == "varied") {
+                            // if the CP data for this clone is present
                             if (vizObj.data.cp_data[site][d.id]) {
                                 return Math.sqrt(vizObj.data.cp_data[site][d.id].cp)*dim.max_r; 
                             }
@@ -267,6 +301,11 @@ HTMLWidgets.widget({
                             else {
                                 return 0;
                             }
+                        }
+
+                        // all nodes same radius, on/off depending on presence at this site
+                        else if (treeType == "binary") {
+                            return dim.max_r;
                         }
                     });
             }
