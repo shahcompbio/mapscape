@@ -13,7 +13,6 @@ HTMLWidgets.widget({
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
-            nCells: 100, // number of cells to plot for voronoi tessellation view
             max_r: 10 // max radius for tree nodes
         };
 
@@ -35,10 +34,11 @@ HTMLWidgets.widget({
     renderValue: function(el, x, instance) {
 
         var dim = vizObj.generalConfig;
-        var viewType = "tree"; // choose from: "voronoi", "tree"
+        var viewType = "voronoi"; // choose from: "voronoi", "tree"
 
         // get params from R
         vizObj.userConfig = x;
+        dim.nCells = x.n_cells;
 
         // VIEW ID
         var view_id = el.id;
