@@ -341,6 +341,11 @@ function _thresholdCPData(vizObj, site) {
         if (cur_cp > 1/vizObj.generalConfig.nCells) {
             total_legit_cp += cur_cp;
         }
+        // warn if this genotype will not be shown
+        else {
+            console.warn("At anatomic site " + site + ", genotype " + gtype + " has cellular prevalence " +
+                "less than the minimum for this view, and will not be shown.");
+        }
     });
 
     // adjust cellular prevalence values of to sum to 1
