@@ -18,8 +18,8 @@
 spacesweep <- function(clonal_prev, 
                       tree_edges,
                       clone_colours,
-                      width = NULL, 
-                      height = NULL) {
+                      width = 960, 
+                      height = 960) {
 
   # CHECK REQUIRED INPUTS ARE PRESENT 
   if (missing(clonal_prev)) {

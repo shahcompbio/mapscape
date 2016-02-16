@@ -13,8 +13,6 @@ HTMLWidgets.widget({
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
-            gridCellWidth: 300,
-            gridCellHeight: 300,
             nCells: 100, // number of cells to plot for voronoi tessellation view
             max_r: 10 // max radius for tree nodes
         };
@@ -26,7 +24,7 @@ HTMLWidgets.widget({
 
         // set configurations
         var config = $.extend(true, {}, defaults);
-        config.width = width;
+        config.width = width - 15; // - 15 because vertical scrollbar takes 15 px?
         config.height = height;
         vizObj.generalConfig = config;
 
@@ -37,7 +35,7 @@ HTMLWidgets.widget({
     renderValue: function(el, x, instance) {
 
         var dim = vizObj.generalConfig;
-        var viewType = "voronoi"; // choose from: "voronoi", "tree"
+        var viewType = "tree"; // choose from: "voronoi", "tree"
 
         // get params from R
         vizObj.userConfig = x;
@@ -68,6 +66,14 @@ HTMLWidgets.widget({
         // get cellular prevalence data in workable format
         _getCPData(vizObj)
 
+
+        // VIEW SETUP - grid cell width / height, num columns
+
+        var ncols = (dim.width/300 < 1) ? 1 : Math.floor(dim.width/300); // minimum of 1 column
+        var nrows = Math.ceil(vizObj.site_ids.length/ncols);
+        dim.gridCellWidth = (dim.width - dim.widgetMargin*2*ncols)/ncols;
+        dim.gridCellHeight = dim.gridCellWidth;
+
         // VORONOI FUNCTION
 
         var voronoi = d3.geom.voronoi()
@@ -75,16 +81,14 @@ HTMLWidgets.widget({
 
         // GRIDSTER
 
-
         var gridster_ul = containerDIV.append("div") // unordered list
             .attr("class", "gridster")
             .style("float", "left")
-            .style("height", (dim.gridCellHeight*3) + "px")
-            .style("width", (dim.gridCellWidth*3) + "px")
+            .style("height", ((dim.gridCellHeight*nrows) + (dim.widgetMargin*2*nrows)) + "px")
+            .style("width", ((dim.gridCellWidth*ncols) + (dim.widgetMargin*2*ncols)) + "px")
             .append("ul")    
             .style("float", "left"); 
 
-        var ncols = 3;
         gridster_ul.selectAll("li")
             .data(vizObj.site_ids)
             .enter().append("li")
