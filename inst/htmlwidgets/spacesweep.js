@@ -37,7 +37,7 @@ HTMLWidgets.widget({
     renderValue: function(el, x, instance) {
 
         var dim = vizObj.generalConfig;
-        var viewType = "tree"; // choose from: "voronoi", "tree"
+        var viewType = "voronoi"; // choose from: "voronoi", "tree"
 
         // get params from R
         vizObj.userConfig = x;
@@ -162,6 +162,13 @@ HTMLWidgets.widget({
                         return (vertices[i].real_cell) ? vertices[i].col : "none";
                     })
                     .attr("fill-opacity", function(d, i) {
+                        return (vertices[i].real_cell) ? 1 : 0;
+                    })
+                    .attr("stroke", function(d, i) {
+                        return (vertices[i].real_cell) ? _decrease_brightness(vertices[i].col, 15) : "none";
+                    })
+                    .attr("stroke-width", "1.5px")
+                    .attr("stroke-opacity", function(d, i) {
                         return (vertices[i].real_cell) ? 1 : 0;
                     })
 
