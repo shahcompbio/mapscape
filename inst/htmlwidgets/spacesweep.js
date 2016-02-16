@@ -20,9 +20,9 @@ HTMLWidgets.widget({
             threshold: 0.005, // cellular prevalence threshold of visual detection
             legendGtypeHeight: 13, // height for each genotype in the legend
             patientTabWidth: 40,
-            gridCellWidth = 300,
-            gridCellHeight = 300,
-            nCells = 100 // number of cells to plot for voronoi tessellation view
+            gridCellWidth: 300,
+            gridCellHeight: 300,
+            nCells: 100 // number of cells to plot for voronoi tessellation view
         };
 
         // global variable vizObj
@@ -44,7 +44,7 @@ HTMLWidgets.widget({
     renderValue: function(el, x, instance) {
 
         var dim = vizObj.generalConfig;
-        var viewType = "tree"; // choose from: "voronoi", "tree"
+        var viewType = "voronoi"; // choose from: "voronoi", "tree"
 
         // get params from R
         vizObj.userConfig = x;
@@ -154,9 +154,8 @@ HTMLWidgets.widget({
                 _addGtypeInfoToVertices(vizObj, site);
 
                 // 2D array of x- and y- positions for vertices
-                var vertex_coords = [];
-                vizObj.data[site]["voronoi_vertices"].forEach(function(vertex) {
-                    vertex_coords.push([vertex.x, vertex.y]);
+                var vertex_coords = vizObj.data[site]["voronoi_vertices"].map(function(vertex) {
+                    return [vertex.x, vertex.y];
                 });
 
                 // plot cells
