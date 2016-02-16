@@ -112,6 +112,11 @@ HTMLWidgets.widget({
         // FOR EACH SITE
         vizObj.site_ids.forEach(function(site, site_idx) {
 
+
+            // threshold cellular prevalence data 
+            _thresholdCPData(vizObj, site);
+
+
             // COLOURS FOR EACH GENOTYPE TODO---- do we need this for voronoi?
 
             var colour_assignment = vizObj.view.colour_assignment,
@@ -130,9 +135,6 @@ HTMLWidgets.widget({
             // PLOT VORONOI TESSELLATION
 
             if (viewType == "voronoi") {
-
-                // threshold cellular prevalence data 
-                _thresholdCPData(vizObj, site);
 
                 // plot tree title
                 var voronoiTitle = gridSVG
