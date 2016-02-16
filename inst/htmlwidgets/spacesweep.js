@@ -8,21 +8,15 @@ HTMLWidgets.widget({
 
         // defaults
         var defaults = {
-            padding: 15,
             treeHeight: 290,
             treeWidth: 290,
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
-            gridsterBaseDimension: 120,
-            panel_width: 30,
-            fontSize: 11,
             rootColour: '#DDDADA',
-            threshold: 0.005, // cellular prevalence threshold of visual detection
-            legendGtypeHeight: 13, // height for each genotype in the legend
-            patientTabWidth: 40,
             gridCellWidth: 300,
             gridCellHeight: 300,
-            nCells: 100 // number of cells to plot for voronoi tessellation view
+            nCells: 100, // number of cells to plot for voronoi tessellation view
+            max_r: 10 // max radius for tree nodes
         };
 
         // global variable vizObj
@@ -36,15 +30,14 @@ HTMLWidgets.widget({
         config.height = height;
         vizObj.generalConfig = config;
 
-        return {
-        }
+        return {}
 
     },
 
     renderValue: function(el, x, instance) {
 
         var dim = vizObj.generalConfig;
-        var viewType = "voronoi"; // choose from: "voronoi", "tree"
+        var viewType = "tree"; // choose from: "voronoi", "tree"
 
         // get params from R
         vizObj.userConfig = x;
@@ -72,7 +65,7 @@ HTMLWidgets.widget({
         // site ids
         vizObj.site_ids = _.uniq(_.pluck(vizObj.userConfig.clonal_prev, "site_id"));
 
-        // get cellular prevalence data in better format
+        // get cellular prevalence data in workable format
         _getCPData(vizObj)
 
         // VORONOI FUNCTION
@@ -233,7 +226,6 @@ HTMLWidgets.widget({
                     .attr("d", _elbow); 
 
                 // create nodes
-                var max_r = 10;
                 var node = gridSVG.selectAll(".treeNode")                  
                     .data(nodes)                   
                     .enter()
@@ -251,12 +243,12 @@ HTMLWidgets.widget({
                     .attr("r", 9)
                     .attr("r", function(d) {
                         if (treeType == "simple") {
-                            return max_r;
+                            return dim.max_r;
                         }
                         else {
                             // if the CP data for this genotype is present
                             if (vizObj.data.cp_data[site][d.id]) {
-                                return Math.sqrt(vizObj.data.cp_data[site][d.id].cp)*max_r; 
+                                return Math.sqrt(vizObj.data.cp_data[site][d.id].cp)*dim.max_r; 
                             }
                             // CP not present
                             else {
