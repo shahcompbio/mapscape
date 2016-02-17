@@ -305,7 +305,16 @@ HTMLWidgets.widget({
 
                         // all nodes same radius, on/off depending on presence at this site
                         else if (treeType == "binary") {
-                            return dim.max_r;
+
+                            // clone present at this site
+                            if (vizObj.data[site].genotypes_to_plot.indexOf(d.id) != -1) {
+                                return dim.max_r;
+                            }
+
+                            // clone absent at this site
+                            else {
+                                return 0; // white
+                            }
                         }
                     });
             }
