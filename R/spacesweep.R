@@ -14,11 +14,13 @@
 #' @param clone_colours Data frame with clone ids and their corresponding colours 
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
+#' @param show_root Whether or not to plot the root (for tree).
 #' @param n_cells The number of cells to plot (for voronoi tessellation).
 #' @export
 spacesweep <- function(clonal_prev, 
                       tree_edges,
                       clone_colours,
+                      show_root = TRUE,
                       n_cells = 100,
                       width = 960, 
                       height = 960) {
@@ -84,12 +86,18 @@ spacesweep <- function(clonal_prev,
     stop("The number of cells (n_cells parameter) must be numeric.")  
   }
 
+  # SHOW ROOT
+  if (!is.logical(show_root)) {
+    stop("The parameter show_root must be a boolean.")  
+  }
+
   # forward options using x
   x = list(
     clonal_prev = jsonlite::toJSON(clonal_prev),
     tree_edges = jsonlite::toJSON(tree_edges),
     clone_cols = jsonlite::toJSON(clone_colours),
-    n_cells = n_cells
+    n_cells = n_cells,
+    show_root = show_root
   )
 
   # create widget
