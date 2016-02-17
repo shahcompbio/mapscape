@@ -117,8 +117,7 @@ HTMLWidgets.widget({
 
             // COLOURS FOR EACH GENOTYPE TODO---- do we need this for voronoi?
 
-            var colour_assignment = vizObj.view.colour_assignment,
-                alpha_colour_assignment = vizObj.view.alpha_colour_assignment;
+            var colour_assignment = vizObj.view.colour_assignment;
 
             // GRID SVG
 
@@ -151,12 +150,12 @@ HTMLWidgets.widget({
                 _addGtypeInfoToVertices(vizObj, site);
 
                 // 2D array of x- and y- positions for vertices
-                var vertex_coords = vizObj.data[site]["voronoi_vertices"].map(function(vertex) {
+                var vertex_coords = vizObj.data["voronoi_vertices"][site].map(function(vertex) {
                     return [vertex.x, vertex.y];
                 });
 
                 // plot cells
-                var vertices = vizObj.data[site]["voronoi_vertices"];
+                var vertices = vizObj.data["voronoi_vertices"][site];
                 var cells = gridSVG.append("g")
                     .selectAll("path")
                     .data(voronoi(vertex_coords), _polygon)
@@ -220,7 +219,7 @@ HTMLWidgets.widget({
                 var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
                     nodes = treeLayout.nodes(root), 
                     links = treeLayout.links(nodes);   
-             
+
                 // swap x and y direction
                 nodes.forEach(function(node) {
                     node.tmp = node.y;
@@ -253,7 +252,7 @@ HTMLWidgets.widget({
                         if (treeType == "binary") {
 
                             // clone present at this site
-                            if (vizObj.data[site].genotypes_to_plot.indexOf(d.id) != -1) {
+                            if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
                                 return colour_assignment[d.id];
                             }
 
@@ -271,7 +270,7 @@ HTMLWidgets.widget({
                         if (treeType == "binary") {
 
                             // clone present at this site
-                            if (vizObj.data[site].genotypes_to_plot.indexOf(d.id) != -1) {
+                            if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
                                 return colour_assignment[d.id];
                             }
 
@@ -307,7 +306,7 @@ HTMLWidgets.widget({
                         else if (treeType == "binary") {
 
                             // clone present at this site
-                            if (vizObj.data[site].genotypes_to_plot.indexOf(d.id) != -1) {
+                            if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
                                 return dim.max_r;
                             }
 

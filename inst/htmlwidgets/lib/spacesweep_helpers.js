@@ -110,9 +110,6 @@ function _getLinearTreeSegments(curNode, chains, base) {
 function _getColours(vizObj) {
     var dim = vizObj.generalConfig,
         colour_assignment = {}, // standard colour assignment
-        alpha_colour_assignment = {}, // alpha colour assignment
-        greyscale_assignment = {}, // standard greyscale assignment
-        alpha_greyscale_assignment = {}, // alpha greyscale assignment
         patient_id = vizObj.patient_id,
         cur_colours = vizObj.userConfig.clone_cols;
 
@@ -130,13 +127,6 @@ function _getColours(vizObj) {
     });
     colour_assignment['Root'] = dim.rootColour;
     vizObj.view.colour_assignment = colour_assignment;
-
-    // get the alpha colour assignment
-    Object.keys(colour_assignment).forEach(function(key, key_idx) {
-        alpha_colour_assignment[key] = (key == "Root") ? 
-            dim.rootColour : _increase_brightness(colour_assignment[key], 50);
-    });
-    vizObj.view.alpha_colour_assignment = alpha_colour_assignment;
 }
 
 // function to increase brightness of hex colour
@@ -222,8 +212,8 @@ function _thresholdCPData(vizObj, site) {
 
     // adjust cellular prevalence values of to sum to 1
 
-    vizObj.data[site] = vizObj.data[site] || {};
-    vizObj.data[site]["genotypes_to_plot"] = []; // which genotypes to show for this site
+    vizObj.data["genotypes_to_plot"] = vizObj.data["genotypes_to_plot"] || {};
+    vizObj.data["genotypes_to_plot"][site] = []; // which genotypes to show for this site
     Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
 
         var cur_cp = vizObj.data.cp_data[site][gtype].cp;
@@ -231,7 +221,7 @@ function _thresholdCPData(vizObj, site) {
         // only add genotypes that will be exhibited in >1 cell
         if (cur_cp > 1/vizObj.generalConfig.nCells) {
             vizObj.data.cp_data[site][gtype].adj_cp = cur_cp/total_legit_cp;
-            vizObj.data[site]["genotypes_to_plot"].push(gtype);
+            vizObj.data["genotypes_to_plot"][site].push(gtype);
         }
     });
 }
@@ -286,7 +276,8 @@ function _getVoronoiVertices(vizObj, site) {
         };
     });
 
-    vizObj.data[site]["voronoi_vertices"] = vertices;
+    vizObj.data["voronoi_vertices"] = vizObj.data["voronoi_vertices"] || {};
+    vizObj.data["voronoi_vertices"][site] = vertices;
 }
 
 /* function to add colour (genotype) information to each vertex for this anatomic site
@@ -295,14 +286,14 @@ function _getVoronoiVertices(vizObj, site) {
 */
 function _addGtypeInfoToVertices(vizObj, site) {
 
-    var gtypes = vizObj.data[site].genotypes_to_plot, // genotypes to plot for this site
+    var gtypes = vizObj.data["genotypes_to_plot"][site], // genotypes to plot for this site
         cumulative_cp = vizObj.data.cp_data[site][gtypes[0]].adj_cp, // cumulative CP thus far
         gtype_i = 0, // index of the current genotype to show
         cur_gtype, // current genotype
         n_real_cells = 1; // # real cells seen
 
     // for each vertex    
-    vizObj.data[site]["voronoi_vertices"].forEach(function(v, i) {
+    vizObj.data["voronoi_vertices"][site].forEach(function(v, i) {
 
         cur_gtype = gtypes[gtype_i];
 
