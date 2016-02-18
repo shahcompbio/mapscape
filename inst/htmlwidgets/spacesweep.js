@@ -120,6 +120,7 @@ HTMLWidgets.widget({
                 .attr("transform", "translate(" + dim.width / 2 + "," + dim.width / 2 + ")")
             
             arcG.append("path")
+                .attr("id", function(d) { return d.id.replace(/ /g,"_"); })
                 .style("fill", function(d) {
                     if (d.phyly == "pure") {
                         return dim.pureColour;
@@ -132,6 +133,17 @@ HTMLWidgets.widget({
                     }
                 })
                 .attr("d", arcData);
+
+            var text = arcG.append("text")
+                .attr("x", 6)
+                .attr("dy", 20);
+
+            text.append("textPath")
+                .attr("fill","white")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "14px")
+                .attr("xlink:href", function(d) { return "#" + d.id.replace(/ /g,"_"); })
+                .text(function(d) { return d.id; });
 
 
             // PLOT ONCOMIX
