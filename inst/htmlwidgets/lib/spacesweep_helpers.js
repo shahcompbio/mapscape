@@ -374,6 +374,9 @@ function _getSitePositioning(vizObj) {
             y2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).y
         }
 
+
+        // VORONOI
+
         // voronoi placement
         cur_site_obj["voronoi"] = {};
         cur_site_obj["voronoi"]["centre"] = {
@@ -402,6 +405,19 @@ function _getSitePositioning(vizObj) {
         cur_site_obj["voronoi"]["vertex_coords"] = vertices.map(function(vertex) {
             return [vertex.x, vertex.y];
         });
+
+
+        // TREE
+
+        cur_site_obj["tree"] = {};
+        cur_site_obj["tree"]["centre"] = {
+            x: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToTree, site_idx+0.5, n_sites).x,
+            y: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToTree, site_idx+0.5, n_sites).y
+        }
+        cur_site_obj["tree"]["top_l_corner"] = {
+            x: cur_site_obj["tree"]["centre"].x - dim.treeWidth/2,
+            y: cur_site_obj["tree"]["centre"].y - dim.treeWidth/2
+        }
 
         // add site to array of sites
         vizObj.data.sites.push(cur_site_obj);

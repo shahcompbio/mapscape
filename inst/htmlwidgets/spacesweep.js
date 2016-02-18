@@ -11,7 +11,7 @@ HTMLWidgets.widget({
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
-            max_r: 15, // max radius for tree nodes
+            max_r: 4, // max radius for tree nodes
             containerColour: '#DDDADA'
         };
 
@@ -47,6 +47,8 @@ HTMLWidgets.widget({
         dim.tabWidth = 30; // width for site tab
         dim.tabRadius = dim.outerRadius - dim.tabWidth;
         dim.radiusToOncoMix = dim.innerRadius + ((dim.outerRadius - dim.tabWidth - dim.innerRadius)*2/3);
+        dim.treeWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)*1/4);
+        dim.radiusToTree = dim.innerRadius + dim.treeWidth;
 
         // GET CONTENT
 
@@ -120,12 +122,15 @@ HTMLWidgets.widget({
             .attr("stroke-width", "6px");
 
 
-        // FOR EACH SITE PLOT ONCOMIX
+        // FOR EACH SITE 
         vizObj.site_ids.forEach(function(site, site_idx) {
 
             var site_data = _.findWhere(vizObj.data.sites, {id: site});
             console.log(site_data);
 
+            // PLOT ONCOMIX
+
+            // voronoi function for this site
             var voronoi = d3.geom.voronoi()
                 .clipExtent([[site_data.voronoi.top_l_corner.x, 
                             site_data.voronoi.top_l_corner.y], 
@@ -135,9 +140,8 @@ HTMLWidgets.widget({
             // plot cells
             var vertices = site_data.voronoi.vertices;
             var cur_siteG = containerSVG.select(".siteG." + site.replace(/ /g,"_"));
-            console.log("site_data.voronoi.vertex_coords");
-            console.log(site_data.voronoi.vertex_coords);
             var cells = cur_siteG.append("g")
+                .attr("class", "cellsG")
                 .selectAll("path")
                 .data(voronoi(site_data.voronoi.vertex_coords), _polygon)
                 .enter().append("path")
@@ -157,7 +161,9 @@ HTMLWidgets.widget({
                 })
 
             // plot nuclei
-            var nuclei = cur_siteG.selectAll("circle")
+            var nuclei = cur_siteG.append("g")
+                .attr("class", "nucleiG")
+                .selectAll("circle")
                 .data(vertices)
                 .enter().append("circle")
                 .attr("cx", function(d) { return d.x; })
@@ -169,149 +175,66 @@ HTMLWidgets.widget({
                 .attr("fill-opacity", function(d) { 
                     return (d.real_cell) ? 1 : 0;
                 });
-         });
-
-
-        // FOR EACH SITE
-        vizObj.site_ids.forEach(function(site, site_idx) {
-
-
-            // COLOURS FOR EACH GENOTYPE TODO---- do we need this for voronoi?
-
-            var colour_assignment = vizObj.view.colour_assignment;
-
-
- /*           // PLOT VORONOI TESSELLATION
 
 
             // PLOT TREE
 
-            if (viewType == "tree") {
+            // d3 tree layout
+            var treePadding = dim.max_r + 2, // keep 1 pixel free on either side of tree
+                treeLayout = d3.layout.tree()           
+                    .size([dim.treeWidth - treePadding*2, dim.treeWidth - treePadding*2]); 
 
-                // type of tree, choose from:
-                //      "simple" - all nodes present, all same radius
-                //      "varied" - node area in proportion to its cellular prevalence
-                //      "binary" - all nodes same radius, on/off depending on presence at this site
-                var treeType = "binary"; 
+            // get nodes and links
+            var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
+                nodes = treeLayout.nodes(root), 
+                links = treeLayout.links(nodes);   
 
-                // plot tree title
-                var treeTitle = gridSVG
-                    .append('text')
-                    .attr('class', 'treeTitle')
-                    .attr('x', dim.gridCellWidth/2)
-                    .attr('y', 2)
-                    .attr('dy', '.71em')
-                    .text(site); 
+            // swap x and y direction
+            nodes.forEach(function(node) {
+                node.tmp = node.y;
+                node.y = node.x + treePadding + site_data.tree.top_l_corner.y;
+                node.x = node.tmp + treePadding + site_data.tree.top_l_corner.x;
+                delete node.tmp;
+            });
 
-                // d3 tree layout
-                var treePadding = dim.max_r + 2, // keep 1 pixel free on either side of tree
-                    treeTitleHeight = treeTitle.node().getBBox().height,
-                    treeLayout = d3.layout.tree()           
-                        .size([dim.gridCellHeight - treePadding*2 - treeTitleHeight, dim.gridCellWidth - treePadding*2]); 
-
-                // get nodes and links
-                var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
-                    nodes = treeLayout.nodes(root), 
-                    links = treeLayout.links(nodes);   
-
-                // swap x and y direction
-                nodes.forEach(function(node) {
-                    node.tmp = node.y;
-                    node.y = node.x + treePadding + treeTitleHeight;
-                    node.x = node.tmp + treePadding;
-                    delete node.tmp;
+            // create links
+            var link = cur_siteG.append("g")
+                .attr("class","treeLinkG")
+                .selectAll(".treeLink")                  
+                .data(links)                   
+                .enter().append("path")                   
+                .attr("class","treeLink")
+                .attr('stroke', '#C7C5C5')
+                .attr('fill', 'none')                
+                .attr("d", _elbow); 
+            
+            // create nodes
+            var cols = vizObj.view.colour_assignment;
+            var node = cur_siteG.append("g")
+                .attr("class", "treeNodeG")
+                .selectAll(".treeNode")                  
+                .data(nodes)                   
+                .enter()
+                .append("circle")     
+                .attr("cx", function(d) { return d.x})
+                .attr("cy", function(d) { return d.y})              
+                .classed("treeNode", true) 
+                .attr("fill", function(d) {
+                    // clone present at this site or not
+                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
+                        cols[d.id] : "#FFFFFF";
+                })
+                .attr("stroke", function(d) {
+                    // clone present at this site or not
+                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
+                        cols[d.id] : "#FFFFFF";
+                })
+                .attr("id", function(d) { return d.sc_id; })
+                .attr("r", function(d) {
+                    // clone present at this site or not
+                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.max_r : 0;
                 });
-
-                // create links
-                var link = gridSVG.append("g")
-                    .classed("treeLinks", true)
-                    .selectAll(".treeLink")                  
-                    .data(links)                   
-                    .enter().append("path")                   
-                    .attr("class","treeLink")
-                    .attr('stroke', '#C7C5C5')
-                    .attr('fill', 'none')                
-                    .attr("d", _elbow); 
-
-                // create nodes
-                var node = gridSVG.selectAll(".treeNode")                  
-                    .data(nodes)                   
-                    .enter()
-                    .append("circle")     
-                    .attr("cx", function(d) { return d.x})
-                    .attr("cy", function(d) { return d.y})              
-                    .classed("treeNode", true) 
-                    .attr("fill", function(d) {
-                        // all nodes same radius, on/off depending on presence at this site
-                        if (treeType == "binary") {
-
-                            // clone present at this site
-                            if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
-                                return colour_assignment[d.id];
-                            }
-
-                            // clone absent at this site
-                            else {
-                                return "#FFFFFF"; // white
-                            }
-                        } 
-
-                        // any other view has colour assignment for each node
-                        return colour_assignment[d.id];
-                    })
-                    .attr("stroke", function(d) {
-                        // all nodes same radius, on/off depending on presence at this site
-                        if (treeType == "binary") {
-
-                            // clone present at this site
-                            if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
-                                return colour_assignment[d.id];
-                            }
-
-                            // clone absent at this site
-                            else {
-                                return "#C7C5C5"; // white
-                            }
-                        } 
-
-                        // any other view has colour assignment for each node
-                        return colour_assignment[d.id];
-                    })
-                    .attr("id", function(d) { return d.sc_id; })
-                    .attr("r", function(d) {
-                        // all nodes present, all same radius
-                        if (treeType == "simple") {
-                            return dim.max_r;
-                        }
-
-                        // node area in proportion to its cellular prevalence
-                        else if (treeType == "varied") {
-                            // if the CP data for this clone is present
-                            if (vizObj.data.cp_data[site][d.id]) {
-                                return Math.sqrt(vizObj.data.cp_data[site][d.id].cp)*dim.max_r; 
-                            }
-                            // CP not present
-                            else {
-                                return 0;
-                            }
-                        }
-
-                        // all nodes same radius, on/off depending on presence at this site
-                        else if (treeType == "binary") {
-
-                            // clone present at this site
-                            if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
-                                return dim.max_r;
-                            }
-
-                            // clone absent at this site
-                            else {
-                                return 0; // white
-                            }
-                        }
-                    });
-            }
-*/        });
+         });
     },
 
     resize: function(el, width, height, instance) {
