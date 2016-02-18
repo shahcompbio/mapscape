@@ -187,42 +187,44 @@ function _getCPData(vizObj) {
 * (genotypes with small cellular prevalences will not be plotted;
 * the rest will be adjusted such that the sum of adjusted CPs is 1)
 * @param {Object} vizObj 
-* @param {String} site -- current anatomic site of interest
 */
-function _thresholdCPData(vizObj, site) {
+function _thresholdCPData(vizObj) {
 
-    // threshold the cellular prevalence 
-    // (> prevalence of one cell in this view)
+    vizObj.site_ids.forEach(function(site) {
 
-    var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
-    Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
+        // threshold the cellular prevalence 
+        // (> prevalence of one cell in this view)
 
-        var cur_cp = vizObj.data.cp_data[site][gtype].cp;
+        var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
+        Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
 
-        // only add genotypes that will be exhibited in >1 cell
-        if (cur_cp > 1/vizObj.generalConfig.nCells) {
-            total_legit_cp += cur_cp;
-        }
-        // warn if this genotype will not be shown
-        else {
-            console.warn("At anatomic site " + site + ", genotype " + gtype + " has cellular prevalence " +
-                "less than the minimum for this view, and will not be shown.");
-        }
-    });
+            var cur_cp = vizObj.data.cp_data[site][gtype].cp;
 
-    // adjust cellular prevalence values of to sum to 1
+            // only add genotypes that will be exhibited in >1 cell
+            if (cur_cp > 1/vizObj.generalConfig.nCells) {
+                total_legit_cp += cur_cp;
+            }
+            // warn if this genotype will not be shown
+            else {
+                console.warn("At anatomic site " + site + ", genotype " + gtype + " has cellular prevalence " +
+                    "less than the minimum for this view, and will not be shown.");
+            }
+        });
 
-    vizObj.data["genotypes_to_plot"] = vizObj.data["genotypes_to_plot"] || {};
-    vizObj.data["genotypes_to_plot"][site] = []; // which genotypes to show for this site
-    Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
+        // adjust cellular prevalence values of to sum to 1
 
-        var cur_cp = vizObj.data.cp_data[site][gtype].cp;
+        vizObj.data["genotypes_to_plot"] = vizObj.data["genotypes_to_plot"] || {};
+        vizObj.data["genotypes_to_plot"][site] = []; // which genotypes to show for this site
+        Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
 
-        // only add genotypes that will be exhibited in >1 cell
-        if (cur_cp > 1/vizObj.generalConfig.nCells) {
-            vizObj.data.cp_data[site][gtype].adj_cp = cur_cp/total_legit_cp;
-            vizObj.data["genotypes_to_plot"][site].push(gtype);
-        }
+            var cur_cp = vizObj.data.cp_data[site][gtype].cp;
+
+            // only add genotypes that will be exhibited in >1 cell
+            if (cur_cp > 1/vizObj.generalConfig.nCells) {
+                vizObj.data.cp_data[site][gtype].adj_cp = cur_cp/total_legit_cp;
+                vizObj.data["genotypes_to_plot"][site].push(gtype);
+            }
+        });
     });
 }
 
@@ -236,20 +238,19 @@ function _polygon(d) {
 /* function to get voronoi vertices for this anatomic site (randomly fill a rectangle, keeping all within a certain 
 * radius from the centre as "real cells", all others as "fake cells") 
 * @param {Object} vizObj 
-* @param {String} site -- current anatomic site of interest
+* @param {Number} cx -- x-coordinate at centre of oncoMix
+* @param {Number} cy -- y-coordinate at centre of oncoMix
 */
-function _getVoronoiVertices(vizObj, site) {
+function _getVoronoiVertices(vizObj, cx, cy) {
     var dim = vizObj.generalConfig;
 
     // voronoi vertices 
-    var circleRadius = dim.gridCellHeight/2 - 45;
-    var cx = dim.gridCellWidth/2;
-    var cy = dim.gridCellHeight/2;
+    var circleRadius = dim.oncoMixWidth*1/3;
     var n_real_cells = 1;
     var vertices = [];
     while (n_real_cells <= dim.nCells) {
-        var x = Math.random() * dim.gridCellWidth;
-        var y = Math.random() * dim.gridCellHeight;
+        var x = (cx - dim.oncoMixWidth/2) + (Math.random() * dim.oncoMixWidth);
+        var y = (cy - dim.oncoMixWidth/2) + (Math.random() * dim.oncoMixWidth);
         var dist = Math.sqrt(Math.pow(x-cx, 2) + Math.pow(y-cy, 2));
         var inside_circle = (dist < circleRadius);
         if (inside_circle) {
@@ -276,15 +277,15 @@ function _getVoronoiVertices(vizObj, site) {
         };
     });
 
-    vizObj.data["voronoi_vertices"] = vizObj.data["voronoi_vertices"] || {};
-    vizObj.data["voronoi_vertices"][site] = vertices;
+    return vertices;
 }
 
 /* function to add colour (genotype) information to each vertex for this anatomic site
 * @param {Object} vizObj 
 * @param {String} site -- current anatomic site of interest
+* @param {Array} vertices -- array of voronoi vertices objects (properties: x, y, real_cell) for this site 
 */
-function _addGtypeInfoToVertices(vizObj, site) {
+function _addGtypeInfoToVertices(vizObj, site, vertices) {
 
     var gtypes = vizObj.data["genotypes_to_plot"][site], // genotypes to plot for this site
         cumulative_cp = vizObj.data.cp_data[site][gtypes[0]].adj_cp, // cumulative CP thus far
@@ -293,7 +294,7 @@ function _addGtypeInfoToVertices(vizObj, site) {
         n_real_cells = 1; // # real cells seen
 
     // for each vertex    
-    vizObj.data["voronoi_vertices"][site].forEach(function(v, i) {
+    vertices.forEach(function(v, i) {
 
         cur_gtype = gtypes[gtype_i];
 
@@ -313,6 +314,8 @@ function _addGtypeInfoToVertices(vizObj, site) {
             n_real_cells++;
         }
     })
+
+    return vertices;
 }
 
 // GENERAL FUNCTIONS
@@ -323,4 +326,106 @@ function _addGtypeInfoToVertices(vizObj, site) {
  */
 function _getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+// LAYOUT FUNCTIONS
+
+/* function to get coordinates for a point evenly spaced around circle perimeter
+* from: http://stackoverflow.com/questions/24273990/calculating-evenly-spaced-points-on-the-perimeter-of-a-circle
+* @param {Number} cx -- x-coordinate at centre of the circle
+* @param {Number} cy -- y-coordinate at centre of the circle
+* @param {Number} r -- radius of the circle
+* @param {Number} currentPoint -- index of current point 
+* @param {Number} totalPoints -- total number of points to evenly space around circle
+*/
+function _drawPoint(cx, cy, r, currentPoint, totalPoints) {  
+
+    var theta = ((Math.PI*2) / totalPoints);
+    var angle = (theta * currentPoint);
+
+    var x = cx + (r * Math.cos(angle));
+    var y = cy + (r * Math.sin(angle));
+
+    return {x: x, y: y, theta: theta, angle: angle};
+}
+
+
+/* function to get positions of site tab, dividers, voronoi tesselation centre, tree centre for each site
+* @param {Object} vizObj
+*/
+function _getSitePositioning(vizObj) {
+    var dim = vizObj.generalConfig,
+        n_sites = vizObj.site_ids.length; // number of sites
+
+    vizObj.data.sites = [];
+
+    // for each site
+    vizObj.site_ids.forEach(function(site, site_idx) {
+        var cur_site_obj = {};
+
+        // id
+        cur_site_obj["id"] = site;
+
+        // left divider
+        cur_site_obj["leftDivider"] = {
+            x1: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx, n_sites).x,
+            y1: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx, n_sites).y,
+            x2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).x,
+            y2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).y
+        }
+
+        // voronoi placement
+        cur_site_obj["voronoi"] = {};
+        cur_site_obj["voronoi"]["centre"] = {
+            x: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, site_idx+0.5, n_sites).x,
+            y: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, site_idx+0.5, n_sites).y
+        }
+        cur_site_obj["voronoi"]["top_l_corner"] = {
+            x: cur_site_obj["voronoi"]["centre"].x - dim.oncoMixWidth/2,
+            y: cur_site_obj["voronoi"]["centre"].y - dim.oncoMixWidth/2
+        }
+
+        // voronoi vertices (randomly fill a rectangle, keeping all within a certain 
+        // radius from the centre as "real cells", all others as "fake cells")
+        var vertices = _getVoronoiVertices(
+                vizObj, 
+                cur_site_obj["voronoi"]["centre"].x,
+                cur_site_obj["voronoi"]["centre"].y
+            );
+
+        // add colour (genotype) information to each vertex
+        cur_site_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(vizObj, 
+                                                                        site, 
+                                                                        vertices);
+
+        // 2D array of x- and y- positions for vertices
+        cur_site_obj["voronoi"]["vertex_coords"] = vertices.map(function(vertex) {
+            return [vertex.x, vertex.y];
+        });
+
+        // add site to array of sites
+        vizObj.data.sites.push(cur_site_obj);
+
+    })
+}
+
+/* function to get the oncoMix radius, given the layout
+* 
+*/
+function _getOncoMixR(vizObj) {
+    var dim = vizObj.generalConfig,
+        n_sites = vizObj.site_ids.length; // number of sites
+
+    // radius of oncoMix
+    var curOMX = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 0.5, n_sites).x;
+    var nextOMX = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 1.5, n_sites).x;
+    var tabX = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.tabRadius, 0.5, n_sites).x;
+    var curOMY = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 0.5, n_sites).y;
+    var nextOMY = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 1.5, n_sites).y;
+    var tabY = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.tabRadius, 0.5, n_sites).y;
+    var r_to_nextOM = Math.sqrt(Math.pow(curOMX-nextOMX, 2) + Math.pow(curOMY-nextOMY, 2)); 
+    var r_to_tab = Math.sqrt(Math.pow(curOMX-tabX, 2) + Math.pow(curOMY-tabY, 2))*2; 
+
+    // pick the smaller of the radius to the tab or the radius to the next oncoMix
+    dim.oncoMixWidth = (r_to_nextOM < r_to_tab) ? r_to_nextOM - 2 : r_to_tab - 2; // - 2 to give space
 }
