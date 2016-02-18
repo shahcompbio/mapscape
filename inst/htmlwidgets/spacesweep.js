@@ -12,7 +12,9 @@ HTMLWidgets.widget({
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
             max_r: 4, // max radius for tree nodes
-            containerColour: '#DDDADA'
+            pureColour: '#DDDADA',
+            monophyleticColour: 'B4AEAE',
+            polyphyleticColour: '8E8383'
         };
 
         // global variable vizObj
@@ -88,20 +90,6 @@ HTMLWidgets.widget({
             .attr("width", dim.width + "px")
             .attr("height", dim.width + "px");
 
-        // outer arc
-        var arcData = d3.svg.arc()
-            .innerRadius(dim.tabRadius)
-            .outerRadius(dim.outerRadius)
-            .startAngle(0)
-            .endAngle(2 * Math.PI);
-
-        var arc = containerSVG.append("g")
-            .attr("class", "arcG")
-            .attr("transform", "translate(" + dim.width / 2 + "," + dim.width / 2 + ")")
-            .append("path")
-            .style("fill", dim.containerColour)
-            .attr("d", arcData);
-
         // supergroup containing all site SVG groups
         var siteGs = containerSVG.append("g")
             .attr("class", "siteGs");
@@ -112,21 +100,27 @@ HTMLWidgets.widget({
             .enter().append("g")
             .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
 
-        // dividers between each site
-        var divider = siteG.append("line")
-            .attr("x1", function(d) { return d.leftDivider.x1; })
-            .attr("x2", function(d) { return d.leftDivider.x2; })
-            .attr("y1", function(d) { return d.leftDivider.y1; })
-            .attr("y2", function(d) { return d.leftDivider.y2; })
-            .attr("stroke", "white")
-            .attr("stroke-width", "6px");
-
-
         // FOR EACH SITE 
         vizObj.site_ids.forEach(function(site, site_idx) {
 
             var site_data = _.findWhere(vizObj.data.sites, {id: site});
             console.log(site_data);
+            var cur_siteG = containerSVG.select(".siteG." + site.replace(/ /g,"_"));
+
+            // PLOT ARC
+
+            var arcData = d3.svg.arc()
+                .innerRadius(dim.tabRadius)
+                .outerRadius(dim.outerRadius)
+                .startAngle(site_data.tab.startAngle)
+                .endAngle(site_data.tab.endAngle);
+
+            var arc = cur_siteG.append("g")
+                .attr("class", "arcG")
+                .attr("transform", "translate(" + dim.width / 2 + "," + dim.width / 2 + ")")
+                .append("path")
+                .style("fill", dim.pureColour)
+                .attr("d", arcData);
 
             // PLOT ONCOMIX
 
@@ -139,7 +133,6 @@ HTMLWidgets.widget({
                 
             // plot cells
             var vertices = site_data.voronoi.vertices;
-            var cur_siteG = containerSVG.select(".siteG." + site.replace(/ /g,"_"));
             var cells = cur_siteG.append("g")
                 .attr("class", "cellsG")
                 .selectAll("path")

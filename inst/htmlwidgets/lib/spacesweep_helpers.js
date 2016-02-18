@@ -406,6 +406,13 @@ function _getSitePositioning(vizObj) {
             return [vertex.x, vertex.y];
         });
 
+        // TAB 
+
+        //placement
+        cur_site_obj["tab"] = {
+            startAngle: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.05, n_sites).angle,
+            endAngle: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.95, n_sites).angle
+        };
 
         // TREE
 
