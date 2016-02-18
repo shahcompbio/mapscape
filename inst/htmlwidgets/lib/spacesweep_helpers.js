@@ -44,6 +44,63 @@ function _getTreeInfo(vizObj) {
         var new_root_tree = _findNodeByName(nodesByName, rootName);
         vizObj.data.treeStructure = new_root_tree;
     }    
+
+    // get descendants for each node
+    vizObj.data.treeDescendantsArr = {};
+    vizObj.data.treeNodes.forEach(function(node, idx) {
+        var curRoot = _findNodeByName(nodesByName, node);
+        var curDescendants = _getDescendantIds(curRoot, []);
+        vizObj.data.treeDescendantsArr[node] = curDescendants;
+    })
+
+    // get ancestors for each node
+    vizObj.data.treeAncestorsArr = _getAncestorIds(vizObj);
+
+}
+
+
+/* function to get descendants id's for the specified key
+* @param {Object} root - key for which we want descendants
+* @param {Array} descendants - initially empty array for descendants to be placed into
+*/
+function _getDescendantIds(root, descendants) {
+    var child;
+
+    if (root["children"].length > 0) {
+        for (var i = 0; i < root["children"].length; i++) {
+            child = root["children"][i];
+            descendants.push(child["id"]);
+            _getDescendantIds(child, descendants);
+        }
+    }
+    return descendants;
+}
+
+/* function to get the ancestor ids for all nodes
+* @param {Object} vizObj
+*/
+function _getAncestorIds(vizObj) {
+    var ancestors = {},
+        curDescendants,
+        descendants_arr = vizObj.data.treeDescendantsArr,
+        treeNodes = vizObj.data.treeNodes;
+
+    // set up each node as originally containing an empty list of ancestors
+    treeNodes.forEach(function(node, idx) {
+        ancestors[node] = [];
+    })
+
+    // get ancestors data from the descendants data
+    treeNodes.forEach(function(node, idx) {
+        // for each descendant of this node
+        curDescendants = descendants_arr[node];
+        for (var i = 0; i < curDescendants.length; i++) { 
+            // add the node to descentant's ancestor list
+            ancestors[curDescendants[i]].push(node);
+        }
+    })
+
+    return ancestors;
 }
 
 /* function to find a key by its name - if the key doesn't exist, it will be created and added to the list of nodes
@@ -328,6 +385,21 @@ function _getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+/* function to get the intersection of two arrays
+* @param {Array} array1 -- first array
+* @param {Array} array2 -- second array
+*/
+function _getIntersection(array1, array2) {
+
+    if (array1 == undefined || array2 == undefined) {
+        return [];
+    }
+
+    return array1.filter(function(n) {
+        return array2.indexOf(n) != -1
+    });
+}
+
 // LAYOUT FUNCTIONS
 
 /* function to get coordinates for a point evenly spaced around circle perimeter
@@ -410,8 +482,12 @@ function _getSitePositioning(vizObj) {
 
         //placement
         cur_site_obj["tab"] = {
-            startAngle: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.05, n_sites).angle,
-            endAngle: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.95, n_sites).angle
+            startAngle: 
+                _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.05, n_sites).angle 
+                + Math.PI/2, // not sure why it's shifted by 90 degrees..
+            endAngle: 
+                _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.95, n_sites).angle 
+                + Math.PI/2
         };
 
         // TREE
@@ -425,6 +501,30 @@ function _getSitePositioning(vizObj) {
             x: cur_site_obj["tree"]["centre"].x - dim.treeWidth/2,
             y: cur_site_obj["tree"]["centre"].y - dim.treeWidth/2
         }
+
+        // PURE, MONOPHYLETIC, OR POLYPHYLETIC SITE
+        var phyly;
+        var site_gtypes = vizObj.data["genotypes_to_plot"][site];
+        // pure tumour
+        if (site_gtypes.length == 1) {
+            phyly = "pure";
+        }
+        // monophyletic tumour
+        else {
+            for (var i = 0; i < site_gtypes.length; i++) {
+                var gtypeAndAncestors = vizObj.data.treeAncestorsArr[site_gtypes[i]].slice();
+                gtypeAndAncestors.push(site_gtypes[i]);
+                if (_getIntersection(gtypeAndAncestors, site_gtypes).length == site_gtypes.length) {
+                    phyly = "monophyletic";
+                }
+            }
+        }
+        // polyphyletic tumour
+        if (["monophyletic","pure"].indexOf(phyly) == -1) {
+            phyly = "polyphyletic";
+        }
+        cur_site_obj["phyly"] = phyly;
+
 
         // add site to array of sites
         vizObj.data.sites.push(cur_site_obj);

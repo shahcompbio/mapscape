@@ -12,9 +12,9 @@ HTMLWidgets.widget({
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
             max_r: 4, // max radius for tree nodes
-            pureColour: '#DDDADA',
-            monophyleticColour: 'B4AEAE',
-            polyphyleticColour: '8E8383'
+            pureColour: '#D3D2D2',
+            monophyleticColour: '767676',
+            polyphyleticColour: '000000'
         };
 
         // global variable vizObj
@@ -115,12 +115,24 @@ HTMLWidgets.widget({
                 .startAngle(site_data.tab.startAngle)
                 .endAngle(site_data.tab.endAngle);
 
-            var arc = cur_siteG.append("g")
+            var arcG = cur_siteG.append("g")
                 .attr("class", "arcG")
                 .attr("transform", "translate(" + dim.width / 2 + "," + dim.width / 2 + ")")
-                .append("path")
-                .style("fill", dim.pureColour)
+            
+            arcG.append("path")
+                .style("fill", function(d) {
+                    if (d.phyly == "pure") {
+                        return dim.pureColour;
+                    }
+                    else if (d.phyly == "monophyletic") {
+                        return dim.monophyleticColour;
+                    }
+                    else if (d.phyly == "polyphyletic") {
+                        return dim.polyphyleticColour;
+                    }
+                })
                 .attr("d", arcData);
+
 
             // PLOT ONCOMIX
 
@@ -161,7 +173,7 @@ HTMLWidgets.widget({
                 .enter().append("circle")
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; })
-                .attr("r", 3)
+                .attr("r", 2)
                 .attr("fill", function(d) {
                     return (d.real_cell) ? _decrease_brightness(d.col, 20) : "none";
                 })
