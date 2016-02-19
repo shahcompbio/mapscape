@@ -490,6 +490,12 @@ function _getSitePositioning(vizObj) {
                 + Math.PI/2
         };
 
+        // MIDDLE ANGLE
+        cur_site_obj["angle"] = 
+            (_drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.05, n_sites).angle +
+            _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx+0.95, n_sites).angle)/2;
+
+
         // TREE
 
         cur_site_obj["tree"] = {};
@@ -500,6 +506,14 @@ function _getSitePositioning(vizObj) {
         cur_site_obj["tree"]["top_l_corner"] = {
             x: cur_site_obj["tree"]["centre"].x - dim.treeWidth/2,
             y: cur_site_obj["tree"]["centre"].y - dim.treeWidth/2
+        }
+        cur_site_obj["tree"]["top_middle"] = {
+            x: cur_site_obj["tree"]["centre"].x,
+            y: cur_site_obj["tree"]["centre"].y - dim.treeWidth/2
+        }
+        cur_site_obj["tree"]["bottom_middle"] = {
+            x: cur_site_obj["tree"]["centre"].x,
+            y: cur_site_obj["tree"]["centre"].y + dim.treeWidth/2
         }
 
         // PURE, MONOPHYLETIC, OR POLYPHYLETIC SITE
@@ -530,25 +544,4 @@ function _getSitePositioning(vizObj) {
         vizObj.data.sites.push(cur_site_obj);
 
     })
-}
-
-/* function to get the oncoMix radius, given the layout
-* 
-*/
-function _getOncoMixR(vizObj) {
-    var dim = vizObj.generalConfig,
-        n_sites = vizObj.site_ids.length; // number of sites
-
-    // radius of oncoMix
-    var curOMX = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 0.5, n_sites).x;
-    var nextOMX = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 1.5, n_sites).x;
-    var tabX = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.tabRadius, 0.5, n_sites).x;
-    var curOMY = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 0.5, n_sites).y;
-    var nextOMY = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, 1.5, n_sites).y;
-    var tabY = _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.tabRadius, 0.5, n_sites).y;
-    var r_to_nextOM = Math.sqrt(Math.pow(curOMX-nextOMX, 2) + Math.pow(curOMY-nextOMY, 2)); 
-    var r_to_tab = Math.sqrt(Math.pow(curOMX-tabX, 2) + Math.pow(curOMY-tabY, 2))*2; 
-
-    // pick the smaller of the radius to the tab or the radius to the next oncoMix
-    dim.oncoMixWidth = (r_to_nextOM < r_to_tab) ? r_to_nextOM - 2 : r_to_tab - 2; // - 2 to give space
 }

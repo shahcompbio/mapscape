@@ -11,7 +11,7 @@ HTMLWidgets.widget({
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
-            max_r: 4, // max radius for tree nodes
+            max_r: 10, // max radius for tree nodes
             pureColour: '#D3D2D2',
             monophyleticColour: '767676',
             polyphyleticColour: '000000'
@@ -48,9 +48,10 @@ HTMLWidgets.widget({
         dim.innerRadius = dim.viewWidth/6; // radius for centre circle (where anatomy will go)
         dim.tabWidth = 30; // width for site tab
         dim.tabRadius = dim.outerRadius - dim.tabWidth;
-        dim.radiusToOncoMix = dim.innerRadius + ((dim.outerRadius - dim.tabWidth - dim.innerRadius)*2/3);
-        dim.treeWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)*1/4);
-        dim.radiusToTree = dim.innerRadius + dim.treeWidth;
+        dim.oncoMixWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)/2) - 3;
+        dim.radiusToOncoMix = dim.innerRadius + dim.oncoMixWidth/2;
+        dim.treeWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)*1/2);
+        dim.radiusToTree = dim.innerRadius + dim.oncoMixWidth/2 + dim.treeWidth - 5;
 
         // GET CONTENT
 
@@ -68,7 +69,6 @@ HTMLWidgets.widget({
         _thresholdCPData(vizObj)
 
         // get site positioning
-        _getOncoMixR(vizObj); // oncoMix radius
         _getSitePositioning(vizObj); // position elements for each site
 
         console.log("vizObj");
@@ -100,51 +100,72 @@ HTMLWidgets.widget({
             .enter().append("g")
             .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
 
+        // PLOT FULL GENOTYPE TREE
+
+        // tree title
+        var extraTitleSpace = 12;
+        containerSVG.append("text")
+            .attr("x", dim.width - dim.treeWidth/2 - extraTitleSpace) 
+            .attr("y", 22)
+            .attr("fill", '#9E9A9A')
+            .attr("text-anchor", "middle")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "22px")
+            .text("Clone Phylogeny");
+
+        // d3 tree layout
+        var treePadding = dim.max_r + 2, // keep 1 pixel free on either side of tree
+            treeLayout = d3.layout.tree()           
+                .size([dim.treeWidth - treePadding*2, dim.treeWidth - treePadding*2]);
+
+        // get nodes and links
+        var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
+            nodes = treeLayout.nodes(root), 
+            links = treeLayout.links(nodes);   
+
+        // swap x and y direction
+        nodes.forEach(function(node) {
+            node.tmp = node.y;
+            node.y = node.x + treePadding + extraTitleSpace; 
+            node.x = node.tmp + treePadding + dim.width - dim.treeWidth - extraTitleSpace; 
+            delete node.tmp; 
+        });
+
+        // create links
+        containerSVG.append("g")
+            .attr("class","gtypeTreeLinkG")
+            .selectAll(".treeLink")                  
+            .data(links)                   
+            .enter().append("path")                   
+            .attr("class","treeLink")
+            .attr('stroke', '#9E9A9A')
+            .attr('fill', 'none') 
+            .attr('stroke-width', '2px')               
+            .attr("d", _elbow); 
+        
+        // create nodes
+        var cols = vizObj.view.colour_assignment;
+        containerSVG.append("g")
+            .attr("class", "gtypeTreeNodeG")
+            .selectAll(".treeNode")                  
+            .data(nodes)                   
+            .enter()
+            .append("circle")     
+            .classed("treeNode", true) 
+            .attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; })              
+            .attr("fill", function(d) { return cols[d.id]; })
+            .attr("stroke", function(d) { return cols[d.id]; })
+            .attr("id", function(d) { return d.sc_id; })
+            .attr("r", function(d) { return dim.max_r; });
+
+
         // FOR EACH SITE 
         vizObj.site_ids.forEach(function(site, site_idx) {
 
             var site_data = _.findWhere(vizObj.data.sites, {id: site});
             console.log(site_data);
             var cur_siteG = containerSVG.select(".siteG." + site.replace(/ /g,"_"));
-
-            // PLOT ARC
-
-            var arcData = d3.svg.arc()
-                .innerRadius(dim.tabRadius)
-                .outerRadius(dim.outerRadius)
-                .startAngle(site_data.tab.startAngle)
-                .endAngle(site_data.tab.endAngle);
-
-            var arcG = cur_siteG.append("g")
-                .attr("class", "arcG")
-                .attr("transform", "translate(" + dim.width / 2 + "," + dim.width / 2 + ")")
-            
-            arcG.append("path")
-                .attr("id", function(d) { return d.id.replace(/ /g,"_"); })
-                .style("fill", function(d) {
-                    if (d.phyly == "pure") {
-                        return dim.pureColour;
-                    }
-                    else if (d.phyly == "monophyletic") {
-                        return dim.monophyleticColour;
-                    }
-                    else if (d.phyly == "polyphyletic") {
-                        return dim.polyphyleticColour;
-                    }
-                })
-                .attr("d", arcData);
-
-            var text = arcG.append("text")
-                .attr("x", 6)
-                .attr("dy", 20);
-
-            text.append("textPath")
-                .attr("fill","white")
-                .attr("font-family", "sans-serif")
-                .attr("font-size", "14px")
-                .attr("xlink:href", function(d) { return "#" + d.id.replace(/ /g,"_"); })
-                .text(function(d) { return d.id; });
-
 
             // PLOT ONCOMIX
 
@@ -177,22 +198,6 @@ HTMLWidgets.widget({
                     return (vertices[i].real_cell) ? 1 : 0;
                 })
 
-            // plot nuclei
-            var nuclei = cur_siteG.append("g")
-                .attr("class", "nucleiG")
-                .selectAll("circle")
-                .data(vertices)
-                .enter().append("circle")
-                .attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; })
-                .attr("r", 2)
-                .attr("fill", function(d) {
-                    return (d.real_cell) ? _decrease_brightness(d.col, 20) : "none";
-                })
-                .attr("fill-opacity", function(d) { 
-                    return (d.real_cell) ? 1 : 0;
-                });
-
 
             // PLOT TREE
 
@@ -221,8 +226,9 @@ HTMLWidgets.widget({
                 .data(links)                   
                 .enter().append("path")                   
                 .attr("class","treeLink")
-                .attr('stroke', '#C7C5C5')
-                .attr('fill', 'none')                
+                .attr('stroke', '#9E9A9A')
+                .attr('fill', 'none') 
+                .attr('stroke-width', '2px')               
                 .attr("d", _elbow); 
             
             // create nodes
@@ -251,6 +257,28 @@ HTMLWidgets.widget({
                     // clone present at this site or not
                     return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.max_r : 0;
                 });
+
+            // PLOT SITE TITLES
+
+            cur_siteG.append("text")
+                .attr("x", site_data.tree.top_middle.x)
+                .attr("y", function() {
+                    if (site_data.angle > Math.PI) {
+                        return site_data.tree.top_middle.y;
+                    }
+                    return site_data.tree.bottom_middle.y;
+                })
+                .attr("dy", function() {
+                    if (site_data.angle > Math.PI) {
+                        return "+0.71em";
+                    }
+                    return "0em";
+                })
+                .attr("text-anchor", "middle")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "22px")
+                .attr("fill", '#9E9A9A')
+                .text(site_data.id);
          });
     },
 
