@@ -158,7 +158,6 @@ HTMLWidgets.widget({
             .attr("cy", function(d) { return d.y; })              
             .attr("fill", function(d) { return cols[d.id]; })
             .attr("stroke", function(d) { return cols[d.id]; })
-            .attr("id", function(d) { return d.sc_id; })
             .attr("r", function(d) { return dim.max_r; });
 
 
@@ -190,6 +189,11 @@ HTMLWidgets.widget({
                     return (vertices[i].real_cell) ? vertices[i].col : "none";
                 })
                 .attr("fill-opacity", function(d, i) {
+                    // if it's a dummy site
+                    if (site.substring(0, 5) == "dummy") {
+                        return 0;
+                    }
+                    // not a dummy site
                     return (vertices[i].real_cell) ? 1 : 0;
                 })
                 .attr("stroke", function(d, i) {
@@ -197,8 +201,13 @@ HTMLWidgets.widget({
                 })
                 .attr("stroke-width", "1.5px")
                 .attr("stroke-opacity", function(d, i) {
+                    // if it's a dummy site
+                    if (site.substring(0, 5) == "dummy") {
+                        return 0;
+                    }
+                    // not a dummy site
                     return (vertices[i].real_cell) ? 1 : 0;
-                })
+                });
 
 
             // PLOT TREE
@@ -231,7 +240,15 @@ HTMLWidgets.widget({
                 .attr('stroke', '#9E9A9A')
                 .attr('fill', 'none') 
                 .attr('stroke-width', '2px')               
-                .attr("d", _elbow); 
+                .attr("d", _elbow)
+                .attr("fill-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                })
+                .attr("stroke-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                }); 
             
             // create nodes
             var cols = vizObj.view.colour_assignment;
@@ -254,10 +271,17 @@ HTMLWidgets.widget({
                     return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
                         cols[d.id] : "#FFFFFF";
                 })
-                .attr("id", function(d) { return d.sc_id; })
                 .attr("r", function(d) {
                     // clone present at this site or not
                     return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.max_r : 0;
+                })
+                .attr("fill-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                })
+                .attr("stroke-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
                 });
 
             // PLOT SITE TITLES
@@ -265,13 +289,13 @@ HTMLWidgets.widget({
             cur_siteG.append("text")
                 .attr("x", site_data.tree.top_middle.x)
                 .attr("y", function() {
-                    if (site_data.angle > Math.PI) {
+                    if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
                         return site_data.tree.top_middle.y;
                     }
                     return site_data.tree.bottom_middle.y;
                 })
                 .attr("dy", function() {
-                    if (site_data.angle > Math.PI) {
+                    if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
                         return "+0.71em";
                     }
                     return "0em";
@@ -280,6 +304,10 @@ HTMLWidgets.widget({
                 .attr("font-family", "sans-serif")
                 .attr("font-size", "22px")
                 .attr("fill", '#9E9A9A')
+                .attr("fill-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                })
                 .text(site_data.id);
          });
     },
