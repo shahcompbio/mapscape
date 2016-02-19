@@ -14,12 +14,14 @@
 #' @param clone_colours Data frame with clone ids and their corresponding colours 
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
+#' @param site_ids {Vector} IDS of the sites in the order your wish to display them (clockwise from positive x-axis).
 #' @param show_root Whether or not to plot the root (for tree).
 #' @param n_cells The number of cells to plot (for voronoi tessellation).
 #' @export
 spacesweep <- function(clonal_prev, 
                       tree_edges,
                       clone_colours,
+                      site_ids = "NA",
                       show_root = TRUE,
                       n_cells = 100,
                       width = 960, 
@@ -91,11 +93,17 @@ spacesweep <- function(clonal_prev,
     stop("The parameter show_root must be a boolean.")  
   }
 
+  # SITE IDS
+  site_ids <- as.character(site_ids)
+  print(site_ids)
+
+
   # forward options using x
   x = list(
     clonal_prev = jsonlite::toJSON(clonal_prev),
     tree_edges = jsonlite::toJSON(tree_edges),
     clone_cols = jsonlite::toJSON(clone_colours),
+    site_ids = site_ids,
     n_cells = n_cells,
     show_root = show_root
   )

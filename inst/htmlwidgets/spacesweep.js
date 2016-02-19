@@ -62,7 +62,9 @@ HTMLWidgets.widget({
         _getColours(vizObj);
 
         // site ids
-        vizObj.site_ids = _.uniq(_.pluck(vizObj.userConfig.clonal_prev, "site_id"));
+        vizObj.site_ids = (vizObj.userConfig.site_ids == "NA") ? 
+            _.uniq(_.pluck(vizObj.userConfig.clonal_prev, "site_id")):
+            vizObj.userConfig.site_ids;
 
         // get cellular prevalence data in workable format, and threshold it
         _getCPData(vizObj);
