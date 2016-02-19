@@ -265,12 +265,14 @@ HTMLWidgets.widget({
             
             // create nodes
             var cols = vizObj.view.colour_assignment;
-            var node = cur_siteG.append("g")
+            var nodeG = cur_siteG.append("g")
                 .attr("class", "treeNodeG")
                 .selectAll(".treeNode")                  
                 .data(nodes)                   
                 .enter()
-                .append("circle")     
+                .append("g");
+
+            nodeG.append("circle")     
                 .attr("cx", function(d) { return d.x})
                 .attr("cy", function(d) { return d.y})              
                 .classed("treeNode", true) 
@@ -287,6 +289,28 @@ HTMLWidgets.widget({
                 .attr("r", function(d) {
                     // clone present at this site or not
                     return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.max_r : 0;
+                })
+                .attr("fill-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                })
+                .attr("stroke-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                });
+            
+            nodeG.append("text")
+                .attr("x", function(d) { return d.x; })
+                .attr("y", function(d) { return d.y - dim.max_r - 2; })
+                .attr("text-anchor", "middle")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "16px")
+                .attr("fill", '#B6B6B6')
+                .text(function(d) {
+                    if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
+                        return Math.round(vizObj.data.cp_data[site][d.id].cp * 100)/100;
+                    }
+                    return "";
                 })
                 .attr("fill-opacity", function() {
                     // if it's a dummy site

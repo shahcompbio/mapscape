@@ -297,15 +297,15 @@ function _thresholdCPData(vizObj) {
         // threshold the cellular prevalence 
         // (> prevalence of one cell in this view)
 
-        var threshold = 1/vizObj.generalConfig.nCells;
+        var threshold = 0.01;
         var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
         Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
 
             var cur_cp = vizObj.data.cp_data[site][gtype].cp;
 
             // only add genotypes that will be exhibited in >1 cell
-            if (cur_cp > 1/vizObj.generalConfig.nCells) {
-                total_legit_cp += cur_cp;
+            if (cur_cp > threshold) {
+                total_legit_cp += vizObj.data.cp_data[site][gtype].cp;
             }
             // warn if this genotype will not be shown
             else {
@@ -323,7 +323,7 @@ function _thresholdCPData(vizObj) {
             var cur_cp = vizObj.data.cp_data[site][gtype].cp;
 
             // only add genotypes that will be exhibited in >1 cell
-            if (cur_cp > 1/vizObj.generalConfig.nCells) {
+            if (cur_cp > threshold) {
                 vizObj.data.cp_data[site][gtype].adj_cp = cur_cp/total_legit_cp;
                 vizObj.data["genotypes_to_plot"][site].push(gtype);
             }
