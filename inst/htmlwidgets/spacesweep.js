@@ -143,7 +143,12 @@ HTMLWidgets.widget({
             .attr('stroke', '#9E9A9A')
             .attr('fill', 'none') 
             .attr('stroke-width', '2px')               
-            .attr("d", _elbow); 
+            .attr("d", function(d) {
+                if (vizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
+                    return _elbow(d);
+                }
+                return _shortElbow(d);
+            }); 
         
         // create nodes
         var cols = vizObj.view.colour_assignment;
@@ -220,7 +225,7 @@ HTMLWidgets.widget({
             // get nodes and links
             var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
                 nodes = treeLayout.nodes(root), 
-                links = treeLayout.links(nodes);   
+                links = treeLayout.links(nodes); 
 
             // swap x and y direction
             nodes.forEach(function(node) {
@@ -240,7 +245,15 @@ HTMLWidgets.widget({
                 .attr('stroke', '#9E9A9A')
                 .attr('fill', 'none') 
                 .attr('stroke-width', '2px')               
-                .attr("d", _elbow)
+                .attr("d", function(d) {
+                    if (site.substring(0, 5) == "dummy") {
+                        return _elbow(d);
+                    }
+                    if (vizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
+                        return _elbow(d);
+                    }
+                    return _shortElbow(d);
+                })
                 .attr("fill-opacity", function() {
                     // if it's a dummy site
                     return (site.substring(0, 5) == "dummy") ? 0 : 1;

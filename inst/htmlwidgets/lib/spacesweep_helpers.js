@@ -52,12 +52,50 @@ function _getTreeInfo(vizObj) {
         var curDescendants = _getDescendantIds(curRoot, []);
         vizObj.data.treeDescendantsArr[node] = curDescendants;
     })
+    vizObj.data.direct_descendants = _getDirectDescendants(vizObj.data.treeStructure, {});
+    console.log("vizObj.data.direct_descendants");
+    console.log(vizObj.data.direct_descendants);
 
     // get ancestors for each node
     vizObj.data.treeAncestorsArr = _getAncestorIds(vizObj);
+    vizObj.data.direct_ancestors = _getDirectAncestors(vizObj.data.treeStructure, {});
+    console.log("vizObj.data.direct_ancestors");
+    console.log(vizObj.data.direct_ancestors);
 
 }
 
+/* function to get the DIRECT ancestor id for all nodes
+* @param {Object} curNode -- current node in the tree (originally the root)
+* @param {Object} dir_ancestors -- originally empty array of direct descendants for each node
+*/
+function _getDirectAncestors(curNode, dir_ancestors) {
+
+    if (curNode.children.length > 0) {
+        for (var i = 0; i < curNode.children.length; i++) {
+            dir_ancestors[curNode.children[i].id] = curNode.id;
+            _getDirectAncestors(curNode.children[i], dir_ancestors)
+        }
+    }
+
+    return dir_ancestors;
+}
+
+/* function to get the DIRECT descendant id for all nodes
+* @param {Object} curNode -- current node in the tree (originally the root)
+* @param {Object} dir_descendants -- originally empty array of direct descendants for each node
+*/
+function _getDirectDescendants(curNode, dir_descendants) {
+    dir_descendants[curNode.id] = [];
+
+    if (curNode.children.length > 0) {
+        for (var i = 0; i < curNode.children.length; i++) {
+            dir_descendants[curNode.id].push(curNode.children[i].id);
+            _getDirectDescendants(curNode.children[i], dir_descendants)
+        }
+    }
+
+    return dir_descendants;
+}
 
 /* function to get descendants id's for the specified key
 * @param {Object} root - key for which we want descendants
@@ -125,6 +163,13 @@ function _findNodeByName(list, name) {
 function _elbow(d) {
     return "M" + d.source.x + "," + d.source.y
         + "H" + (d.source.x + (d.target.x-d.source.x)/2)
+        + "V" + d.target.y + "H" + d.target.x;
+}
+
+/* elbow function to draw phylogeny links 
+*/
+function _shortElbow(d) {
+    return "M" + (d.source.x + (d.target.x-d.source.x)/2) + "," + d.source.y
         + "V" + d.target.y + "H" + d.target.x;
 }
 
@@ -252,6 +297,7 @@ function _thresholdCPData(vizObj) {
         // threshold the cellular prevalence 
         // (> prevalence of one cell in this view)
 
+        var threshold = 1/vizObj.generalConfig.nCells;
         var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
         Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
 
