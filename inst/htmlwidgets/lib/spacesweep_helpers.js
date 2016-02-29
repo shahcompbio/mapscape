@@ -459,7 +459,7 @@ function _getIntersection(array1, array2) {
 function _drawPoint(cx, cy, r, currentPoint, totalPoints) {  
 
     var theta = ((Math.PI*2) / totalPoints);
-    var angle = (theta * currentPoint) + Math.PI/2;
+    var angle = (theta * currentPoint) + Math.PI/2; // - Math.PI/2;
 
     var x = cx + (r * Math.cos(angle));
     var y = cy + (r * Math.sin(angle));

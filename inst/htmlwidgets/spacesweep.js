@@ -73,9 +73,6 @@ HTMLWidgets.widget({
         // get site positioning
         _getSitePositioning(vizObj); // position elements for each site
 
-        console.log("vizObj");
-        console.log(vizObj);
-
         // DIVS
 
         var containerDIV = d3.select(el)
@@ -105,9 +102,10 @@ HTMLWidgets.widget({
         // PLOT FULL GENOTYPE TREE
 
         // tree title
+        var bigTreeExtraSpace = 45; // amount of extra space for the big clone phylogeny
         var extraTitleSpace = 12;
         containerSVG.append("text")
-            .attr("x", dim.width - dim.treeWidth/2 - extraTitleSpace) 
+            .attr("x", dim.width - dim.treeWidth/2 - extraTitleSpace - bigTreeExtraSpace/2) 
             .attr("y", 22)
             .attr("fill", '#9E9A9A')
             .attr("text-anchor", "middle")
@@ -118,7 +116,8 @@ HTMLWidgets.widget({
         // d3 tree layout
         var treePadding = dim.max_r + 2, // keep 1 pixel free on either side of tree
             treeLayout = d3.layout.tree()           
-                .size([dim.treeWidth - treePadding*2, dim.treeWidth - treePadding*2]);
+                .size([dim.treeWidth - treePadding*2 + bigTreeExtraSpace, 
+                    dim.treeWidth - treePadding*2 + bigTreeExtraSpace]);
 
         // get nodes and links
         var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
@@ -129,7 +128,7 @@ HTMLWidgets.widget({
         nodes.forEach(function(node) {
             node.tmp = node.y;
             node.y = node.x + treePadding + extraTitleSpace; 
-            node.x = node.tmp + treePadding + dim.width - dim.treeWidth - extraTitleSpace; 
+            node.x = node.tmp + treePadding + dim.width - dim.treeWidth - extraTitleSpace - bigTreeExtraSpace; 
             delete node.tmp; 
         });
 
@@ -163,7 +162,7 @@ HTMLWidgets.widget({
             .attr("cy", function(d) { return d.y; })              
             .attr("fill", function(d) { return cols[d.id]; })
             .attr("stroke", function(d) { return cols[d.id]; })
-            .attr("r", function(d) { return dim.max_r; });
+            .attr("r", "13px");
 
 
         // FOR EACH SITE 
@@ -299,27 +298,27 @@ HTMLWidgets.widget({
                     return (site.substring(0, 5) == "dummy") ? 0 : 1;
                 });
             
-            nodeG.append("text")
-                .attr("x", function(d) { return d.x; })
-                .attr("y", function(d) { return d.y - dim.max_r - 2; })
-                .attr("text-anchor", "middle")
-                .attr("font-family", "sans-serif")
-                .attr("font-size", "16px")
-                .attr("fill", '#B6B6B6')
-                .text(function(d) {
-                    if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
-                        return Math.round(vizObj.data.cp_data[site][d.id].cp * 100)/100;
-                    }
-                    return "";
-                })
-                .attr("fill-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
-                })
-                .attr("stroke-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
-                });
+            // nodeG.append("text")
+            //     .attr("x", function(d) { return d.x; })
+            //     .attr("y", function(d) { return d.y - dim.max_r - 2; })
+            //     .attr("text-anchor", "middle")
+            //     .attr("font-family", "sans-serif")
+            //     .attr("font-size", "16px")
+            //     .attr("fill", '#9E9A9A')
+            //     .text(function(d) {
+            //         if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
+            //             return (Math.round(vizObj.data.cp_data[site][d.id].cp * 100)/100).toFixed(2);
+            //         }
+            //         return "";
+            //     })
+            //     .attr("fill-opacity", function() {
+            //         // if it's a dummy site
+            //         return (site.substring(0, 5) == "dummy") ? 0 : 1;
+            //     })
+            //     .attr("stroke-opacity", function() {
+            //         // if it's a dummy site
+            //         return (site.substring(0, 5) == "dummy") ? 0 : 1;
+            //     });
 
             // PLOT SITE TITLES
 
@@ -327,12 +326,14 @@ HTMLWidgets.widget({
                 .attr("x", site_data.tree.top_middle.x)
                 .attr("y", function() {
                     if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
+                    // if (site_data.angle > Math.PI || site_data.angle < 0) {
                         return site_data.tree.top_middle.y;
                     }
                     return site_data.tree.bottom_middle.y;
                 })
                 .attr("dy", function() {
                     if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
+                    // if (site_data.angle > Math.PI || site_data.angle < 0) {
                         return "+0.71em";
                     }
                     return "0em";
