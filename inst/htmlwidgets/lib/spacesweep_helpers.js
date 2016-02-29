@@ -53,15 +53,19 @@ function _getTreeInfo(vizObj) {
         vizObj.data.treeDescendantsArr[node] = curDescendants;
     })
     vizObj.data.direct_descendants = _getDirectDescendants(vizObj.data.treeStructure, {});
-    console.log("vizObj.data.direct_descendants");
-    console.log(vizObj.data.direct_descendants);
 
     // get ancestors for each node
     vizObj.data.treeAncestorsArr = _getAncestorIds(vizObj);
     vizObj.data.direct_ancestors = _getDirectAncestors(vizObj.data.treeStructure, {});
-    console.log("vizObj.data.direct_ancestors");
-    console.log(vizObj.data.direct_ancestors);
 
+    // get the height of the tree
+    vizObj.data.tree_height = 0;
+    Object.keys(vizObj.data.treeAncestorsArr).forEach(function(key) {
+        var ancestor_arr = vizObj.data.treeAncestorsArr[key];
+        if (ancestor_arr.length > vizObj.data.tree_height) {
+            vizObj.data.tree_height = ancestor_arr.length;
+        }
+    })
 }
 
 /* function to get the DIRECT ancestor id for all nodes

@@ -11,10 +11,11 @@ HTMLWidgets.widget({
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
             rootColour: '#DDDADA',
-            max_r: 10, // max radius for tree nodes
             pureColour: '#D3D2D2',
             monophyleticColour: '767676',
-            polyphyleticColour: '000000'
+            polyphyleticColour: '000000',
+            legendWidth: 70,
+            legendTitleHeight: 14
         };
 
         // global variable vizObj
@@ -24,7 +25,24 @@ HTMLWidgets.widget({
 
         // set configurations
         var config = $.extend(true, {}, defaults);
-        config.width = (width < height) ? width : height; // width (and height) of view (smallest of the two)
+        config.containerWidth = width;
+        config.containerHeight = height;
+        // diameter of the main view
+        config.viewDiameter = ((config.containerWidth - config.legendWidth) < config.containerHeight) ? 
+            (config.containerWidth - config.legendWidth) :
+            config.containerHeight;
+        config.viewCentre = { x: config.viewDiameter/2, y: config.viewDiameter/2 };
+        config.outerRadius = config.viewDiameter/2;
+        config.innerRadius = config.viewDiameter/6; // radius for centre circle (where anatomy will go)
+        config.circBorderWidth = 3; // width for circular border width
+        config.legendHeight = config.viewDiameter;
+        // - 3 for extra space
+        config.oncoMixWidth = ((config.outerRadius - config.circBorderWidth - config.innerRadius)/2) - 3; 
+        config.treeWidth = ((config.outerRadius - config.circBorderWidth - config.innerRadius)/2) - 3; 
+        config.radiusToOncoMix = config.innerRadius + config.oncoMixWidth/2; // radius to oncoMix centre
+        config.radiusToTree = config.innerRadius + config.oncoMixWidth + config.treeWidth/2; // radius to tree centre
+        config.legendTreeWidth = config.legendWidth - 2; // width of the tree in the legend
+
         vizObj.generalConfig = config;
 
         return {}
@@ -39,18 +57,6 @@ HTMLWidgets.widget({
         // get params from R
         vizObj.userConfig = x;
         dim.nCells = x.n_cells;
-
-        // VIEW SETUP
-
-        dim.viewCentre = { x: dim.width/2, y: dim.width/2 };
-        dim.viewWidth = dim.width - 4; // 2 px free on either side
-        dim.outerRadius = dim.viewWidth/2;
-        dim.innerRadius = dim.viewWidth/6; // radius for centre circle (where anatomy will go)
-        dim.tabWidth = 30; // width for site tab
-        dim.oncoMixWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)/2) - 3;
-        dim.radiusToOncoMix = dim.innerRadius + dim.oncoMixWidth/2;
-        dim.treeWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)*1/2);
-        dim.radiusToTree = dim.innerRadius + dim.oncoMixWidth/2 + dim.treeWidth - 5;
 
         // GET CONTENT
 
@@ -72,24 +78,45 @@ HTMLWidgets.widget({
         // get site positioning
         _getSitePositioning(vizObj); // position elements for each site
 
+        console.log("vizObj");
+        console.log(vizObj);
+
+        // VIEW SETUP
+
+        // radii (- 5 = how much space to give between nodes)
+        var tree_height = vizObj.data.tree_height; // height of the tree (# nodes)
+        dim.node_r = ((dim.treeWidth - 5*tree_height)/tree_height)/2; // site tree
+        dim.legendNode_r = ((dim.legendTreeWidth - 5*tree_height)/tree_height)/2; // legend tree
+
         // DIVS
 
-        var containerDIV = d3.select(el)
+        var viewDIV = d3.select(el)
             .append("div")
-            .attr("class", "containerDIV")
+            .attr("class", "viewDIV")
             .style("position", "relative")
-            .style("width", dim.width + "px")
-            .style("height", dim.width + "px");
+            .style("width", dim.viewDiameter + "px")
+            .style("height", dim.viewDiameter + "px")
+            .style("float", "left");
 
-        var containerSVG = containerDIV.append("svg:svg")
-            .attr("class", "containerSVG")
+        var legendDIV = d3.select(el)
+            .append("div")
+            .attr("class", "legendDIV")
+            .style("position", "relative")
+            .style("width", dim.legendWidth + "px")
+            .style("height", dim.legendHeight + "px")
+            .style("float", "left");
+
+        // SVGS
+
+        var viewSVG = viewDIV.append("svg:svg")
+            .attr("class", "viewSVG")
             .attr("x", 0)
             .attr("y", 0)
-            .attr("width", dim.width + "px")
-            .attr("height", dim.width + "px");
+            .attr("width", dim.viewDiameter + "px")
+            .attr("height", dim.viewDiameter + "px");
 
         // supergroup containing all site SVG groups
-        var siteGs = containerSVG.append("g")
+        var siteGs = viewSVG.append("g")
             .attr("class", "siteGs");
 
         // site groups
@@ -98,25 +125,31 @@ HTMLWidgets.widget({
             .enter().append("g")
             .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
 
+        // legend SVG
+        var legendSVG = legendDIV.append("svg:svg")
+            .attr("class", "legendSVG")
+            .attr("x", dim.viewDiameter)
+            .attr("y", 0)
+            .attr("width", dim.legendWidth)
+            .attr("height", dim.legendHeight);
+
         // PLOT FULL GENOTYPE TREE
 
         // tree title
-        var bigTreeExtraSpace = 45; // amount of extra space for the big clone phylogeny
-        var extraTitleSpace = 12;
-        containerSVG.append("text")
-            .attr("x", dim.width - dim.treeWidth/2 - extraTitleSpace - bigTreeExtraSpace/2) 
+        legendSVG.append("text")
+            .attr("class", "legendTitle")
+            .attr("x", dim.legendTreeWidth/2) 
             .attr("y", 22)
             .attr("fill", '#9E9A9A')
             .attr("text-anchor", "middle")
             .attr("font-family", "sans-serif")
-            .attr("font-size", "22px")
-            .text("Clone Phylogeny");
+            .attr("font-size", dim.legendTitleHeight)
+            .text("Phylogeny");
 
         // d3 tree layout
-        var treePadding = dim.max_r + 2, // keep 1 pixel free on either side of tree
-            treeLayout = d3.layout.tree()           
-                .size([dim.treeWidth - treePadding*2 + bigTreeExtraSpace, 
-                    dim.treeWidth - treePadding*2 + bigTreeExtraSpace]);
+        var treeLayout = d3.layout.tree()           
+                .size([dim.legendTreeWidth - dim.legendNode_r*2, 
+                    dim.legendTreeWidth - dim.legendNode_r*2]);
 
         // get nodes and links
         var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
@@ -126,13 +159,13 @@ HTMLWidgets.widget({
         // swap x and y direction
         nodes.forEach(function(node) {
             node.tmp = node.y;
-            node.y = node.x + treePadding + extraTitleSpace; 
-            node.x = node.tmp + treePadding + dim.width - dim.treeWidth - extraTitleSpace - bigTreeExtraSpace; 
+            node.y = node.x + dim.legendNode_r + dim.legendTitleHeight; 
+            node.x = node.tmp + dim.legendNode_r; 
             delete node.tmp; 
         });
 
         // create links
-        containerSVG.append("g")
+        legendSVG.append("g")
             .attr("class","gtypeTreeLinkG")
             .selectAll(".treeLink")                  
             .data(links)                   
@@ -150,7 +183,7 @@ HTMLWidgets.widget({
         
         // create nodes
         var cols = vizObj.view.colour_assignment;
-        containerSVG.append("g")
+        legendSVG.append("g")
             .attr("class", "gtypeTreeNodeG")
             .selectAll(".treeNode")                  
             .data(nodes)                   
@@ -161,15 +194,14 @@ HTMLWidgets.widget({
             .attr("cy", function(d) { return d.y; })              
             .attr("fill", function(d) { return cols[d.id]; })
             .attr("stroke", function(d) { return cols[d.id]; })
-            .attr("r", "13px");
+            .attr("r", dim.legendNode_r);
 
 
         // FOR EACH SITE 
         vizObj.site_ids.forEach(function(site, site_idx) {
 
-            var site_data = _.findWhere(vizObj.data.sites, {id: site});
-            console.log(site_data);
-            var cur_siteG = containerSVG.select(".siteG." + site.replace(/ /g,"_"));
+            var site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
+                cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")); // svg group for this site
 
             // PLOT ONCOMIX
 
@@ -216,9 +248,8 @@ HTMLWidgets.widget({
             // PLOT TREE
 
             // d3 tree layout
-            var treePadding = dim.max_r + 2, // keep 1 pixel free on either side of tree
-                treeLayout = d3.layout.tree()           
-                    .size([dim.treeWidth - treePadding*2, dim.treeWidth - treePadding*2]); 
+            var treeLayout = d3.layout.tree()           
+                    .size([dim.treeWidth - dim.node_r*2, dim.treeWidth - dim.node_r*2]); 
 
             // get nodes and links
             var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
@@ -228,8 +259,8 @@ HTMLWidgets.widget({
             // swap x and y direction
             nodes.forEach(function(node) {
                 node.tmp = node.y;
-                node.y = node.x + treePadding + site_data.tree.top_l_corner.y;
-                node.x = node.tmp + treePadding + site_data.tree.top_l_corner.x;
+                node.y = node.x + dim.node_r + site_data.tree.top_l_corner.y;
+                node.x = node.tmp + dim.node_r + site_data.tree.top_l_corner.x;
                 delete node.tmp;
             });
 
@@ -286,7 +317,7 @@ HTMLWidgets.widget({
                 })
                 .attr("r", function(d) {
                     // clone present at this site or not
-                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.max_r : 0;
+                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.node_r : 0;
                 })
                 .attr("fill-opacity", function() {
                     // if it's a dummy site
@@ -297,27 +328,28 @@ HTMLWidgets.widget({
                     return (site.substring(0, 5) == "dummy") ? 0 : 1;
                 });
             
-            // nodeG.append("text")
-            //     .attr("x", function(d) { return d.x; })
-            //     .attr("y", function(d) { return d.y - dim.max_r - 2; })
-            //     .attr("text-anchor", "middle")
-            //     .attr("font-family", "sans-serif")
-            //     .attr("font-size", "16px")
-            //     .attr("fill", '#9E9A9A')
-            //     .text(function(d) {
-            //         if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
-            //             return (Math.round(vizObj.data.cp_data[site][d.id].cp * 100)/100).toFixed(2);
-            //         }
-            //         return "";
-            //     })
-            //     .attr("fill-opacity", function() {
-            //         // if it's a dummy site
-            //         return (site.substring(0, 5) == "dummy") ? 0 : 1;
-            //     })
-            //     .attr("stroke-opacity", function() {
-            //         // if it's a dummy site
-            //         return (site.substring(0, 5) == "dummy") ? 0 : 1;
-            //     });
+            nodeG.append("text")
+                .attr("class", "cpLabel")
+                .attr("x", function(d) { return d.x; })
+                .attr("y", function(d) { return d.y - dim.node_r - 2; })
+                .attr("text-anchor", "middle")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", dim.node_r*2*18/35) // make width = diameter. (18:35 = ~height:width ratio)
+                .attr("fill", '#9E9A9A')
+                .text(function(d) {
+                    if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
+                        return (Math.round(vizObj.data.cp_data[site][d.id].cp * 100)/100).toFixed(2);
+                    }
+                    return "";
+                })
+                .attr("fill-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                })
+                .attr("stroke-opacity", function() {
+                    // if it's a dummy site
+                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                });
 
             // PLOT SITE TITLES
 
@@ -339,7 +371,7 @@ HTMLWidgets.widget({
                 })
                 .attr("text-anchor", "middle")
                 .attr("font-family", "sans-serif")
-                .attr("font-size", "22px")
+                .attr("font-size", dim.viewDiameter/30)
                 .attr("fill", '#9E9A9A')
                 .attr("fill-opacity", function() {
                     // if it's a dummy site
