@@ -1,8 +1,8 @@
 Package: spacesweep
-Title: What the Package Does (one line, title case)
-Version: 0.0.2.9004
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Title: spacesweep
+Version: 0.0.2.9005
+Authors@R: person("Maia", "Smith", email = "maiaannesmith@gmail.com", role = c("aut", "cre"))
+Description: Generates patient clonal SpaceSweeps.
 Depends:
     R (>= 3.2.2)
 License: What license is it under?

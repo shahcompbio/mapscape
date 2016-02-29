@@ -47,7 +47,6 @@ HTMLWidgets.widget({
         dim.outerRadius = dim.viewWidth/2;
         dim.innerRadius = dim.viewWidth/6; // radius for centre circle (where anatomy will go)
         dim.tabWidth = 30; // width for site tab
-        dim.tabRadius = dim.outerRadius - dim.tabWidth;
         dim.oncoMixWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)/2) - 3;
         dim.radiusToOncoMix = dim.innerRadius + dim.oncoMixWidth/2;
         dim.treeWidth = ((dim.outerRadius - dim.tabWidth - dim.innerRadius)*1/2);
