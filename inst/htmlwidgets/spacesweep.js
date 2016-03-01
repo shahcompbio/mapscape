@@ -446,13 +446,41 @@ HTMLWidgets.widget({
 
             // if the site was found on the anatomic image
             if (site_data.stem) {
-                cur_siteG.append("line")
+                cur_siteG
+                    .append("line")
+                    .classed("anatomicPointer", true)
+                    .classed(site, true)
                     .attr("x1", site_data.innerRadius.x)
                     .attr("y1", site_data.innerRadius.y)
                     .attr("x2", image_top_l.x + (site_data.stem.x*image_width))
                     .attr("y2", image_top_l.y + (site_data.stem.y*image_width))
                     .attr("stroke", "#CBCBCB");  
             }
+
+            // PLOT ANATOMIC MARKS - marks on image 
+
+            // if the site was found on the anatomic image
+            if (site_data.stem) {
+                cur_siteG
+                    .append("g")
+                    .attr("class", "anatomicMarksG")
+                    .selectAll(".anatomicMark")
+                    .data(vizObj.data.genotypes_to_plot[site])
+                    .enter()
+                    .append("circle")
+                    .attr("class", function(d) { 
+                        return "anatomicMark " + d; 
+                    })
+                    .attr("cx", image_top_l.x + (site_data.stem.x*image_width))
+                    .attr("cy", image_top_l.y + (site_data.stem.y*image_width))
+                    .attr("r", 4)
+                    .attr("fill", function(d) { 
+                        return cols[d];
+                    })
+                    .attr("fill-opacity", 0);
+            }
+
+            
         });
     },
 
