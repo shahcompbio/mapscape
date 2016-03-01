@@ -103,7 +103,9 @@ function _getSiteLocationsOnImage(vizObj) {
         {siteStem: "Bwl", x: 0.669, y: 0.42},
         {siteStem: "SBwl", x: 0.669, y: 0.42},
         {siteStem: "RPv", x: 0.649, y: 0.482},
-        {siteStem: "Ap", x: 0.649, y: 0.475}
+        {siteStem: "Ap", x: 0.649, y: 0.475},
+        {siteStem: "RUt", x: 0.659, y: 0.482},
+        {siteStem: "LUt", x: 0.679, y: 0.482}
     ]
 }
 
