@@ -84,6 +84,12 @@ HTMLWidgets.widget({
         // get colour palette
         _getColours(vizObj);
 
+        // get anatomic locations on image
+        _getSiteLocationsOnImage(vizObj);
+
+        // assign anatomic locations to each site
+        _assignAnatomicLocations(vizObj);
+
         console.log("vizObj");
         console.log(vizObj);
 
@@ -121,16 +127,6 @@ HTMLWidgets.widget({
             .attr("width", dim.viewDiameter + "px")
             .attr("height", dim.viewDiameter + "px");
 
-        // supergroup containing all site SVG groups
-        var siteGs = viewSVG.append("g")
-            .attr("class", "siteGs");
-
-        // site groups
-        var siteG = siteGs.selectAll(".siteG")
-            .data(vizObj.data.sites)
-            .enter().append("g")
-            .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
-
         // legend SVG
         var legendSVG = legendDIV.append("svg:svg")
             .attr("class", "legendSVG")
@@ -142,13 +138,36 @@ HTMLWidgets.widget({
         // PLOT ANATOMY IMAGE
 
         var image_width = dim.innerRadius*2;
+        var image_ref = "http://www.clipartbest.com/cliparts/niE/XL8/niEXL8grT.png";
+        var image_top_l = {x: dim.viewDiameter/2 - image_width/2, y: dim.viewDiameter/2 - image_width/2}
         viewSVG.append("image")
-            .attr("xlink:href", "http://www.clipartbest.com/cliparts/niE/XL8/niEXL8grT.png")
-            .attr("x", dim.viewDiameter/2 - image_width/2)
-            .attr("y", dim.viewDiameter/2 - image_width/2)
+            .attr("xlink:href", image_ref)
+            .attr("x", image_top_l.x)
+            .attr("y", image_top_l.y)
             .attr("width", image_width)
             .attr("height", image_width);
 
+        // PLOT ANATOMIC LOCATIONS - for testing of location accuracy
+
+        // viewSVG.append("g")
+        //     .attr("class","anatomicSitesG")
+        //     .selectAll(".anatomicSite")                  
+        //     .data(vizObj.view.siteLocationsOnImage)                   
+        //     .enter()
+        //     .append("circle")
+        //     .attr("cx", function(d) { return image_top_l.x + (d.x*image_width); })
+        //     .attr("cy", function(d) { return image_top_l.y + (d.y*image_width); })
+        //     .attr("r", 1)
+        //     .attr("fill", "red");
+
+        // SITE SVG GROUPS
+
+        var siteGs = viewSVG.append("g")
+            .attr("class", "siteGs")
+            .selectAll(".siteG")
+            .data(vizObj.data.sites)
+            .enter().append("g")
+            .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
 
         // PLOT CIRCLE BORDER
 
@@ -417,6 +436,16 @@ HTMLWidgets.widget({
                 .attr("font-size", dim.viewDiameter/40)
                 .attr("fill", '#9E9A9A')
                 .text(site_data.id);
+
+            // PLOT ANATOMIC LINES
+
+            cur_siteG.append("line")
+                .attr("x1", site_data.innerRadius.x)
+                .attr("y1", site_data.innerRadius.y)
+                .attr("x2", image_top_l.x + (site_data.stem.x*image_width))
+                .attr("y2", image_top_l.y + (site_data.stem.y*image_width))
+                .attr("stroke", "#CBCBCB");
+
          });
     },
 

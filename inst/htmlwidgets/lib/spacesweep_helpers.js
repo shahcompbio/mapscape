@@ -71,6 +71,59 @@ function _legendGtypeMouseout(vizObj) {
     });
 }
 
+// ANATOMY FUNCTIONS
+
+/* function to get proportional anatomic locations on the anatomic diagram
+* @param {Object} vizObj
+*/
+function _getSiteLocationsOnImage(vizObj) {
+    vizObj.view.siteLocationsOnImage = [
+        {siteStem: "Om", x: 0.669, y: 0.40},
+        {siteStem: "RFT", x: 0.648, y: 0.445},
+        {siteStem: "LFT", x: 0.690, y: 0.445},
+        {siteStem: "ROv", x: 0.649, y: 0.462},
+        {siteStem: "LOv", x: 0.689, y: 0.462},
+        {siteStem: "Cds", x: 0.669, y: 0.470},
+        {siteStem: "Cln", x: 0.669, y: 0.478},
+        {siteStem: "Adnx", x: 0.669, y: 0.474},
+        {siteStem: "RPvs", x: 0.635, y: 0.454},
+        {siteStem: "LPvs", x: 0.703, y: 0.454},
+        {siteStem: "Brn", x: 0.669, y: 0.08},
+        {siteStem: "Bwl", x: 0.669, y: 0.42},
+        {siteStem: "SBwl", x: 0.669, y: 0.42},
+        {siteStem: "RPv", x: 0.649, y: 0.482},
+        {siteStem: "Ap", x: 0.649, y: 0.475}
+    ]
+}
+
+/* function to assign anatomic locations to each site
+* @param {Object} vizObj 
+*/
+function _assignAnatomicLocations(vizObj) {
+
+    // for each site in the data
+    vizObj.data.sites.forEach(function(site_data) {
+        var site_id = site_data.id.toLowerCase();
+
+        // for each potential anatomic location
+        for (var i = 0; i < vizObj.view.siteLocationsOnImage.length; i++) {
+            var cur_location = vizObj.view.siteLocationsOnImage[i];
+
+            // if this stem is the stem of the current site
+            var siteStem = cur_location.siteStem.toLowerCase();
+            if (site_id.startsWith(siteStem)) {
+                site_data.stem = cur_location;
+                break;
+            }
+
+            // no site found - throw warning
+            if (i == vizObj.view.siteLocationsOnImage.length-1) {
+                console.warn("No corresponding anatomic site found for site \"" + site_id + "\".")
+            }
+        }
+    })
+}
+
 // TREE FUNCTIONS
 
 /* extract all info from tree about nodes, edges, ancestors, descendants
@@ -698,6 +751,12 @@ function _getSitePositioning(vizObj) {
             y1: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx, n_sites).y,
             x2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).x,
             y2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).y
+        }
+
+        // INNER RADIUS
+        cur_site_obj["innerRadius"] = {
+            x: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx+0.5, n_sites).x,
+            y: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx+0.5, n_sites).y      
         }
 
 
