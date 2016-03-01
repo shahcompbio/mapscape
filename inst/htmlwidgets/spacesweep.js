@@ -30,15 +30,15 @@ HTMLWidgets.widget({
         // diameter of the main view
         config.viewDiameter = ((config.containerWidth - config.legendWidth) < config.containerHeight) ? 
             (config.containerWidth - config.legendWidth) :
-            config.containerHeight;
+            config.containerHeight; 
         config.viewCentre = { x: config.viewDiameter/2, y: config.viewDiameter/2 };
-        config.outerRadius = config.viewDiameter/2;
+        config.outerRadius = config.viewDiameter/2; 
         config.innerRadius = config.viewDiameter/6; // radius for centre circle (where anatomy will go)
         config.circBorderWidth = 3; // width for circular border width
         config.legendHeight = config.viewDiameter;
-        // - 3 for extra space
+        // - 3, - 10 for extra space
         config.oncoMixWidth = ((config.outerRadius - config.circBorderWidth - config.innerRadius)/2) - 3; 
-        config.treeWidth = ((config.outerRadius - config.circBorderWidth - config.innerRadius)/2) - 3; 
+        config.treeWidth = ((config.outerRadius - config.circBorderWidth - config.innerRadius)/2) - 10; 
         config.radiusToOncoMix = config.innerRadius + config.oncoMixWidth/2; // radius to oncoMix centre
         config.radiusToTree = config.innerRadius + config.oncoMixWidth + config.treeWidth/2; // radius to tree centre
         config.legendTreeWidth = config.legendWidth - 2; // width of the tree in the legend
@@ -135,6 +135,15 @@ HTMLWidgets.widget({
             .attr("y", 0)
             .attr("width", dim.legendWidth)
             .attr("height", dim.legendHeight);
+
+        // plot circle border
+        viewSVG.append("circle")
+            .attr("cx", dim.viewDiameter/2)
+            .attr("cy", dim.viewDiameter/2)
+            .attr("r", dim.viewDiameter/2 - 4)
+            .attr("fill", "none")
+            .attr("stroke", "#F4F3F3")
+            .attr("stroke-width", "5px");
 
         // PLOT FULL GENOTYPE TREE
 
@@ -390,7 +399,7 @@ HTMLWidgets.widget({
                 })
                 .attr("text-anchor", "middle")
                 .attr("font-family", "sans-serif")
-                .attr("font-size", dim.viewDiameter/30)
+                .attr("font-size", dim.viewDiameter/40)
                 .attr("fill", '#9E9A9A')
                 .text(site_data.id);
          });
