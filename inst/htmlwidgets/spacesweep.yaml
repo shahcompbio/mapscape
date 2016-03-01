@@ -25,3 +25,7 @@ dependencies:
    src: "htmlwidgets/lib"
    script: jquery.gridster.js
    stylesheet: jquery.gridster.css
+ - name: d3.tip
+   version: 0.6.3
+   src: "htmlwidgets/lib"
+   script: d3.tip.js

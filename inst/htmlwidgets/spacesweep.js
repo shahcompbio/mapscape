@@ -196,6 +196,22 @@ HTMLWidgets.widget({
             .attr("stroke", function(d) { return cols[d.id]; })
             .attr("r", dim.legendNode_r);
 
+        // TOOLTIP FUNCTIONS
+
+        var nodeTip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+                var cp;
+                if (vizObj.data["genotypes_to_plot"][d.site].indexOf(d.id) != -1) {
+                    cp = (Math.round(vizObj.data.cp_data[d.site][d.id].cp * 100)/100).toFixed(2);
+                }
+                else {
+                    cp = "";                    
+                }
+                return "<strong>Prevalence:</strong> <span style='color:white'>" + cp + "</span>";
+            });
+        viewSVG.call(nodeTip);
 
         // FOR EACH SITE 
         vizObj.site_ids.forEach(function(site, site_idx) {
@@ -326,29 +342,16 @@ HTMLWidgets.widget({
                 .attr("stroke-opacity", function() {
                     // if it's a dummy site
                     return (site.substring(0, 5) == "dummy") ? 0 : 1;
-                });
-            
-            nodeG.append("text")
-                .attr("class", "cpLabel")
-                .attr("x", function(d) { return d.x; })
-                .attr("y", function(d) { return d.y - dim.node_r - 2; })
-                .attr("text-anchor", "middle")
-                .attr("font-family", "sans-serif")
-                .attr("font-size", dim.node_r*2*18/35) // make width = diameter. (18:35 = ~height:width ratio)
-                .attr("fill", '#9E9A9A')
-                .text(function(d) {
-                    if (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) {
-                        return (Math.round(vizObj.data.cp_data[site][d.id].cp * 100)/100).toFixed(2);
-                    }
-                    return "";
                 })
-                .attr("fill-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                .on('mouseover', function(d) {
+                    d.site = site;
+                    console.log("showing");
+                    // show tooltip
+                    nodeTip.show(d);
                 })
-                .attr("stroke-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
+                .on('mouseout', function(d) {
+                    // hide tooltip
+                    nodeTip.hide(d);
                 });
 
             // PLOT SITE TITLES
