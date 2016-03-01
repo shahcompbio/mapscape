@@ -439,14 +439,16 @@ HTMLWidgets.widget({
 
             // PLOT ANATOMIC LINES
 
-            cur_siteG.append("line")
-                .attr("x1", site_data.innerRadius.x)
-                .attr("y1", site_data.innerRadius.y)
-                .attr("x2", image_top_l.x + (site_data.stem.x*image_width))
-                .attr("y2", image_top_l.y + (site_data.stem.y*image_width))
-                .attr("stroke", "#CBCBCB");
-
-         });
+            // if the site was found on the anatomic image
+            if (site_data.stem) {
+                cur_siteG.append("line")
+                    .attr("x1", site_data.innerRadius.x)
+                    .attr("y1", site_data.innerRadius.y)
+                    .attr("x2", image_top_l.x + (site_data.stem.x*image_width))
+                    .attr("y2", image_top_l.y + (site_data.stem.y*image_width))
+                    .attr("stroke", "#CBCBCB");  
+            }
+        });
     },
 
     resize: function(el, width, height, instance) {
