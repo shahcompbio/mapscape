@@ -81,6 +81,9 @@ HTMLWidgets.widget({
         // get sites showing each genotype
         _getGenotypeSites(vizObj.data.genotypes_to_plot);
 
+        // get colour palette
+        _getColours(vizObj);
+
         console.log("vizObj");
         console.log(vizObj);
 

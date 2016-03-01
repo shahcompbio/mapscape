@@ -308,6 +308,119 @@ function _getColours(vizObj) {
     vizObj.view.colour_assignment = colour_assignment;
 }
 
+/* function to get a colour palette
+*/
+function _getColourPalette() {
+
+    var colours = {
+        "Reds": 
+            ["#F8766D","#f8837b", "#f9918a", "#fa9f99", "#fbada7", "#fcbbb6", "#fcc8c5", "#fdd6d3", 
+            "#fee4e2", "#fff2f1"].reverse(),
+        "Greens":
+            ["#53B400", "#64bb19", "#75c333", "#86ca4c", "#98d266", "#a9da80", "#bae199", "#cce9b3", 
+            "#ddf0cc", "#eef8e6"].reverse(),
+        "Pinks":
+            ["#FB61D7", "#f870db", "#f980df", "#fa90e3", "#fba0e7", "#fcb0eb", "#fcc0ef", "#fdd0f3", 
+            "#fee0f7", "#fff0fb"].reverse(),
+        "Turquoises":
+            ["#00C094", "#19c69e", "#33cca9", "#4cd3b4", "#66d9bf", "#80e0ca", "#99e6d4", "#b3ecdf", 
+            "#ccf3ea", "#e6f9f5"].reverse(),
+        "Purples":
+            ["#A58AFF", "#ae95ff", "#b7a1ff", "#c0adff", "#c9b9ff", "#d2c5ff", "#dbd0ff", "#e4dcff", 
+            "#ede8ff", "#f6f4ff"].reverse(),
+        "Blues":
+            ["#00B6EB", "#19bded", "#33c4ef", "#4cccf1", "#66d3f3", "#80dbf5", "#99e2f7", "#b3e9f9", 
+            "#ccf1fb", "#e6f8fd"].reverse(),
+        "Yellows":
+            ["#C49A00","#caa419", "#d0ae33", "#d6b84c", "#dcc266", "#e2cd80", "#e8d799", "#eee1b3", 
+            "#f4ebcc", "#faf5e6"].reverse(),
+        "Greys":
+            ["#CBCBCB"]
+    }
+
+    return colours;
+}
+
+/*
+* function to, using the tree hierarchy, get appropriate colours for each genotype
+* @param {Object} vizObj
+* @param {Object} chains -- the linear segments (chains) in the genotype tree 
+*                           (key is segment start key, value is array of descendants in this chain)
+* @param {Object} curNode -- current key in the tree
+* @param {Array} palette -- colour themes to choose from
+* @param {Object} colour_assignment -- originally empty array of the final colour assignments
+* @param {String} curTheme -- the colour theme currently in use
+*/
+function _colourTree(vizObj, chains, curNode, palette, colour_assignment, curTheme) {
+
+    // colour node
+    if (curNode.id == "Root") {
+        colour_assignment[curNode.id] = vizObj.generalConfig.rootColour; // grey
+        var n = chains[curNode.id].length+1; // + 1 to include the base key (this child)
+        var tmp_palette = [];
+        for (var j = 8; j >= 0; j -= Math.floor(9/n)) {
+            tmp_palette.push(palette[curTheme][j])
+        }
+        palette[curTheme] = tmp_palette;
+    }
+    else {
+        colour_assignment[curNode.id] = palette[curTheme].shift();
+    }
+
+    // if the current key has zero or >1 child to search through
+    if (curNode.children.length != 1 && curNode.id != "Root") { 
+
+        // remove its colour theme from the colour themes available
+        delete palette[curTheme];
+    }
+
+    // if the current key has one child only
+    if (curNode.children.length == 1) {
+
+        // colour child with the same theme as its parent
+        _colourTree(vizObj, chains, curNode.children[0], palette, colour_assignment, curTheme)
+    }
+
+    // otherwise
+    else {
+        // reorder the children according to their emergent cellular prevalence
+        var tmpChildren = $.extend([], curNode.children);
+        
+        // for each child
+        for (var i = 0; i < tmpChildren.length; i++) {
+
+            // give it a new colour theme
+            curTheme = Object.keys(palette)[0];
+
+            // modify the colour palette to contain the most contrasting colours
+            var n = chains[tmpChildren[i].id].length+1; // + 1 to include the base key (this child)
+            var tmp_palette = [];
+            if (n == 1) { // if there's only one item in this chain, set it to a bright colour (not the darkest)
+                tmp_palette.push(palette[curTheme][7]);
+            }
+            else {
+                for (var j = 8; j >= 0; j -= Math.floor(9/n)) {
+                    tmp_palette.push(palette[curTheme][j]);
+                }
+            }
+            palette[curTheme] = tmp_palette;
+
+            // colour child
+            _colourTree(vizObj, chains, tmpChildren[i], palette, colour_assignment, curTheme)
+        }
+    }
+
+    return colour_assignment;
+}
+
+function _getColours(vizObj) {
+    var colour_palette = _getColourPalette();
+    var chains = _getLinearTreeSegments(vizObj.data.treeStructure, {}, "");
+    colour_assignment = _colourTree(vizObj, chains, vizObj.data.treeStructure, 
+        colour_palette, {}, "Greys");
+    vizObj.view.colour_assignment = colour_assignment;
+}
+
 // function to increase brightness of hex colour
 // from: http://stackoverflow.com/questions/6443990/javascript-calculate-brighter-colour
 function _increase_brightness(hex, percent){
