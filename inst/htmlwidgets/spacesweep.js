@@ -86,10 +86,10 @@ HTMLWidgets.widget({
 
         // VIEW SETUP
 
-        // radii (- 5 = how much space to give between nodes)
+        // radii (- 7 = how much space to give between nodes)
         var tree_height = vizObj.data.tree_height; // height of the tree (# nodes)
-        dim.node_r = ((dim.treeWidth - 5*tree_height)/tree_height)/2; // site tree
-        dim.legendNode_r = ((dim.legendTreeWidth - 5*tree_height)/tree_height)/2; // legend tree
+        dim.node_r = ((dim.treeWidth - 7*tree_height)/tree_height)/2; // site tree
+        dim.legendNode_r = ((dim.legendTreeWidth - 7*tree_height)/tree_height)/2; // legend tree
 
         // DIVS
 
@@ -168,20 +168,40 @@ HTMLWidgets.widget({
         });
 
         // create links
+        var link_ids = [];
         legendSVG.append("g")
             .attr("class","gtypeTreeLinkG")
             .selectAll(".legendTreeLink")                  
             .data(links)                   
             .enter().append("path")                   
-            .attr("class","legendTreeLink")
+            .attr("class", function(d) { 
+                d.link_id = "legendTreeLink_" + d.source.id + "_" + d.target.id;
+                link_ids.push(d.link_id);
+                return d.link_id;
+            })
             .attr('stroke', '#9E9A9A')
-            .attr('fill', 'none') 
+            .attr('fill', 'none')
             .attr('stroke-width', '2px')               
             .attr("d", function(d) {
                 if (vizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
                     return _elbow(d);
                 }
                 return _shortElbow(d);
+            })
+            .on("mouseover", function(d) {
+
+                // shade other legend tree nodes & links
+                d3.selectAll(".legendTreeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
+                d3.selectAll(".legendTreeLink").attr("stroke-opacity", 0.15);
+
+                // shade view
+                _shadeView();
+
+                // highlight all elements downstream of link
+                _downstreamEffects(vizObj, d.link_id, link_ids);
+            })
+            .on("mouseout", function() {
+                _legendGtypeMouseout(vizObj);
             }); 
         
         // create nodes
@@ -192,48 +212,28 @@ HTMLWidgets.widget({
             .data(nodes)                   
             .enter()
             .append("circle")     
-            .classed("legendTreeNode", true) 
+            .attr("class", function(d) {
+                return "legendTreeNode " + d.id;
+            })
             .attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })              
             .attr("fill", function(d) { return cols[d.id]; })
             .attr("stroke", function(d) { return cols[d.id]; })
             .attr("r", dim.legendNode_r)
             .on("mouseover", function(d) {
-                var cur_gtype = d.id;
 
-                // shade all elements of view
-                d3.selectAll(".voronoiCell").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
-                d3.selectAll(".treeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
-                d3.selectAll(".treeLink").attr("stroke-opacity", 0.15);
-                d3.selectAll(".siteTitle").attr("fill-opacity", 0.15);
+                // shade legend tree nodes & links
+                d3.selectAll(".legendTreeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
+                d3.selectAll(".legendTreeLink").attr("stroke-opacity", 0.15);
 
-                // shade other legend tree nodes & links
-                d3.selectAll(".legendTreeNode")
-                    .attr("fill-opacity", function(d) {
-                        return (d.id == cur_gtype) ? 1 : 0.15;
-                    })
-                    .attr("stroke-opacity", function(d) {
-                        return (d.id == cur_gtype) ? 1 : 0.15;
-                    });
-                d3.selectAll(".legendTreeLink")
-                    .attr("stroke-opacity", function(d) {
-                        return (d.id == cur_gtype) ? 1 : 0.15;
-                    });
+                // shade view
+                _shadeView();
 
-                // highlight those sites showing the moused-over genotype
-                vizObj.data.genotype_sites[d.id].forEach(function(site) {
-                    d3.selectAll("." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-                })
+                // highlight genotype in legend tree, & sites expressing this genotype
+                _legendGtypeHighlight(vizObj, d.id);
             })
             .on("mouseout", function(d) {
-                // reset legend tree nodes
-                d3.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-                d3.selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-
-                // reset all elements of view
-                vizObj.data.sites.forEach(function(site) {
-                    d3.selectAll("." + site.id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-                })
+                _legendGtypeMouseout(vizObj);
             });
 
         // TOOLTIP FUNCTIONS

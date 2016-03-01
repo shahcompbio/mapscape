@@ -1,3 +1,76 @@
+// D3 EFFECTS FUNCTIONS
+
+
+/* recursive function to perform downstream effects upon tree link highlighting
+* @param {Object} vizObj
+* @param link_id -- id for the link that's currently highlighted
+* @param link_ids -- ids for all links in tree
+*/
+function _downstreamEffects(vizObj, link_id, link_ids) {
+
+    // get target id & single cell id
+    var targetRX = new RegExp("legendTreeLink_.+_(.+)");  
+    var target_id = targetRX.exec(link_id)[1];
+    console.log("target_id " + target_id);
+
+    // highlight sites associated with the target genotype
+    _legendGtypeHighlight(vizObj, target_id);
+
+    // get the targets of this target
+    var sourceRX = new RegExp("legendTreeLink_" + target_id + "_(.+)");
+    var targetLinks_of_targetNode = [];
+    link_ids.map(function(id) {
+        if (id.match(sourceRX)) {
+            targetLinks_of_targetNode.push(id);
+        }
+    });
+
+    // for each of the target's targets, highlight their downstream links
+    targetLinks_of_targetNode.map(function(target_link_id) {
+        _downstreamEffects(vizObj, target_link_id, link_ids);
+    });
+};
+
+
+
+
+/* function for mouseover highlighting of legend genotype
+* @param {Object} vizObj
+* @param {String} cur_gtype -- genotype on hover
+*/
+function _legendGtypeHighlight(vizObj, cur_gtype) {
+    // highlight genotype on legend tree
+    d3.selectAll("." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+
+    // highlight those sites showing the moused-over genotype
+    vizObj.data.genotype_sites[cur_gtype].forEach(function(site) {
+        d3.selectAll("." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    })
+}
+
+/* function to shade all elements of the view
+*/
+function _shadeView() {
+    d3.selectAll(".voronoiCell").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
+    d3.selectAll(".treeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
+    d3.selectAll(".treeLink").attr("stroke-opacity", 0.15);
+    d3.selectAll(".siteTitle").attr("fill-opacity", 0.15);
+}
+
+/* function for mouseout of legend genotype
+* @param {Object} vizObj
+*/
+function _legendGtypeMouseout(vizObj) {
+    // reset legend tree nodes
+    d3.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+
+    // reset all elements of view
+    vizObj.data.sites.forEach(function(site) {
+        d3.selectAll("." + site.id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    });
+}
+
 // TREE FUNCTIONS
 
 /* extract all info from tree about nodes, edges, ancestors, descendants
