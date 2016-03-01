@@ -139,7 +139,19 @@ HTMLWidgets.widget({
             .attr("width", dim.legendWidth)
             .attr("height", dim.legendHeight);
 
-        // plot circle border
+        // PLOT ANATOMY IMAGE
+
+        var image_width = dim.innerRadius*2;
+        viewSVG.append("image")
+            .attr("xlink:href", "http://www.clipartbest.com/cliparts/niE/XL8/niEXL8grT.png")
+            .attr("x", dim.viewDiameter/2 - image_width/2)
+            .attr("y", dim.viewDiameter/2 - image_width/2)
+            .attr("width", image_width)
+            .attr("height", image_width);
+
+
+        // PLOT CIRCLE BORDER
+
         viewSVG.append("circle")
             .attr("cx", dim.viewDiameter/2)
             .attr("cy", dim.viewDiameter/2)
