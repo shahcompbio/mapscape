@@ -15,7 +15,8 @@ HTMLWidgets.widget({
             monophyleticColour: '767676',
             polyphyleticColour: '000000',
             legendWidth: 100,
-            legendTitleHeight: 16
+            legendTitleHeight: 16,
+            max_r: 8 // maximum radius for tree nodes
         };
 
         // global variable vizObj
@@ -97,8 +98,12 @@ HTMLWidgets.widget({
 
         // radii (- 7 = how much space to give between nodes)
         var tree_height = vizObj.data.tree_height; // height of the tree (# nodes)
-        dim.node_r = ((dim.treeWidth - 7*tree_height)/tree_height)/2; // site tree
-        dim.legendNode_r = ((dim.legendTreeWidth - 7*tree_height)/tree_height)/2; // legend tree
+        var node_r = ((dim.treeWidth - 7*tree_height)/tree_height)/2; // site tree
+        var legendNode_r = ((dim.legendTreeWidth - 7*tree_height)/tree_height)/2; // legend tree
+
+        // make sure radii do not surpass the maximum
+        dim.node_r = (node_r > dim.max_r) ? dim.max_r : node_r;
+        dim.legendNode_r = (legendNode_r > dim.max_r) ? dim.max_r : legendNode_r;
 
         // DIVS
 
