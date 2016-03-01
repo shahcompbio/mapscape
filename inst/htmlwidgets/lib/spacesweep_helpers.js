@@ -335,6 +335,24 @@ function _thresholdCPData(vizObj) {
     });
 }
 
+/* function to get the sites expressing each genotype
+* @param {Object} genotypes_to_plot -- each site (1st level property) has an array of genotypes at that site
+*/
+function _getGenotypeSites(genotypes_to_plot) {
+    var genotype_sites = {};
+
+    vizObj.data.treeNodes.forEach(function(gtype) {
+        var sites_containing_gtype = [];
+        Object.keys(vizObj.data.genotypes_to_plot).forEach(function(site) {
+            if (vizObj.data.genotypes_to_plot[site].indexOf(gtype) != -1) {
+                sites_containing_gtype.push(site);
+            }
+        });
+        genotype_sites[gtype] = sites_containing_gtype;
+    })
+
+    vizObj.data.genotype_sites = genotype_sites;
+}
 
 // VORONOI FUNCTIONS
 

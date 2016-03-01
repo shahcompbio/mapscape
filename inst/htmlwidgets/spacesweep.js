@@ -14,8 +14,8 @@ HTMLWidgets.widget({
             pureColour: '#D3D2D2',
             monophyleticColour: '767676',
             polyphyleticColour: '000000',
-            legendWidth: 70,
-            legendTitleHeight: 14
+            legendWidth: 100,
+            legendTitleHeight: 16
         };
 
         // global variable vizObj
@@ -77,6 +77,9 @@ HTMLWidgets.widget({
 
         // get site positioning
         _getSitePositioning(vizObj); // position elements for each site
+
+        // get sites showing each genotype
+        _getGenotypeSites(vizObj.data.genotypes_to_plot);
 
         console.log("vizObj");
         console.log(vizObj);
@@ -167,10 +170,10 @@ HTMLWidgets.widget({
         // create links
         legendSVG.append("g")
             .attr("class","gtypeTreeLinkG")
-            .selectAll(".treeLink")                  
+            .selectAll(".legendTreeLink")                  
             .data(links)                   
             .enter().append("path")                   
-            .attr("class","treeLink")
+            .attr("class","legendTreeLink")
             .attr('stroke', '#9E9A9A')
             .attr('fill', 'none') 
             .attr('stroke-width', '2px')               
@@ -185,16 +188,53 @@ HTMLWidgets.widget({
         var cols = vizObj.view.colour_assignment;
         legendSVG.append("g")
             .attr("class", "gtypeTreeNodeG")
-            .selectAll(".treeNode")                  
+            .selectAll(".legendTreeNode")                  
             .data(nodes)                   
             .enter()
             .append("circle")     
-            .classed("treeNode", true) 
+            .classed("legendTreeNode", true) 
             .attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })              
             .attr("fill", function(d) { return cols[d.id]; })
             .attr("stroke", function(d) { return cols[d.id]; })
-            .attr("r", dim.legendNode_r);
+            .attr("r", dim.legendNode_r)
+            .on("mouseover", function(d) {
+                var cur_gtype = d.id;
+
+                // shade all elements of view
+                d3.selectAll(".voronoiCell").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
+                d3.selectAll(".treeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
+                d3.selectAll(".treeLink").attr("stroke-opacity", 0.15);
+                d3.selectAll(".siteTitle").attr("fill-opacity", 0.15);
+
+                // shade other legend tree nodes & links
+                d3.selectAll(".legendTreeNode")
+                    .attr("fill-opacity", function(d) {
+                        return (d.id == cur_gtype) ? 1 : 0.15;
+                    })
+                    .attr("stroke-opacity", function(d) {
+                        return (d.id == cur_gtype) ? 1 : 0.15;
+                    });
+                d3.selectAll(".legendTreeLink")
+                    .attr("stroke-opacity", function(d) {
+                        return (d.id == cur_gtype) ? 1 : 0.15;
+                    });
+
+                // highlight those sites showing the moused-over genotype
+                vizObj.data.genotype_sites[d.id].forEach(function(site) {
+                    d3.selectAll("." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+                })
+            })
+            .on("mouseout", function(d) {
+                // reset legend tree nodes
+                d3.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+                d3.selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+
+                // reset all elements of view
+                vizObj.data.sites.forEach(function(site) {
+                    d3.selectAll("." + site.id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+                })
+            });
 
         // TOOLTIP FUNCTIONS
 
@@ -235,16 +275,13 @@ HTMLWidgets.widget({
                 .selectAll("path")
                 .data(voronoi(site_data.voronoi.vertex_coords), _polygon)
                 .enter().append("path")
+                .classed("voronoiCell", true)
+                .classed(site, true)
                 .attr("d", _polygon)
                 .attr("fill", function(d, i) {
                     return (vertices[i].real_cell) ? vertices[i].col : "none";
                 })
                 .attr("fill-opacity", function(d, i) {
-                    // if it's a dummy site
-                    if (site.substring(0, 5) == "dummy") {
-                        return 0;
-                    }
-                    // not a dummy site
                     return (vertices[i].real_cell) ? 1 : 0;
                 })
                 .attr("stroke", function(d, i) {
@@ -252,11 +289,6 @@ HTMLWidgets.widget({
                 })
                 .attr("stroke-width", "1.5px")
                 .attr("stroke-opacity", function(d, i) {
-                    // if it's a dummy site
-                    if (site.substring(0, 5) == "dummy") {
-                        return 0;
-                    }
-                    // not a dummy site
                     return (vertices[i].real_cell) ? 1 : 0;
                 });
 
@@ -286,26 +318,16 @@ HTMLWidgets.widget({
                 .selectAll(".treeLink")                  
                 .data(links)                   
                 .enter().append("path")                   
-                .attr("class","treeLink")
+                .classed("treeLink", true)
+                .classed(site, true)
                 .attr('stroke', '#9E9A9A')
                 .attr('fill', 'none') 
                 .attr('stroke-width', '2px')               
                 .attr("d", function(d) {
-                    if (site.substring(0, 5) == "dummy") {
-                        return _elbow(d);
-                    }
                     if (vizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
                         return _elbow(d);
                     }
                     return _shortElbow(d);
-                })
-                .attr("fill-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
-                })
-                .attr("stroke-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
                 }); 
             
             // create nodes
@@ -321,6 +343,7 @@ HTMLWidgets.widget({
                 .attr("cx", function(d) { return d.x})
                 .attr("cy", function(d) { return d.y})              
                 .classed("treeNode", true) 
+                .classed(site, true)
                 .attr("fill", function(d) {
                     // clone present at this site or not
                     return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
@@ -335,17 +358,8 @@ HTMLWidgets.widget({
                     // clone present at this site or not
                     return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.node_r : 0;
                 })
-                .attr("fill-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
-                })
-                .attr("stroke-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
-                })
                 .on('mouseover', function(d) {
                     d.site = site;
-                    console.log("showing");
                     // show tooltip
                     nodeTip.show(d);
                 })
@@ -357,6 +371,8 @@ HTMLWidgets.widget({
             // PLOT SITE TITLES
 
             cur_siteG.append("text")
+                .classed("siteTitle", true)
+                .classed(site, true)
                 .attr("x", site_data.tree.top_middle.x)
                 .attr("y", function() {
                     if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
@@ -376,10 +392,6 @@ HTMLWidgets.widget({
                 .attr("font-family", "sans-serif")
                 .attr("font-size", dim.viewDiameter/30)
                 .attr("fill", '#9E9A9A')
-                .attr("fill-opacity", function() {
-                    // if it's a dummy site
-                    return (site.substring(0, 5) == "dummy") ? 0 : 1;
-                })
                 .text(site_data.id);
          });
     },
