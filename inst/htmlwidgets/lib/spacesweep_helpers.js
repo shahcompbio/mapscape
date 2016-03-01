@@ -42,9 +42,7 @@ function _legendGtypeHighlight(vizObj, cur_gtype) {
     d3.selectAll("." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // highlight those sites showing the moused-over genotype
-    vizObj.data.genotype_sites[cur_gtype].forEach(function(site) {
-        d3.selectAll("." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    })
+    _highlightSites(vizObj.data.genotype_sites[cur_gtype]);
 }
 
 /* function to shade all elements of the view
@@ -57,12 +55,13 @@ function _shadeView() {
     d3.selectAll(".anatomicPointer").attr("stroke-opacity", 0.25)
 }
 
-/* function for mouseout of legend genotype
+/* function for view reset
 * @param {Object} vizObj
 */
-function _legendGtypeMouseout(vizObj) {
+function _resetView(vizObj) {
     // reset anatomic marks
-    d3.selectAll(".anatomicMark").attr("fill-opacity", 0);
+    d3.selectAll(".anatomicGtypeMark").attr("fill-opacity", 0);
+    d3.selectAll(".anatomicGeneralMark").attr("fill-opacity", 0);
 
     // reset legend tree nodes
     d3.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
@@ -72,6 +71,15 @@ function _legendGtypeMouseout(vizObj) {
     vizObj.data.sites.forEach(function(site) {
         d3.selectAll("." + site.id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
     });
+}
+
+/* function to highlight certain sites in the view
+* @param {Array} site_ids -- site ids to highlight
+*/
+function _highlightSites(site_ids) {
+    site_ids.forEach(function(site) {
+        d3.selectAll("." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    })
 }
 
 // ANATOMY FUNCTIONS
@@ -99,23 +107,40 @@ function _getSiteLocationsOnImage(vizObj) {
     ]
 }
 
-/* function to assign anatomic locations to each site
+/* function to assign site stems (e.g. "Om") to site ids (e.g. "Om1"), and vice versa
+* Note: "stem" = anatomic site stem (e.g. "Om")
+*       "id" = site id (e.g. "Om1")
 * @param {Object} vizObj 
 */
 function _assignAnatomicLocations(vizObj) {
 
+    // keep track of stems in this dataset, and their corresponding site ids
+    vizObj.data.siteStemsInDataset = {};
+
     // for each site in the data
     vizObj.data.sites.forEach(function(site_data) {
-        var site_id = site_data.id.toLowerCase();
+        var site_id = site_data.id;
 
-        // for each potential anatomic location
+        // for each potential stem
         for (var i = 0; i < vizObj.view.siteLocationsOnImage.length; i++) {
             var cur_location = vizObj.view.siteLocationsOnImage[i];
 
-            // if this stem is the stem of the current site
+            // if this stem is applicable to the current site id
             var siteStem = cur_location.siteStem.toLowerCase();
-            if (site_id.startsWith(siteStem)) {
+            if (site_id.toLowerCase().startsWith(siteStem)) {
+
+                // add the stem data to the site id data
                 site_data.stem = cur_location;
+
+                // add this site id to the stems data
+                if (vizObj.data.siteStemsInDataset[siteStem]) {
+                    vizObj.data.siteStemsInDataset[siteStem].site_ids.push(site_id);
+                }
+                else {
+                    vizObj.data.siteStemsInDataset[siteStem] = cur_location;
+                    vizObj.data.siteStemsInDataset[siteStem].site_ids = [site_id];
+                }
+
                 break;
             }
 

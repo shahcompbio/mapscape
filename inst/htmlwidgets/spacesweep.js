@@ -16,7 +16,8 @@ HTMLWidgets.widget({
             polyphyleticColour: '000000',
             legendWidth: 100,
             legendTitleHeight: 16,
-            max_r: 8 // maximum radius for tree nodes
+            max_r: 8, // maximum radius for tree nodes
+            siteMark_r: 4 // site mark radius
         };
 
         // global variable vizObj
@@ -43,6 +44,11 @@ HTMLWidgets.widget({
         config.radiusToOncoMix = config.innerRadius + config.oncoMixWidth/2; // radius to oncoMix centre
         config.radiusToTree = config.innerRadius + config.oncoMixWidth + config.treeWidth/2; // radius to tree centre
         config.legendTreeWidth = config.legendWidth - 2; // width of the tree in the legend
+
+        // image configurations
+        config.image_width = config.innerRadius*2;
+        config.image_ref = "http://www.clipartbest.com/cliparts/niE/XL8/niEXL8grT.png";
+        config.image_top_l = {x: config.viewDiameter/2 - config.image_width/2, y: config.viewDiameter/2 - config.image_width/2};
 
         vizObj.generalConfig = config;
 
@@ -142,15 +148,12 @@ HTMLWidgets.widget({
 
         // PLOT ANATOMY IMAGE
 
-        var image_width = dim.innerRadius*2;
-        var image_ref = "http://www.clipartbest.com/cliparts/niE/XL8/niEXL8grT.png";
-        var image_top_l = {x: dim.viewDiameter/2 - image_width/2, y: dim.viewDiameter/2 - image_width/2}
         viewSVG.append("image")
-            .attr("xlink:href", image_ref)
-            .attr("x", image_top_l.x)
-            .attr("y", image_top_l.y)
-            .attr("width", image_width)
-            .attr("height", image_width);
+            .attr("xlink:href", dim.image_ref)
+            .attr("x", dim.image_top_l.x)
+            .attr("y", dim.image_top_l.y)
+            .attr("width", dim.image_width)
+            .attr("height", dim.image_width);
 
         // PLOT ANATOMIC LOCATIONS - for testing of location accuracy
 
@@ -160,8 +163,8 @@ HTMLWidgets.widget({
         //     .data(vizObj.view.siteLocationsOnImage)                   
         //     .enter()
         //     .append("circle")
-        //     .attr("cx", function(d) { return image_top_l.x + (d.x*image_width); })
-        //     .attr("cy", function(d) { return image_top_l.y + (d.y*image_width); })
+        //     .attr("cx", function(d) { return dim.image_top_l.x + (d.x*dim.image_width); })
+        //     .attr("cy", function(d) { return dim.image_top_l.y + (d.y*dim.image_width); })
         //     .attr("r", 1)
         //     .attr("fill", "red");
 
@@ -249,7 +252,7 @@ HTMLWidgets.widget({
                 _downstreamEffects(vizObj, d.link_id, link_ids);
             })
             .on("mouseout", function() {
-                _legendGtypeMouseout(vizObj);
+                _resetView(vizObj);
             }); 
         
         // create nodes
@@ -281,8 +284,44 @@ HTMLWidgets.widget({
                 _legendGtypeHighlight(vizObj, d.id);
             })
             .on("mouseout", function(d) {
-                _legendGtypeMouseout(vizObj);
+                _resetView(vizObj);
             });
+
+        // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
+
+        viewSVG.append("g")
+            .attr("class", "anatomicGeneralMarksG")
+            .selectAll(".anatomicGeneralMark")
+            .data(Object.keys(vizObj.data.siteStemsInDataset))
+            .enter()
+            .append("circle")
+            .attr("class", "anatomicGeneralMark")
+            .attr("cx", function(d) { 
+                return dim.image_top_l.x + (vizObj.data.siteStemsInDataset[d].x*dim.image_width);
+            })
+            .attr("cy", function(d) { 
+                return dim.image_top_l.y + (vizObj.data.siteStemsInDataset[d].y*dim.image_width);
+            })
+            .attr("r", dim.siteMark_r)
+            .attr("fill", "#747272")
+            .attr("fill-opacity", 0)
+            .on("mouseover", function(d) {
+                // highlight this stem location
+                d3.select(this)
+                    .attr("fill-opacity", 1);
+
+                // shade view
+                _shadeView();
+
+                // highlight all sites with this stem
+                _highlightSites(vizObj.data.siteStemsInDataset[d].site_ids);
+
+            })
+            .on("mouseout", function(d) {
+                _resetView(vizObj);
+            });
+
+
 
         // TOOLTIP FUNCTIONS
 
@@ -452,8 +491,8 @@ HTMLWidgets.widget({
                     .classed(site, true)
                     .attr("x1", site_data.innerRadius.x)
                     .attr("y1", site_data.innerRadius.y)
-                    .attr("x2", image_top_l.x + (site_data.stem.x*image_width))
-                    .attr("y2", image_top_l.y + (site_data.stem.y*image_width))
+                    .attr("x2", dim.image_top_l.x + (site_data.stem.x*dim.image_width))
+                    .attr("y2", dim.image_top_l.y + (site_data.stem.y*dim.image_width))
                     .attr("stroke", "#CBCBCB");  
             }
 
@@ -463,17 +502,17 @@ HTMLWidgets.widget({
             if (site_data.stem) {
                 cur_siteG
                     .append("g")
-                    .attr("class", "anatomicMarksG")
-                    .selectAll(".anatomicMark")
+                    .attr("class", "anatomicGtypeMarksG")
+                    .selectAll(".anatomicGtypeMark")
                     .data(vizObj.data.genotypes_to_plot[site])
                     .enter()
                     .append("circle")
                     .attr("class", function(d) { 
-                        return "anatomicMark " + d; 
+                        return "anatomicGtypeMark " + d; 
                     })
-                    .attr("cx", image_top_l.x + (site_data.stem.x*image_width))
-                    .attr("cy", image_top_l.y + (site_data.stem.y*image_width))
-                    .attr("r", 4)
+                    .attr("cx", dim.image_top_l.x + (site_data.stem.x*dim.image_width))
+                    .attr("cy", dim.image_top_l.y + (site_data.stem.y*dim.image_width))
+                    .attr("r", dim.siteMark_r)
                     .attr("fill", function(d) { 
                         return cols[d];
                     })
