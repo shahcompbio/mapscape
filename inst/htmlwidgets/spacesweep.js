@@ -174,13 +174,13 @@ HTMLWidgets.widget({
 
         viewSVG.append("circle")
             .attr("class", "anatomyDiagram")
-            .attr("r", dim.innerRadius)
+            .attr("r", dim.innerRadius - 10)
             .attr("cy", dim.viewDiameter/2)
             .attr("cx", dim.viewDiameter/2)
             .attr("fill", "url(#anatomyPattern)")
             .attr("stroke", "#CBCBCB")
             .attr("stroke-width", "3px")
-            .attr("stroke-opacity", 0.5);
+            .attr("stroke-opacity", 0.2);
 
         // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
 
@@ -554,7 +554,8 @@ HTMLWidgets.widget({
                     .attr("y1", site_data.innerRadius.y)
                     .attr("x2", dim.image_top_l.x + (site_data.stem.x*dim.image_width))
                     .attr("y2", dim.image_top_l.y + (site_data.stem.y*dim.image_width))
-                    .attr("stroke", "#CBCBCB");  
+                    .attr("stroke", "#CBCBCB")
+                    .attr("stroke-width", "2px");  
             }
 
             // PLOT ANATOMIC MARKS - marks on image 
