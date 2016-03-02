@@ -47,9 +47,9 @@ HTMLWidgets.widget({
         config.radiusToTree = config.innerRadius + config.oncoMixWidth + config.treeWidth/2; // radius to tree centre
         config.legendTreeWidth = config.legendWidth - 2; // width of the tree in the legend
 
-        // image configurations
-        config.image_width = config.innerRadius*2;
-        config.image_top_l = {x: config.viewDiameter/2 - config.image_width/2, y: config.viewDiameter/2 - config.image_width/2};
+        // anatomical image configurations
+        config.image_plot_width = config.innerRadius*2; // width of the plot space for the image
+        config.image_top_l = {x: config.viewDiameter/2 - config.image_plot_width/2, y: config.viewDiameter/2 - config.image_plot_width/2};
 
         vizObj.generalConfig = config;
 
@@ -150,7 +150,7 @@ HTMLWidgets.widget({
             .attr("width", dim.legendWidth)
             .attr("height", dim.legendHeight);
 
-        // PLOT ANATOMY IMAGE
+        // PLOT ANATOMY IMAGE IN MAIN VIEW
 
         var defs = viewSVG.append("defs").attr("id", "imgdefs")
 
@@ -163,8 +163,8 @@ HTMLWidgets.widget({
             .attr("class", "anatomyImage")
             .attr("x", 0)
             .attr("y", 0)
-            .attr("height", dim.image_width)
-            .attr("width", dim.image_width)
+            .attr("height", dim.image_plot_width)
+            .attr("width", dim.image_plot_width)
             .attr("xlink:href", function() {
                 if (vizObj.userConfig.gender == "F") {
                     return dim.anatomy_female_image_ref;
@@ -328,7 +328,7 @@ HTMLWidgets.widget({
                                             vizObj.data.siteStemsInDataset[d].y,
                                             dim.image_top_l.x,
                                             dim.image_top_l.y,
-                                            dim.image_width
+                                            dim.image_plot_width
                                         ).x;
                 return cropped_x;
             })
@@ -338,7 +338,7 @@ HTMLWidgets.widget({
                                             vizObj.data.siteStemsInDataset[d].y,
                                             dim.image_top_l.x,
                                             dim.image_top_l.y,
-                                            dim.image_width
+                                            dim.image_plot_width
                                         ).y;
                 return cropped_y;
             })
@@ -535,7 +535,7 @@ HTMLWidgets.widget({
                                                                     site_data.stem.y,
                                                                     dim.image_top_l.x,
                                                                     dim.image_top_l.y,
-                                                                    dim.image_width
+                                                                    dim.image_plot_width
                                                                 ).x;
                         return cropped_x;
                     })
@@ -545,7 +545,7 @@ HTMLWidgets.widget({
                                                                     site_data.stem.y,
                                                                     dim.image_top_l.x,
                                                                     dim.image_top_l.y,
-                                                                    dim.image_width
+                                                                    dim.image_plot_width
                                                                 ).y;
                         return cropped_y;
                     })
@@ -573,7 +573,7 @@ HTMLWidgets.widget({
                                                                     site_data.stem.y,
                                                                     dim.image_top_l.x,
                                                                     dim.image_top_l.y,
-                                                                    dim.image_width
+                                                                    dim.image_plot_width
                                                                 ).x;
                         return cropped_x;
                     })
@@ -583,7 +583,7 @@ HTMLWidgets.widget({
                                                                     site_data.stem.y,
                                                                     dim.image_top_l.x,
                                                                     dim.image_top_l.y,
-                                                                    dim.image_width
+                                                                    dim.image_plot_width
                                                                 ).y;
                         return cropped_y;
                     })

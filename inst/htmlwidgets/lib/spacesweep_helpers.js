@@ -210,14 +210,14 @@ function _getImageBounds(vizObj) {
 function _scale(vizObj) {
 
     var anatomy_padding = 0.05; // 5% of the image
-    var original_width = vizObj.generalConfig.image_width;
+    var original_width = vizObj.generalConfig.image_plot_width;
 
     // get the width (width == height) of the cropped section
     var bounds = vizObj.view.imageBounds;
     var crop_width_prop = ((bounds.max_x - bounds.min_x) > (bounds.max_y - bounds.min_y)) ? 
         (bounds.max_x - bounds.min_x + anatomy_padding*2) :
         (bounds.max_y - bounds.min_y + anatomy_padding*2);
-    var crop_width = crop_width_prop*vizObj.generalConfig.image_width; 
+    var crop_width = crop_width_prop*vizObj.generalConfig.image_plot_width; 
 
     // scaling factor
     var scaling_factor = crop_width/original_width; 
