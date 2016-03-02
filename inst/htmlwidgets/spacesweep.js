@@ -174,7 +174,7 @@ HTMLWidgets.widget({
 
         viewSVG.append("circle")
             .attr("class", "anatomyDiagram")
-            .attr("r", dim.innerRadius - 10)
+            .attr("r", dim.innerRadius)
             .attr("cy", dim.viewDiameter/2)
             .attr("cx", dim.viewDiameter/2)
             .attr("fill", "url(#anatomyPattern)")
@@ -184,50 +184,15 @@ HTMLWidgets.widget({
 
         // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
 
-        var anatomy_padding = 0.1;
-
-        // get the length (width == height) of the cropped section
-        var bounds = vizObj.view.imageBounds;
-        var fractional_length = ((bounds.max_x - bounds.min_x) > (bounds.max_y - bounds.min_y)) ? 
-            (bounds.max_x - bounds.min_x + anatomy_padding*2) :
-            (bounds.max_y - bounds.min_y + anatomy_padding*2);
-        var length = fractional_length*dim.image_width; 
-
-        // scaling factor
-        var scaling_factor = length/dim.image_width; 
-
-        // new height == new width (must blow up the image by the scaling factor)
-        var new_width = (dim.image_width/scaling_factor); 
-
-        // fractional centre of original image
-        var centre = {
-            x: ((bounds.max_x + bounds.min_x)/2), 
-            y: ((bounds.max_y + bounds.min_y)/2)
-        };
-
-        // amount to shift left and up
-        var left_shift = (centre.x - fractional_length/2)*new_width;
-        var up_shift = (centre.y - fractional_length/2)*new_width;
+        // get scaling information
+        var crop_info = _scale(vizObj);
 
         // update the anatomy image with the new cropping
         d3.select(".anatomyImage") 
-            .attr("height", new_width)
-            .attr("width", new_width)
-            .attr("x", -left_shift)
-            .attr("y", -up_shift);          
-
-        // PLOT ANATOMIC LOCATIONS - for testing of location accuracy
-
-        // viewSVG.append("g")
-        //     .attr("class","anatomicSitesG")
-        //     .selectAll(".anatomicSite")                  
-        //     .data(vizObj.view.siteLocationsOnImage)                   
-        //     .enter()
-        //     .append("circle")
-        //     .attr("cx", function(d) { return dim.image_top_l.x + (d.x*dim.image_width); })
-        //     .attr("cy", function(d) { return dim.image_top_l.y + (d.y*dim.image_width); })
-        //     .attr("r", 1)
-        //     .attr("fill", "red");
+            .attr("height", crop_info.new_width)
+            .attr("width", crop_info.new_width)
+            .attr("x", -crop_info.left_shift)
+            .attr("y", -crop_info.up_shift);          
 
         // SITE SVG GROUPS
 
@@ -358,10 +323,24 @@ HTMLWidgets.widget({
             .append("circle")
             .attr("class", "anatomicGeneralMark")
             .attr("cx", function(d) { 
-                return dim.image_top_l.x + (vizObj.data.siteStemsInDataset[d].x*dim.image_width);
+                var cropped_x = _getCroppedCoordinate(crop_info, 
+                                            vizObj.data.siteStemsInDataset[d].x, 
+                                            vizObj.data.siteStemsInDataset[d].y,
+                                            dim.image_top_l.x,
+                                            dim.image_top_l.y,
+                                            dim.image_width
+                                        ).x;
+                return cropped_x;
             })
             .attr("cy", function(d) { 
-                return dim.image_top_l.y + (vizObj.data.siteStemsInDataset[d].y*dim.image_width);
+                var cropped_y = _getCroppedCoordinate(crop_info, 
+                                            vizObj.data.siteStemsInDataset[d].x, 
+                                            vizObj.data.siteStemsInDataset[d].y,
+                                            dim.image_top_l.x,
+                                            dim.image_top_l.y,
+                                            dim.image_width
+                                        ).y;
+                return cropped_y;
             })
             .attr("r", dim.siteMark_r)
             .attr("fill", "#747272")
@@ -381,8 +360,6 @@ HTMLWidgets.widget({
             .on("mouseout", function(d) {
                 _resetView(vizObj);
             });
-
-
 
         // TOOLTIP FUNCTIONS
 
@@ -552,8 +529,26 @@ HTMLWidgets.widget({
                     .classed(site, true)
                     .attr("x1", site_data.innerRadius.x)
                     .attr("y1", site_data.innerRadius.y)
-                    .attr("x2", dim.image_top_l.x + (site_data.stem.x*dim.image_width))
-                    .attr("y2", dim.image_top_l.y + (site_data.stem.y*dim.image_width))
+                    .attr("x2", function(d) { 
+                        var cropped_x = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_width
+                                                                ).x;
+                        return cropped_x;
+                    })
+                    .attr("y2", function(d) { 
+                        var cropped_y = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_width
+                                                                ).y;
+                        return cropped_y;
+                    })
                     .attr("stroke", "#CBCBCB")
                     .attr("stroke-width", "2px");  
             }
@@ -572,8 +567,26 @@ HTMLWidgets.widget({
                     .attr("class", function(d) { 
                         return "anatomicGtypeMark " + d; 
                     })
-                    .attr("cx", dim.image_top_l.x + (site_data.stem.x*dim.image_width))
-                    .attr("cy", dim.image_top_l.y + (site_data.stem.y*dim.image_width))
+                    .attr("cx", function(d) { 
+                        var cropped_x = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_width
+                                                                ).x;
+                        return cropped_x;
+                    })
+                    .attr("cy", function(d) { 
+                        var cropped_y = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_width
+                                                                ).y;
+                        return cropped_y;
+                    })
                     .attr("r", dim.siteMark_r)
                     .attr("fill", function(d) { 
                         return cols[d];

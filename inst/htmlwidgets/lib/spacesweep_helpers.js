@@ -82,7 +82,7 @@ function _highlightSites(site_ids) {
     })
 }
 
-// ANATOMY FUNCTIONS
+// ANATOMY IMAGE FUNCTIONS
 
 /* function to get proportional anatomic locations on the anatomic diagram
 * @param {Object} vizObj
@@ -200,6 +200,73 @@ function _getImageBounds(vizObj) {
         max_x: max_x,
         max_y: max_y
     }
+}
+
+/* function to scale an image 
+* @param {Number} crop_width -- the width of the crop region 
+* @param {Number} original_width -- the width of the original image
+* @param {Array}
+*/
+function _scale(vizObj) {
+
+    var anatomy_padding = 0.05; // 5% of the image
+    var original_width = vizObj.generalConfig.image_width;
+
+    // get the width (width == height) of the cropped section
+    var bounds = vizObj.view.imageBounds;
+    var crop_width_prop = ((bounds.max_x - bounds.min_x) > (bounds.max_y - bounds.min_y)) ? 
+        (bounds.max_x - bounds.min_x + anatomy_padding*2) :
+        (bounds.max_y - bounds.min_y + anatomy_padding*2);
+    var crop_width = crop_width_prop*vizObj.generalConfig.image_width; 
+
+    // scaling factor
+    var scaling_factor = crop_width/original_width; 
+
+    // new height == new width (must blow up the image by the scaling factor)
+    var new_width = (original_width/scaling_factor); 
+
+    // fractional centre of original image
+    var centre = {
+        x: ((bounds.max_x + bounds.min_x)/2), 
+        y: ((bounds.max_y + bounds.min_y)/2)
+    };
+
+    // amount to shift left and up ([0,1], then absolute)
+    var left_shift_prop = (centre.x - crop_width_prop/2);
+    var up_shift_prop = (centre.y - crop_width_prop/2);
+    var left_shift = left_shift_prop*new_width;
+    var up_shift = up_shift_prop*new_width;
+
+    var crop_info = {
+        crop_width_prop: crop_width_prop,
+        new_width: new_width,
+        left_shift: left_shift,
+        up_shift: up_shift,
+        left_shift_prop: left_shift_prop,
+        up_shift_prop: up_shift_prop
+    }
+
+    return crop_info;
+}
+
+/* function to transform a coordinate to its cropped equivalent on the anatomy image
+* @param {Object} crop_info -- cropping onformation (shifts, width, etc.)
+* @param {Number} x_prop -- x-coordinate [0,1] on original image
+* @param {Number} y_prop -- y-coordinate [0,1] on original image
+* @param {Number} top_l_x -- absolute x-coordinate for the top left of the plotting area
+* @param {Number} top_l_y -- absolute y-coordinate for the top left of the plotting area
+* @param {Number} plot_width -- absolute width for the plotting area
+* @return absolute coordinates
+*/
+function _getCroppedCoordinate(crop_info, x_prop, y_prop, top_l_x, top_l_y, plot_width) {
+    var cropped_x_prop = (x_prop - crop_info.left_shift_prop)/crop_info.crop_width_prop;
+    var cropped_y_prop = (y_prop - crop_info.up_shift_prop)/crop_info.crop_width_prop;
+
+    var cropped_coordinates = {
+        x: top_l_x + (cropped_x_prop*plot_width), 
+        y: top_l_y + (cropped_y_prop*plot_width)
+    };
+    return cropped_coordinates;
 }
 
 // TREE FUNCTIONS
