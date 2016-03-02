@@ -98,6 +98,9 @@ HTMLWidgets.widget({
         // assign anatomic locations to each site
         _assignAnatomicLocations(vizObj);
 
+        // get image bounds for current site data 
+        _getImageBounds(vizObj);
+
         console.log("vizObj");
         console.log(vizObj);
 
@@ -149,17 +152,69 @@ HTMLWidgets.widget({
 
         // PLOT ANATOMY IMAGE
 
-        viewSVG.append("image")
+        var defs = viewSVG.append("defs").attr("id", "imgdefs")
+
+        var anatomyPattern = defs.append("pattern")
+                                .attr("id", "anatomyPattern")
+                                .attr("height", 1)
+                                .attr("width", 1)
+
+        anatomyPattern.append("image")
+            .attr("class", "anatomyImage")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("height", dim.image_width)
+            .attr("width", dim.image_width)
             .attr("xlink:href", function() {
                 if (vizObj.userConfig.gender == "F") {
                     return dim.anatomy_female_image_ref;
                 }
                 return dim.anatomy_male_image_ref;
-            })
-            .attr("x", dim.image_top_l.x)
-            .attr("y", dim.image_top_l.y)
-            .attr("width", dim.image_width)
-            .attr("height", dim.image_width);
+            });
+
+        viewSVG.append("circle")
+            .attr("class", "anatomyDiagram")
+            .attr("r", dim.innerRadius)
+            .attr("cy", dim.viewDiameter/2)
+            .attr("cx", dim.viewDiameter/2)
+            .attr("fill", "url(#anatomyPattern)")
+            .attr("stroke", "#CBCBCB")
+            .attr("stroke-width", "3px")
+            .attr("stroke-opacity", 0.5);
+
+        // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
+
+        var anatomy_padding = 0.1;
+
+        // get the length (width == height) of the cropped section
+        var bounds = vizObj.view.imageBounds;
+        var fractional_length = ((bounds.max_x - bounds.min_x) > (bounds.max_y - bounds.min_y)) ? 
+            (bounds.max_x - bounds.min_x + anatomy_padding*2) :
+            (bounds.max_y - bounds.min_y + anatomy_padding*2);
+        var length = fractional_length*dim.image_width; 
+
+        // scaling factor
+        var scaling_factor = length/dim.image_width; 
+
+        // new height == new width (must blow up the image by the scaling factor)
+        var new_width = (dim.image_width/scaling_factor); 
+
+        // fractional centre of original image
+        var centre = {
+            x: ((bounds.max_x + bounds.min_x)/2), 
+            y: ((bounds.max_y + bounds.min_y)/2)
+        };
+
+        // amount to shift left and up
+        var left_shift = (centre.x - fractional_length/2)*new_width;
+        var up_shift = (centre.y - fractional_length/2)*new_width;
+
+        // update the anatomy image with the new cropping
+        d3.select(".anatomyImage") 
+            .attr("height", new_width)
+            .attr("width", new_width)
+            .attr("x", -left_shift)
+            .attr("y", -up_shift);          
 
         // PLOT ANATOMIC LOCATIONS - for testing of location accuracy
 

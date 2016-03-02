@@ -169,6 +169,39 @@ function _assignAnatomicLocations(vizObj) {
     })
 }
 
+/* function to get image bounds for the anatomic data in this dataset
+* @param {Object} vizObj
+*/
+function _getImageBounds(vizObj) {
+    var min_x = Infinity,
+        max_x = -1
+        min_y = Infinity,
+        max_y = -1;
+
+    Object.keys(vizObj.data.siteStemsInDataset).forEach(function(siteStem) {
+        var cur_siteStem = vizObj.data.siteStemsInDataset[siteStem];
+        if (min_x > cur_siteStem.x) {
+            min_x = cur_siteStem.x;
+        }
+        if (min_y > cur_siteStem.y) {
+            min_y = cur_siteStem.y;
+        }
+        if (max_x < cur_siteStem.x) {
+            max_x = cur_siteStem.x;
+        }
+        if (max_y < cur_siteStem.y) {
+            max_y = cur_siteStem.y;
+        }
+    })
+
+    vizObj.view.imageBounds = {
+        min_x: min_x,
+        min_y: min_y,
+        max_x: max_x,
+        max_y: max_y
+    }
+}
+
 // TREE FUNCTIONS
 
 /* extract all info from tree about nodes, edges, ancestors, descendants
