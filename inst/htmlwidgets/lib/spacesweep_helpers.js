@@ -898,14 +898,7 @@ function _getSitePositioning(vizObj) {
             x2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).x,
             y2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).y
         }
-
-        // INNER RADIUS
-        cur_site_obj["innerRadius"] = {
-            x: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx+0.5, n_sites).x,
-            y: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx+0.5, n_sites).y      
-        }
-
-
+        
         // VORONOI
 
         // voronoi placement

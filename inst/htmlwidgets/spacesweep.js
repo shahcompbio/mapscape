@@ -418,7 +418,83 @@ HTMLWidgets.widget({
         vizObj.site_ids.forEach(function(site, site_idx) {
 
             var site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
-                cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")); // svg group for this site
+                cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")), // svg group for this site
+                cols = vizObj.view.colour_assignment;
+
+            // PLOT ANATOMIC LINES
+
+            // if the site was found on the anatomic image
+            if (site_data.stem) {
+                cur_siteG
+                    .append("line")
+                    .classed("anatomicPointer", true)
+                    .classed(site, true)
+                    .attr("x1", site_data.voronoi.centre.x)
+                    .attr("y1", site_data.voronoi.centre.y)
+                    .attr("x2", function(d) { 
+                        var cropped_x = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_plot_width
+                                                                ).x;
+                        return cropped_x;
+                    })
+                    .attr("y2", function(d) { 
+                        var cropped_y = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_plot_width
+                                                                ).y;
+                        return cropped_y;
+                    })
+                    .attr("stroke", "#CBCBCB")
+                    .attr("stroke-width", "2px");  
+            }
+
+            // PLOT ANATOMIC MARKS - marks on image 
+
+            // if the site was found on the anatomic image
+            if (site_data.stem) {
+                cur_siteG
+                    .append("g")
+                    .attr("class", "anatomicGtypeMarksG")
+                    .selectAll(".anatomicGtypeMark")
+                    .data(vizObj.data.genotypes_to_plot[site])
+                    .enter()
+                    .append("circle")
+                    .attr("class", function(d) { 
+                        return "anatomicGtypeMark " + d; 
+                    })
+                    .attr("cx", function(d) { 
+                        var cropped_x = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_plot_width
+                                                                ).x;
+                        return cropped_x;
+                    })
+                    .attr("cy", function(d) { 
+                        var cropped_y = _getCroppedCoordinate(crop_info, 
+                                                                    site_data.stem.x, 
+                                                                    site_data.stem.y,
+                                                                    dim.image_top_l.x,
+                                                                    dim.image_top_l.y,
+                                                                    dim.image_plot_width
+                                                                ).y;
+                        return cropped_y;
+                    })
+                    .attr("r", dim.siteMark_r)
+                    .attr("fill", function(d) { 
+                        return cols[d];
+                    })
+                    .attr("fill-opacity", 0);
+            }
 
             // PLOT ONCOMIX
 
@@ -492,7 +568,6 @@ HTMLWidgets.widget({
                 }); 
             
             // create nodes
-            var cols = vizObj.view.colour_assignment;
             var nodeG = cur_siteG.append("g")
                 .attr("class", "treeNodeG")
                 .selectAll(".treeNode")                  
@@ -554,82 +629,6 @@ HTMLWidgets.widget({
                 .attr("font-size", dim.viewDiameter/40)
                 .attr("fill", '#9E9A9A')
                 .text(site_data.id);
-
-            // PLOT ANATOMIC LINES
-
-            // if the site was found on the anatomic image
-            if (site_data.stem) {
-                cur_siteG
-                    .append("line")
-                    .classed("anatomicPointer", true)
-                    .classed(site, true)
-                    .attr("x1", site_data.innerRadius.x)
-                    .attr("y1", site_data.innerRadius.y)
-                    .attr("x2", function(d) { 
-                        var cropped_x = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).x;
-                        return cropped_x;
-                    })
-                    .attr("y2", function(d) { 
-                        var cropped_y = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).y;
-                        return cropped_y;
-                    })
-                    .attr("stroke", "#CBCBCB")
-                    .attr("stroke-width", "2px");  
-            }
-
-            // PLOT ANATOMIC MARKS - marks on image 
-
-            // if the site was found on the anatomic image
-            if (site_data.stem) {
-                cur_siteG
-                    .append("g")
-                    .attr("class", "anatomicGtypeMarksG")
-                    .selectAll(".anatomicGtypeMark")
-                    .data(vizObj.data.genotypes_to_plot[site])
-                    .enter()
-                    .append("circle")
-                    .attr("class", function(d) { 
-                        return "anatomicGtypeMark " + d; 
-                    })
-                    .attr("cx", function(d) { 
-                        var cropped_x = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).x;
-                        return cropped_x;
-                    })
-                    .attr("cy", function(d) { 
-                        var cropped_y = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).y;
-                        return cropped_y;
-                    })
-                    .attr("r", dim.siteMark_r)
-                    .attr("fill", function(d) { 
-                        return cols[d];
-                    })
-                    .attr("fill-opacity", 0);
-            }
-
             
         });
     },
