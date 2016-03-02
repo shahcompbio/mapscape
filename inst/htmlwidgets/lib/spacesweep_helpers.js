@@ -243,7 +243,8 @@ function _scale(vizObj) {
         left_shift: left_shift,
         up_shift: up_shift,
         left_shift_prop: left_shift_prop,
-        up_shift_prop: up_shift_prop
+        up_shift_prop: up_shift_prop,
+        centre_prop: centre
     }
 
     return crop_info;

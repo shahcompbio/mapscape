@@ -50,6 +50,8 @@ HTMLWidgets.widget({
         // anatomical image configurations
         config.image_plot_width = config.innerRadius*2; // width of the plot space for the image
         config.image_top_l = {x: config.viewDiameter/2 - config.image_plot_width/2, y: config.viewDiameter/2 - config.image_plot_width/2};
+        config.legend_image_plot_width = config.legendWidth; // width of the plot space for the image
+        config.legend_image_top_l = {x: 0, y: config.legendTreeWidth + config.legendTitleHeight*2 + 10};
 
         vizObj.generalConfig = config;
 
@@ -213,7 +215,7 @@ HTMLWidgets.widget({
             .attr("stroke", "#F4F3F3")
             .attr("stroke-width", "5px");
 
-        // PLOT FULL GENOTYPE TREE
+        // PLOT LEGEND GENOTYPE TREE
 
         // tree title
         legendSVG.append("text")
@@ -312,6 +314,40 @@ HTMLWidgets.widget({
             .on("mouseout", function(d) {
                 _resetView(vizObj);
             });
+
+        // PLOT ANATOMY IN LEGEND
+
+        // anatomy title
+        legendSVG.append("text")
+            .attr("class", "legendTitle")
+            .attr("x", dim.legendTreeWidth/2) 
+            .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
+            .attr("fill", '#9E9A9A')
+            .attr("text-anchor", "middle")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", dim.legendTitleHeight)
+            .text("Anatomy");
+
+        // anatomy image
+        legendSVG.append("image")
+            .attr("xlink:href", function() {
+                if (vizObj.userConfig.gender == "F") {
+                    return dim.anatomy_female_image_ref;
+                }
+                return dim.anatomy_male_image_ref;
+            })
+            .attr("x", dim.legend_image_top_l.x)
+            .attr("y", dim.legend_image_top_l.y)
+            .attr("width", dim.legend_image_plot_width)
+            .attr("height", dim.legend_image_plot_width);
+
+        // anatomy region of interest
+        legendSVG.append("circle")
+            .attr("cx", dim.legend_image_top_l.x + crop_info.centre_prop.x*dim.legend_image_plot_width)
+            .attr("cy", dim.legend_image_top_l.y + crop_info.centre_prop.y*dim.legend_image_plot_width)
+            .attr("r", (crop_info.crop_width_prop/2)*dim.legend_image_plot_width)
+            .attr("stroke", "#9E9A9A")
+            .attr("fill", "none");
 
         // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
 
