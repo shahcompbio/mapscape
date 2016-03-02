@@ -11,6 +11,7 @@
 #' @param tree_edges Tree edges data frame. The root of the tree (id: "Root") must be specified as a source.
 #'   Format: columns are (1) {String} "source" - source node id
 #'                       (2) {String} "target" - target node id.
+#' @param gender Gender of the patient (M/F). 
 #' @param clone_colours Data frame with clone ids and their corresponding colours 
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
@@ -22,6 +23,7 @@
 spacesweep <- function(clonal_prev, 
                       tree_edges,
                       clone_colours,
+                      gender,
                       site_ids = "NA",
                       show_root = TRUE,
                       n_cells = 100,
@@ -29,6 +31,7 @@ spacesweep <- function(clonal_prev,
                       height = 960) {
 
   # CHECK REQUIRED INPUTS ARE PRESENT 
+
   if (missing(clonal_prev)) {
     stop("Clonal prevalence data frame must be provided.")
   }
@@ -37,6 +40,15 @@ spacesweep <- function(clonal_prev,
   }
   if (missing(clone_colours)) {
     stop("Clonal colours frame must be provided.")
+  }
+  if (missing(gender)) {
+    stop("The gender of the patient must be provided.")
+  }
+
+  # GENDER
+
+  if (gender != "F" && gender != "M") {
+    stop("The gender must be specified as \"F\" or \"M\".")
   }
 
   # CLONAL PREVALENCE DATA
@@ -104,6 +116,7 @@ spacesweep <- function(clonal_prev,
     clonal_prev = jsonlite::toJSON(clonal_prev),
     tree_edges = jsonlite::toJSON(tree_edges),
     clone_cols = jsonlite::toJSON(clone_colours),
+    gender = gender,
     site_ids = site_ids,
     n_cells = n_cells,
     show_root = show_root

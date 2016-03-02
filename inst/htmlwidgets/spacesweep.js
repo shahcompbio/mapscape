@@ -17,7 +17,9 @@ HTMLWidgets.widget({
             legendWidth: 100,
             legendTitleHeight: 16,
             max_r: 8, // maximum radius for tree nodes
-            siteMark_r: 4 // site mark radius
+            siteMark_r: 4, // site mark radius
+            anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
+            anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
 
         // global variable vizObj
@@ -47,7 +49,6 @@ HTMLWidgets.widget({
 
         // image configurations
         config.image_width = config.innerRadius*2;
-        config.image_ref = "http://www.clipartbest.com/cliparts/niE/XL8/niEXL8grT.png";
         config.image_top_l = {x: config.viewDiameter/2 - config.image_width/2, y: config.viewDiameter/2 - config.image_width/2};
 
         vizObj.generalConfig = config;
@@ -149,7 +150,12 @@ HTMLWidgets.widget({
         // PLOT ANATOMY IMAGE
 
         viewSVG.append("image")
-            .attr("xlink:href", dim.image_ref)
+            .attr("xlink:href", function() {
+                if (vizObj.userConfig.gender == "F") {
+                    return dim.anatomy_female_image_ref;
+                }
+                return dim.anatomy_male_image_ref;
+            })
             .attr("x", dim.image_top_l.x)
             .attr("y", dim.image_top_l.y)
             .attr("width", dim.image_width)

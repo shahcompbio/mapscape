@@ -88,25 +88,40 @@ function _highlightSites(site_ids) {
 * @param {Object} vizObj
 */
 function _getSiteLocationsOnImage(vizObj) {
-    vizObj.view.siteLocationsOnImage = [
-        {siteStem: "Om", x: 0.669, y: 0.40},
-        {siteStem: "RFT", x: 0.648, y: 0.445},
-        {siteStem: "LFT", x: 0.690, y: 0.445},
-        {siteStem: "ROv", x: 0.649, y: 0.462},
-        {siteStem: "LOv", x: 0.689, y: 0.462},
-        {siteStem: "Cds", x: 0.669, y: 0.470},
-        {siteStem: "Cln", x: 0.669, y: 0.478},
-        {siteStem: "Adnx", x: 0.669, y: 0.474},
-        {siteStem: "RPvs", x: 0.635, y: 0.454},
-        {siteStem: "LPvs", x: 0.703, y: 0.454},
-        {siteStem: "Brn", x: 0.669, y: 0.08},
-        {siteStem: "Bwl", x: 0.669, y: 0.42},
-        {siteStem: "SBwl", x: 0.669, y: 0.42},
-        {siteStem: "RPv", x: 0.649, y: 0.482},
-        {siteStem: "Ap", x: 0.649, y: 0.475},
-        {siteStem: "RUt", x: 0.659, y: 0.482},
-        {siteStem: "LUt", x: 0.679, y: 0.482}
-    ]
+    // female anatomy
+    if (vizObj.userConfig.gender == "F") {
+        vizObj.view.siteLocationsOnImage = [
+            {siteStem: "Om", x: 0.503, y: 0.40},
+            {siteStem: "RFT", x: 0.482, y: 0.435},
+            {siteStem: "LFT", x: 0.524, y: 0.435},
+            {siteStem: "ROv", x: 0.483, y: 0.450},
+            {siteStem: "LOv", x: 0.523, y: 0.450},
+            {siteStem: "Cds", x: 0.503, y: 0.470},
+            {siteStem: "Cln", x: 0.503, y: 0.478},
+            {siteStem: "Adnx", x: 0.503, y: 0.474},
+            {siteStem: "RPv", x: 0.469, y: 0.454},
+            {siteStem: "LPv", x: 0.537, y: 0.454},
+            {siteStem: "Brn", x: 0.503, y: 0.05},
+            {siteStem: "Bwl", x: 0.503, y: 0.415},
+            {siteStem: "SBwl", x: 0.503, y: 0.42},
+            {siteStem: "Ap", x: 0.483, y: 0.475},
+            {siteStem: "RUt", x: 0.493, y: 0.482},
+            {siteStem: "LUt", x: 0.513, y: 0.482}
+        ]        
+    }
+    // male anatomy
+    else {
+        vizObj.view.siteLocationsOnImage = [
+            {siteStem: "Om", x: 0.503, y: 0.40},
+            {siteStem: "Cln", x: 0.503, y: 0.478},
+            {siteStem: "RPv", x: 0.459, y: 0.454},
+            {siteStem: "LPv", x: 0.547, y: 0.454},
+            {siteStem: "Brn", x: 0.503, y: 0.05},
+            {siteStem: "Bwl", x: 0.503, y: 0.415},
+            {siteStem: "SBwl", x: 0.503, y: 0.42},
+            {siteStem: "Ap", x: 0.483, y: 0.475},
+        ]
+    }
 }
 
 /* function to assign site stems (e.g. "Om") to site ids (e.g. "Om1"), and vice versa
