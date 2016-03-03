@@ -863,7 +863,7 @@ function _getIntersection(array1, array2) {
 function _drawPoint(cx, cy, r, currentPoint, totalPoints) {  
 
     var theta = ((Math.PI*2) / totalPoints);
-    var angle = (theta * currentPoint) + Math.PI/2; // - Math.PI/2;
+    var angle = (theta * currentPoint); // - Math.PI/2;
 
     var x = cx + (r * Math.cos(angle));
     var y = cy + (r * Math.sin(angle));
@@ -1008,6 +1008,12 @@ function _getSitePositioning(vizObj) {
         vizObj.data.sites.push(cur_site_obj);
 
     })
+
+    // get anatomic locations on image
+    _getSiteLocationsOnImage(vizObj);
+
+    // assign anatomic locations to each site
+    _assignAnatomicLocations(vizObj);
 }
 
 /*
@@ -1026,4 +1032,59 @@ function _find_angle_of_line_segment(A,B) {
         return 2*Math.PI - angle;
     }
     return angle;
+}
+
+/* function to get order of the sites, from negative x-, negative y- axis
+* @param {Object} vizObj
+*/
+function _getSiteOrder(vizObj) {
+    var sites = [];
+
+    vizObj.site_ids.forEach(function(site_id) {
+
+        // current transformation of the site title / tree group
+        var t = d3.transform(d3.select(".treeAndSiteTitleG."+site_id).attr("transform")),
+            t_x = t.translate[0],
+            t_y = t.translate[1];
+
+        // current coordinates
+        var x = (t) ? 
+                    parseFloat(d3.select(".siteTitle."+site_id).attr("x")) + t_x :
+                    parseFloat(d3.select(".siteTitle."+site_id).attr("x"));
+        var y = (t) ? 
+                    parseFloat(d3.select(".siteTitle."+site_id).attr("y")) + t_y :
+                    parseFloat(d3.select(".siteTitle."+site_id).attr("y"));
+
+        // depending on placement of title, move y-coordinate up or down
+        y = (d3.select(".siteTitle."+site_id).data()[0].position == "top") ? 
+            y + vizObj.generalConfig.treeWidth/2 :
+            y - vizObj.generalConfig.treeWidth/2;
+        console.log(d3.select(".siteTitle."+site_id).data()[0].position);
+
+        // find the angle formed with the horizontal, by the line segment from the title to the view centre
+        var angle = _find_angle_of_line_segment({x: x, 
+                                                    y: y},
+                                                {x: vizObj.generalConfig.viewCentre.x, 
+                                                    y: vizObj.generalConfig.viewCentre.y});
+        sites.push({
+            "site_id": site_id,
+            "angle": angle
+        })
+    })
+
+    _sortByKey(sites, "angle");
+    var site_order = _.pluck(sites, "site_id");
+
+    
+    return site_order;
+}
+
+/* function to sort array of objects by key
+* from: http://stackoverflow.com/questions/8837454/sort-array-of-objects-by-single-key-with-date-value
+*/
+function _sortByKey(array, key) {
+    return array.sort(function(a, b) {
+        var x = a[key]; var y = b[key];
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    });
 }

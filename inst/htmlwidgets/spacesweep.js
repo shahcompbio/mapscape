@@ -95,12 +95,6 @@ HTMLWidgets.widget({
         // get colour palette
         _getColours(vizObj);
 
-        // get anatomic locations on image
-        _getSiteLocationsOnImage(vizObj);
-
-        // assign anatomic locations to each site
-        _assignAnatomicLocations(vizObj);
-
         // get image bounds for current site data 
         _getImageBounds(vizObj);
 
@@ -168,10 +162,90 @@ HTMLWidgets.widget({
                         return "translate(" + (point.x-d.x) + "," + 
                                                 (point.y-d.y) + ")";
                     });
-
             })
             .on("dragend", function(d) {
                 dim.dragOn = false; 
+
+                // turn off divider highlighting
+                d3.selectAll(".divider").attr("stroke-opacity", 0);
+
+                // get new site order
+                vizObj.site_ids = _getSiteOrder(vizObj);
+
+                // get site repositioning
+                _getSitePositioning(vizObj);      
+
+                // for each site
+                vizObj.site_ids.forEach(function(site, site_idx) {
+
+                    // get the data
+                    var site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
+                        cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")); // svg group for this site
+
+                    // calculate angle w/the horizontal, formed by the line segment between the 
+                    // "snapped" site position & view centre
+                    var angle = _find_angle_of_line_segment(
+                                    {x: site_data.voronoi.centre.x, y: site_data.voronoi.centre.y},
+                                    {x: dim.viewCentre.x, y: dim.viewCentre.y});
+
+                    // move anatomic lines
+                    if (site_data.stem) { // if the site was found on the anatomic image
+                        cur_siteG.select(".anatomicPointer." + site)
+                            .transition()
+                            .attr("x1", function(d) {
+                                d.x1 = site_data.voronoi.centre.x;
+                                return d.x1;
+                            })
+                            .attr("y1", function(d) {
+                                d.y1 = site_data.voronoi.centre.y;
+                                return d.y1;
+                            })
+                            .attr("x2", function(d) { 
+                                var cropped_x = _getCroppedCoordinate(crop_info, 
+                                                                            site_data.stem.x, 
+                                                                            site_data.stem.y,
+                                                                            dim.image_top_l.x,
+                                                                            dim.image_top_l.y,
+                                                                            dim.image_plot_width
+                                                                        ).x;
+                                return cropped_x;
+                            })
+                            .attr("y2", function(d) { 
+                                var cropped_y = _getCroppedCoordinate(crop_info, 
+                                                                            site_data.stem.x, 
+                                                                            site_data.stem.y,
+                                                                            dim.image_top_l.x,
+                                                                            dim.image_top_l.y,
+                                                                            dim.image_plot_width
+                                                                        ).y;
+                                return cropped_y;
+                            });  
+                    }
+
+                    // move oncoMix
+                    d3.select(".oncoMixG."+site)
+                        .transition()
+                        .attr("transform", function(d) {
+                            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
+                                                Math.pow(d.y - dim.viewCentre.y, 2)),
+                                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                            return "translate(" + (point.x-d.x) + "," + 
+                                                    (point.y-d.y) + ")";
+                        });
+
+                    // move tree * site title
+                    d3.select(".treeAndSiteTitleG."+site)
+                        .transition()
+                        .attr("transform", function(d) {
+                            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
+                                                Math.pow(d.y - dim.viewCentre.y, 2)),
+                                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                            return "translate(" + (point.x-d.x) + "," + 
+                                                    (point.y-d.y) + ")";
+                        });
+
+                });
+          
             });
 
         // DIVS
@@ -262,6 +336,7 @@ HTMLWidgets.widget({
             .data(vizObj.data.sites)
             .enter()
             .append("line")
+            .classed("divider", true)
             .attr("x1", function(d) { return d.leftDivider.x1; })
             .attr("x2", function(d) { return d.leftDivider.x2; })
             .attr("y1", function(d) { return d.leftDivider.y1; })
@@ -608,7 +683,8 @@ HTMLWidgets.widget({
             // plot cells
             var vertices = site_data.voronoi.vertices;
             var cells = curSiteOncoMixG.append("g")
-                .attr("class", "cellsG")
+                .classed("cellsG", true)
+                .classed(site, true)
                 .selectAll("path")
                 .data(voronoi(site_data.voronoi.vertex_coords), _polygon)
                 .enter().append("path")
@@ -719,18 +795,20 @@ HTMLWidgets.widget({
                 .classed("siteTitle", true)
                 .classed(site, true)
                 .attr("x", site_data.tree.top_middle.x)
-                .attr("y", function() {
+                .attr("y", function(d) {
                     if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
-                    // if (site_data.angle > Math.PI || site_data.angle < 0) {
+                        d.position = "top";
                         return site_data.tree.top_middle.y;
                     }
+                    d.position = "bottom";
                     return site_data.tree.bottom_middle.y;
                 })
-                .attr("dy", function() {
+                .attr("dy", function(d) {
                     if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
-                    // if (site_data.angle > Math.PI || site_data.angle < 0) {
+                        d.position = "top";
                         return "+0.71em";
                     }
+                    d.position = "bottom";
                     return "0em";
                 })
                 .attr("text-anchor", "middle")
