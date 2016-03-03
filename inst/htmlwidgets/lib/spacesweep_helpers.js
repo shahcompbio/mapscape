@@ -907,8 +907,8 @@ function _getSitePositioning(vizObj) {
         cur_site_obj["leftDivider"] = {
             x1: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx, n_sites).x,
             y1: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, site_idx, n_sites).y,
-            x2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).x,
-            y2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).y
+            x2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius - 2, site_idx, n_sites).x,
+            y2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius - 2, site_idx, n_sites).y
         }
 
         // VORONOI

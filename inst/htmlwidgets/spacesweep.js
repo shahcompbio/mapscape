@@ -18,6 +18,7 @@ HTMLWidgets.widget({
             legendTitleHeight: 16,
             max_r: 8, // maximum radius for tree nodes
             siteMark_r: 4, // site mark radius
+            dragOn: false, // whether or not drag is on
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -120,6 +121,9 @@ HTMLWidgets.widget({
         // DRAG BEHAVIOUR
 
         var drag = d3.behavior.drag()
+            .on("dragstart", function(d) {
+                dim.dragOn = true; 
+            })
             .on("drag", function(d,i) {
 
                 // calculate angle w/the horizontal, formed by the line segment between the mouse & view centre
@@ -165,6 +169,9 @@ HTMLWidgets.widget({
                                                 (point.y-d.y) + ")";
                     });
 
+            })
+            .on("dragend", function(d) {
+                dim.dragOn = false; 
             });
 
         // DIVS
@@ -245,6 +252,33 @@ HTMLWidgets.widget({
             .attr("width", crop_info.new_width)
             .attr("x", -crop_info.left_shift)
             .attr("y", -crop_info.up_shift);          
+
+        // DIVIDERS between each site
+
+        var divider = viewSVG
+            .append("g")
+            .attr("class","dividers")
+            .selectAll(".divider")
+            .data(vizObj.data.sites)
+            .enter()
+            .append("line")
+            .attr("x1", function(d) { return d.leftDivider.x1; })
+            .attr("x2", function(d) { return d.leftDivider.x2; })
+            .attr("y1", function(d) { return d.leftDivider.y1; })
+            .attr("y2", function(d) { return d.leftDivider.y2; })
+            .attr("stroke", "#FF8787")
+            .attr("stroke-width", "10px")
+            .attr("stroke-opacity", 0)
+            .on("mouseover", function(d) {
+                if (dim.dragOn) {
+                    d3.select(this).attr("stroke-opacity", 1);
+                }
+            })
+            .on("mouseout", function(d) {
+                if (dim.dragOn) {
+                    d3.select(this).attr("stroke-opacity", 0);
+                }
+            });
 
         // SITE SVG GROUPS
 
