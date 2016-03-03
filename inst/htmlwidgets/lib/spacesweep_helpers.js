@@ -1188,20 +1188,41 @@ function _snapSites(vizObj, viewSVG) {
                 var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
                                     Math.pow(d.y - dim.viewCentre.y, 2)),
                     point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                return "translate(" + (point.x-d.x) + "," + 
-                                        (point.y-d.y) + ")";
+                return "translate(" + (point.x-d.x) + "," + (point.y-d.y) + ")";
             });
 
         // move tree * site title
+        // keep track of translation
+        var translation = {};
         d3.select(".treeAndSiteTitleG."+site)
             .transition()
             .attr("transform", function(d) {
                 var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
                                     Math.pow(d.y - dim.viewCentre.y, 2)),
                     point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                return "translate(" + (point.x-d.x) + "," + 
-                                        (point.y-d.y) + ")";
+                    translation = {x: (point.x-d.x), y: (point.y-d.y)};
+                return "translate(" + translation.x + "," + translation.y + ")";
             });
+
+        // change site title location (depending on placement of site, above or below view centre)
+        d3.select(".siteTitle." + site)
+            .transition()
+            .attr("y", function(d) {
+                if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
+                    d.position = "top";
+                    return site_data.tree.top_middle.y - translation.y;
+                }
+                d.position = "bottom";
+                return site_data.tree.bottom_middle.y - translation.y;
+            })
+            .attr("dy", function(d) {
+                if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
+                    d.position = "top";
+                    return "+0.71em";
+                }
+                d.position = "bottom";
+                return "0em";
+            })
 
     });
 }
