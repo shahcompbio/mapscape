@@ -120,48 +120,11 @@ HTMLWidgets.widget({
             })
             .on("drag", function(d,i) {
 
-                // calculate angle w/the horizontal, formed by the line segment between the mouse & view centre
-                var angle = _find_angle_of_line_segment(
-                                {x: d3.event.x, y: d3.event.y},
-                                {x: dim.viewCentre.x, y: dim.viewCentre.y});
-
                 // current site affected
                 var cur_site = d3.select(this).attr("class").substring(6);
 
-                // move anatomic pointer
-                d3.select(".anatomicPointer."+cur_site)
-                    .attr("x1", function() {
-                        var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
-                                            Math.pow(d.y1 - dim.viewCentre.y, 2)),
-                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                        return point.x;
-                    })
-                    .attr("y1", function() {
-                        var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
-                                            Math.pow(d.y1 - dim.viewCentre.y, 2)),
-                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                        return point.y;
-                    })
-
-                // move oncoMix
-                d3.select(".oncoMixG."+cur_site)
-                    .attr("transform", function(d) {
-                        var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                            Math.pow(d.y - dim.viewCentre.y, 2)),
-                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                        return "translate(" + (point.x-d.x) + "," + 
-                                                (point.y-d.y) + ")";
-                    });
-
-                // move tree * site title
-                d3.select(".treeAndSiteTitleG."+cur_site)
-                    .attr("transform", function(d) {
-                        var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                            Math.pow(d.y - dim.viewCentre.y, 2)),
-                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                        return "translate(" + (point.x-d.x) + "," + 
-                                                (point.y-d.y) + ")";
-                    });
+                // operations on drag
+                _dragFunction(vizObj, cur_site, d);
             })
             .on("dragend", function(d) {
                 dim.dragOn = false; 
@@ -172,80 +135,11 @@ HTMLWidgets.widget({
                 // get new site order
                 vizObj.site_ids = _getSiteOrder(vizObj);
 
-                // get site repositioning
-                _getSitePositioning(vizObj);      
+                // get site positioning coordinates etc
+                _getSitePositioning(vizObj);   
 
-                // for each site
-                vizObj.site_ids.forEach(function(site, site_idx) {
-
-                    // get the data
-                    var site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
-                        cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")); // svg group for this site
-
-                    // calculate angle w/the horizontal, formed by the line segment between the 
-                    // "snapped" site position & view centre
-                    var angle = _find_angle_of_line_segment(
-                                    {x: site_data.voronoi.centre.x, y: site_data.voronoi.centre.y},
-                                    {x: dim.viewCentre.x, y: dim.viewCentre.y});
-
-                    // move anatomic lines
-                    if (site_data.stem) { // if the site was found on the anatomic image
-                        cur_siteG.select(".anatomicPointer." + site)
-                            .transition()
-                            .attr("x1", function(d) {
-                                d.x1 = site_data.voronoi.centre.x;
-                                return d.x1;
-                            })
-                            .attr("y1", function(d) {
-                                d.y1 = site_data.voronoi.centre.y;
-                                return d.y1;
-                            })
-                            .attr("x2", function(d) { 
-                                var cropped_x = _getCroppedCoordinate(crop_info, 
-                                                                            site_data.stem.x, 
-                                                                            site_data.stem.y,
-                                                                            dim.image_top_l.x,
-                                                                            dim.image_top_l.y,
-                                                                            dim.image_plot_width
-                                                                        ).x;
-                                return cropped_x;
-                            })
-                            .attr("y2", function(d) { 
-                                var cropped_y = _getCroppedCoordinate(crop_info, 
-                                                                            site_data.stem.x, 
-                                                                            site_data.stem.y,
-                                                                            dim.image_top_l.x,
-                                                                            dim.image_top_l.y,
-                                                                            dim.image_plot_width
-                                                                        ).y;
-                                return cropped_y;
-                            });  
-                    }
-
-                    // move oncoMix
-                    d3.select(".oncoMixG."+site)
-                        .transition()
-                        .attr("transform", function(d) {
-                            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                                Math.pow(d.y - dim.viewCentre.y, 2)),
-                                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                            return "translate(" + (point.x-d.x) + "," + 
-                                                    (point.y-d.y) + ")";
-                        });
-
-                    // move tree * site title
-                    d3.select(".treeAndSiteTitleG."+site)
-                        .transition()
-                        .attr("transform", function(d) {
-                            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                                Math.pow(d.y - dim.viewCentre.y, 2)),
-                                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-                            return "translate(" + (point.x-d.x) + "," + 
-                                                    (point.y-d.y) + ")";
-                        });
-
-                });
-          
+                // reposition sites on the screen
+                _snapSites(vizObj, viewSVG);
             });
 
         // DIVS
@@ -275,7 +169,6 @@ HTMLWidgets.widget({
             .attr("width", dim.viewDiameter + "px")
             .attr("height", dim.viewDiameter + "px");
 
-        // legend SVG
         var legendSVG = legendDIV.append("svg:svg")
             .attr("class", "legendSVG")
             .attr("x", dim.viewDiameter)
@@ -318,14 +211,14 @@ HTMLWidgets.widget({
         // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
 
         // get scaling information
-        var crop_info = _scale(vizObj);
+        vizObj.crop_info = _scale(vizObj);
 
         // update the anatomy image with the new cropping
         d3.select(".anatomyImage") 
-            .attr("height", crop_info.new_width)
-            .attr("width", crop_info.new_width)
-            .attr("x", -crop_info.left_shift)
-            .attr("y", -crop_info.up_shift);          
+            .attr("height", vizObj.crop_info.new_width)
+            .attr("width", vizObj.crop_info.new_width)
+            .attr("x", -vizObj.crop_info.left_shift)
+            .attr("y", -vizObj.crop_info.up_shift);          
 
         // DIVIDERS between each site
 
@@ -503,9 +396,9 @@ HTMLWidgets.widget({
 
         // anatomy region of interest
         legendSVG.append("circle")
-            .attr("cx", dim.legend_image_top_l.x + crop_info.centre_prop.x*dim.legend_image_plot_width)
-            .attr("cy", dim.legend_image_top_l.y + crop_info.centre_prop.y*dim.legend_image_plot_width)
-            .attr("r", (crop_info.crop_width_prop/2)*dim.legend_image_plot_width)
+            .attr("cx", dim.legend_image_top_l.x + vizObj.crop_info.centre_prop.x*dim.legend_image_plot_width)
+            .attr("cy", dim.legend_image_top_l.y + vizObj.crop_info.centre_prop.y*dim.legend_image_plot_width)
+            .attr("r", (vizObj.crop_info.crop_width_prop/2)*dim.legend_image_plot_width)
             .attr("stroke", "#9E9A9A")
             .attr("fill", "none");
 
@@ -519,7 +412,7 @@ HTMLWidgets.widget({
             .append("circle")
             .attr("class", "anatomicGeneralMark")
             .attr("cx", function(d) { 
-                var cropped_x = _getCroppedCoordinate(crop_info, 
+                var cropped_x = _getCroppedCoordinate(vizObj.crop_info, 
                                             vizObj.data.siteStemsInDataset[d].x, 
                                             vizObj.data.siteStemsInDataset[d].y,
                                             dim.image_top_l.x,
@@ -529,7 +422,7 @@ HTMLWidgets.widget({
                 return cropped_x;
             })
             .attr("cy", function(d) { 
-                var cropped_y = _getCroppedCoordinate(crop_info, 
+                var cropped_y = _getCroppedCoordinate(vizObj.crop_info, 
                                             vizObj.data.siteStemsInDataset[d].x, 
                                             vizObj.data.siteStemsInDataset[d].y,
                                             dim.image_top_l.x,
@@ -574,249 +467,11 @@ HTMLWidgets.widget({
             });
         viewSVG.call(nodeTip);
 
-        // FOR EACH SITE 
+        // FOR EACH SITE
         vizObj.site_ids.forEach(function(site, site_idx) {
 
-            var site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
-                cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")), // svg group for this site
-                cols = vizObj.view.colour_assignment;
-
-            // PLOT ANATOMIC LINES
-
-            // if the site was found on the anatomic image
-            if (site_data.stem) {
-                cur_siteG
-                    .append("line")
-                    .classed("anatomicPointer", true)
-                    .classed(site, true)
-                    .attr("x1", function(d) {
-                        d.x1 = site_data.voronoi.centre.x;
-                        return d.x1;
-                    })
-                    .attr("y1", function(d) {
-                        d.y1 = site_data.voronoi.centre.y;
-                        return d.y1;
-                    })
-                    .attr("x2", function(d) { 
-                        var cropped_x = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).x;
-                        return cropped_x;
-                    })
-                    .attr("y2", function(d) { 
-                        var cropped_y = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).y;
-                        return cropped_y;
-                    })
-                    .attr("stroke", "#CBCBCB")
-                    .attr("stroke-width", "2px");  
-            }
-
-            // PLOT ANATOMIC MARKS - marks on image 
-
-            // if the site was found on the anatomic image
-            if (site_data.stem) {
-                cur_siteG
-                    .append("g")
-                    .attr("class", "anatomicGtypeMarksG")
-                    .selectAll(".anatomicGtypeMark")
-                    .data(vizObj.data.genotypes_to_plot[site])
-                    .enter()
-                    .append("circle")
-                    .attr("class", function(d) { 
-                        return "anatomicGtypeMark " + d; 
-                    })
-                    .attr("cx", function(d) { 
-                        var cropped_x = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).x;
-                        return cropped_x;
-                    })
-                    .attr("cy", function(d) { 
-                        var cropped_y = _getCroppedCoordinate(crop_info, 
-                                                                    site_data.stem.x, 
-                                                                    site_data.stem.y,
-                                                                    dim.image_top_l.x,
-                                                                    dim.image_top_l.y,
-                                                                    dim.image_plot_width
-                                                                ).y;
-                        return cropped_y;
-                    })
-                    .attr("r", dim.siteMark_r)
-                    .attr("fill", function(d) { 
-                        return cols[d];
-                    })
-                    .attr("fill-opacity", 0);
-            }
-
-            // PLOT ONCOMIX
-
-            // create oncoMix group
-            var curSiteOncoMixG = cur_siteG
-                .selectAll(".oncoMixG")
-                .data([{"x": site_data.voronoi.centre.x, "y": site_data.voronoi.centre.y}])
-                .enter()
-                .append("g")
-                .classed("oncoMixG", true)
-                .classed(site, true);
-
-            // voronoi function for this site
-            var voronoi = d3.geom.voronoi()
-                .clipExtent([[site_data.voronoi.top_l_corner.x, 
-                            site_data.voronoi.top_l_corner.y], 
-                            [site_data.voronoi.top_l_corner.x + dim.oncoMixWidth, 
-                            site_data.voronoi.top_l_corner.y + dim.oncoMixWidth]]);
-                
-            // plot cells
-            var vertices = site_data.voronoi.vertices;
-            var cells = curSiteOncoMixG.append("g")
-                .classed("cellsG", true)
-                .classed(site, true)
-                .selectAll("path")
-                .data(voronoi(site_data.voronoi.vertex_coords), _polygon)
-                .enter().append("path")
-                .classed("voronoiCell", true)
-                .classed(site, true)
-                .attr("d", _polygon)
-                .attr("fill", function(d, i) {
-                    return (vertices[i].real_cell) ? vertices[i].col : "none";
-                })
-                .attr("fill-opacity", function(d, i) {
-                    return (vertices[i].real_cell) ? 1 : 0;
-                })
-                .attr("stroke", function(d, i) {
-                    return (vertices[i].real_cell) ? _decrease_brightness(vertices[i].col, 15) : "none";
-                })
-                .attr("stroke-width", "1.5px")
-                .attr("stroke-opacity", function(d, i) {
-                    return (vertices[i].real_cell) ? 1 : 0;
-                });
-
-
-            // PLOT TREE
-
-            // d3 tree layout
-            var treeLayout = d3.layout.tree()           
-                    .size([dim.treeWidth - dim.node_r*2, dim.treeWidth - dim.node_r*2]); 
-
-            // get nodes and links
-            var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
-                nodes = treeLayout.nodes(root), 
-                links = treeLayout.links(nodes); 
-
-            // swap x and y direction
-            nodes.forEach(function(node) {
-                node.tmp = node.y;
-                node.y = node.x + dim.node_r + site_data.tree.top_l_corner.y;
-                node.x = node.tmp + dim.node_r + site_data.tree.top_l_corner.x;
-                delete node.tmp;
-            });
-
-            // create tree & title group
-            var curSiteTreeAndSiteTitleG = cur_siteG
-                .selectAll(".treeAndSiteTitleG")
-                .data([{"x": site_data.tree.centre.x, "y": site_data.tree.centre.y}])
-                .enter()
-                .append("g")
-                .classed("treeAndSiteTitleG", true)
-                .classed(site, true);
-
-            // create links
-            var link = curSiteTreeAndSiteTitleG.append("g")
-                .attr("class","treeLinkG")
-                .selectAll(".treeLink")                  
-                .data(links)                   
-                .enter().append("path")                   
-                .classed("treeLink", true)
-                .classed(site, true)
-                .attr('stroke', '#9E9A9A')
-                .attr('fill', 'none') 
-                .attr('stroke-width', '2px')               
-                .attr("d", function(d) {
-                    if (vizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
-                        return _elbow(d);
-                    }
-                    return _shortElbow(d);
-                }); 
-            
-            // create nodes
-            var nodeG = curSiteTreeAndSiteTitleG.append("g")
-                .attr("class", "treeNodeG")
-                .selectAll(".treeNode")                  
-                .data(nodes)                   
-                .enter()
-                .append("g");
-
-            nodeG.append("circle")     
-                .attr("cx", function(d) { return d.x})
-                .attr("cy", function(d) { return d.y})              
-                .classed("treeNode", true) 
-                .classed(site, true)
-                .attr("fill", function(d) {
-                    // clone present at this site or not
-                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
-                        cols[d.id] : "#FFFFFF";
-                })
-                .attr("stroke", function(d) {
-                    // clone present at this site or not
-                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
-                        cols[d.id] : "#FFFFFF";
-                })
-                .attr("r", function(d) {
-                    // clone present at this site or not
-                    return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.node_r : 0;
-                })
-                .on('mouseover', function(d) {
-                    d.site = site;
-                    // show tooltip
-                    nodeTip.show(d);
-                })
-                .on('mouseout', function(d) {
-                    // hide tooltip
-                    nodeTip.hide(d);
-                });
-
-            // PLOT SITE TITLES
-
-            curSiteTreeAndSiteTitleG.append("text")
-                .classed("siteTitle", true)
-                .classed(site, true)
-                .attr("x", site_data.tree.top_middle.x)
-                .attr("y", function(d) {
-                    if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
-                        d.position = "top";
-                        return site_data.tree.top_middle.y;
-                    }
-                    d.position = "bottom";
-                    return site_data.tree.bottom_middle.y;
-                })
-                .attr("dy", function(d) {
-                    if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
-                        d.position = "top";
-                        return "+0.71em";
-                    }
-                    d.position = "bottom";
-                    return "0em";
-                })
-                .attr("text-anchor", "middle")
-                .attr("font-family", "sans-serif")
-                .attr("font-size", dim.viewDiameter/40)
-                .attr("fill", '#9E9A9A')
-                .text(site_data.id);
-            
+            // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
+            _plotSite(vizObj, site, viewSVG);            
         });
     },
 
