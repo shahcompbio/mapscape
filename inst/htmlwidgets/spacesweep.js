@@ -87,14 +87,17 @@ HTMLWidgets.widget({
             _.uniq(_.pluck(vizObj.userConfig.clonal_prev, "site_id")):
             vizObj.userConfig.site_ids;
 
+        // assign anatomic locations to each site
+        _assignAnatomicLocations(vizObj);
+
+        // get image bounds for current site data 
+        _getImageBounds(vizObj);
+
         // if no site ordering is given by the user
         if (vizObj.userConfig.site_ids == "NA") {
-            // assign anatomic locations to each site
-            _assignAnatomicLocations(vizObj);
+            // initial ordering of sites based on their anatomic location
+            _initialSiteOrdering(vizObj);
         }
-
-        // initial ordering of sites based on their anatomic location
-        _initialSiteOrdering(vizObj);
 
         // get cellular prevalence data in workable format, and threshold it
         _getCPData(vizObj);
@@ -108,9 +111,6 @@ HTMLWidgets.widget({
 
         // get colour palette
         _getColours(vizObj);
-
-        // get image bounds for current site data 
-        _getImageBounds(vizObj);
 
         console.log("vizObj");
         console.log(vizObj);

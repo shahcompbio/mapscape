@@ -87,7 +87,7 @@ function _highlightSites(site_ids) {
 function _dragFunction(vizObj, cur_site, d) {
     var dim = vizObj.generalConfig;
 
-    // calculate angle w/the horizontal, formed by the line segment between the mouse & view centre
+    // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
     var angle = _find_angle_of_line_segment(
                     {x: d3.event.x, y: d3.event.y},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
@@ -930,7 +930,7 @@ function _drawPoint(cx, cy, r, currentPoint, totalPoints) {
 *    http://stackoverflow.com/questions/24273990/calculating-evenly-spaced-points-on-the-perimeter-of-a-circle
 * @param {Number} cx -- x-coordinate at centre of the circle
 * @param {Number} cy -- y-coordinate at centre of the circle
-* @param {Number} angle -- angle from positive horizontal axis
+* @param {Number} angle -- angle from positive x-axis
 */
 function _drawPointGivenAngle(cx, cy, r, angle) {  
 
@@ -1055,7 +1055,7 @@ function _getSitePositioning(vizObj) {
 }
 
 /*
-* Calculates the angle AB forms with the horizontal (in radians) 
+* Calculates the angle AB forms with the positive x-axis (in radians) 
 * modified from: http://stackoverflow.com/questions/17763392/how-to-calculate-in-javascript-angle-between-3-points
 *
 * A mouse coordinates
@@ -1099,7 +1099,7 @@ function _reorderSitesData(vizObj) {
             y + vizObj.generalConfig.treeWidth/2 :
             y - vizObj.generalConfig.treeWidth/2;
 
-        // find the angle formed with the horizontal, by the line segment from the title to the view centre
+        // find the angle formed with the positive x-axis, by the line segment from the title to the view centre
         var angle = _find_angle_of_line_segment({x: x, 
                                                     y: y},
                                                 {x: vizObj.generalConfig.viewCentre.x, 
@@ -1136,7 +1136,7 @@ function _snapSites(vizObj, viewSVG) {
         var site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
             cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")); // svg group for this site
 
-        // calculate angle w/the horizontal, formed by the line segment between the 
+        // calculate angle w/the positive x-axis, formed by the line segment between the 
         // "snapped" site position & view centre
         var angle = _find_angle_of_line_segment(
                         {x: site_data.voronoi.centre.x, y: site_data.voronoi.centre.y},
@@ -1490,19 +1490,31 @@ function _plotSite(vizObj, site, viewSVG) {
 
 }
 
-/* initial ordering of sites based on their anatomic locations (in the y-direction)
+/* initial ordering of sites based on their anatomic locations 
+* (angle with positive x-axis, formed by the line segment between the site position on the image & view centre)
 */
 function _initialSiteOrdering(vizObj) {
-    var sites = []; // sites and their y-coordinates
+    var sites = [], // sites and their y-coordinates
+        dim = vizObj.generalConfig;
 
     // for each site
     vizObj.data.sites.forEach(function(site) {
         // anatomic location detected
         if (site.stem) {
+
+            // cropped x, y positions 
+            var centre = _scale(vizObj).centre_prop;
+
+            // calculate angle w/the positive x-axis, formed by the line segment between the 
+            // site position & view centre
+            var angle = _find_angle_of_line_segment(
+                            {x: site.stem.x, y: site.stem.y},
+                            {x: centre.x, y: centre.y});
+
             sites.push({
                 "site_id": site.id,
                 "stem": site.stem.siteStem,
-                "y": site.stem.y
+                "angle": angle
             });
         }
         // if no anatomic location detected
@@ -1510,44 +1522,18 @@ function _initialSiteOrdering(vizObj) {
             sites.push({
                 "site_id": site.id,
                 "stem": "NA", // no site stem (ie. location) found
-                "y": 0.5 // halfway through y-axis
+                "angle": Math.PI/2 // auto position is on the bottom of the view (pi/2 from positive x-axis)
             });
         }
     });
 
     // sort sites by y-direction and stem
-    _sortByKey(sites, "y", "stem");
-
-    // alternate site stems
-    var site_order = [];
-    var prev_stem = ""; // previously seen site stem
-    var append = false;
-    sites.forEach(function(site) {
-        // check for new site stem
-        if (prev_stem != site.stem) {
-            prev_stem = site.stem;
-            append = !append; // switch between append and prepend
-        }
-
-        // appending site
-        if (append) {
-            site_order.push(site.site_id);
-        }
-        // prepending site 
-        else {
-            site_order.unshift(site.site_id);
-        }
-    });
-
-    // shift by 3/4 of the circle, so the ordering starts at the negative y-axis
-    var three_quarters = Math.floor(site_order.length * 3/4);
-    var shifted_site_order = site_order.slice(three_quarters, site_order.length).concat(
-                                site_order.slice(0, three_quarters));
+    _sortByKey(sites, "angle", "stem");
 
     // rearrange vizObj.data.sites array to reflect new ordering
     var new_sites_array = [];
-    shifted_site_order.forEach(function(site_id) {
-        new_sites_array.push(_.findWhere(vizObj.data.sites, {id: site_id}));
+    sites.forEach(function(site) {
+        new_sites_array.push(_.findWhere(vizObj.data.sites, {id: site.site_id}));
     })
     vizObj.data.sites = new_sites_array;
 }
