@@ -19,6 +19,7 @@ HTMLWidgets.widget({
             max_r: 8, // maximum radius for tree nodes
             siteMark_r: 4, // site mark radius
             dragOn: false, // whether or not drag is on
+            startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -71,6 +72,10 @@ HTMLWidgets.widget({
 
         // GET CONTENT
 
+
+        // get anatomic locations on image
+        _getSiteLocationsOnImage(vizObj);
+
         // extract all info from tree about nodes, edges, ancestors, descendants
         _getTreeInfo(vizObj);
 
@@ -81,6 +86,15 @@ HTMLWidgets.widget({
         vizObj.site_ids = (vizObj.userConfig.site_ids == "NA") ? 
             _.uniq(_.pluck(vizObj.userConfig.clonal_prev, "site_id")):
             vizObj.userConfig.site_ids;
+
+        // if no site ordering is given by the user
+        if (vizObj.userConfig.site_ids == "NA") {
+            // assign anatomic locations to each site
+            _assignAnatomicLocations(vizObj);
+        }
+
+        // initial ordering of sites based on their anatomic location
+        _initialSiteOrdering(vizObj);
 
         // get cellular prevalence data in workable format, and threshold it
         _getCPData(vizObj);
@@ -129,11 +143,14 @@ HTMLWidgets.widget({
             .on("dragend", function(d) {
                 dim.dragOn = false; 
 
-                // get new site order
-                vizObj.site_ids = _getSiteOrder(vizObj);
+                // order sites
+                _reorderSitesData(vizObj);
 
                 // get site positioning coordinates etc
                 _getSitePositioning(vizObj);   
+
+                console.log("vizObj");
+                console.log(vizObj);
 
                 // reposition sites on the screen
                 _snapSites(vizObj, viewSVG);
@@ -418,23 +435,6 @@ HTMLWidgets.widget({
             .on("mouseout", function(d) {
                 _resetView(vizObj);
             });
-
-        // TOOLTIP FUNCTIONS
-
-        var nodeTip = d3.tip()
-            .attr('class', 'd3-tip')
-            .offset([-10, 0])
-            .html(function(d) {
-                var cp;
-                if (vizObj.data["genotypes_to_plot"][d.site].indexOf(d.id) != -1) {
-                    cp = (Math.round(vizObj.data.cp_data[d.site][d.id].cp * 100)/100).toFixed(2);
-                }
-                else {
-                    cp = "";                    
-                }
-                return "<strong>Prevalence:</strong> <span style='color:white'>" + cp + "</span>";
-            });
-        viewSVG.call(nodeTip);
 
         // FOR EACH SITE
         vizObj.site_ids.forEach(function(site, site_idx) {

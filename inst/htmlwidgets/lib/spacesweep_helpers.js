@@ -180,9 +180,11 @@ function _assignAnatomicLocations(vizObj) {
     // keep track of stems in this dataset, and their corresponding site ids
     vizObj.data.siteStemsInDataset = {};
 
+    vizObj.data.sites = [];
+
     // for each site in the data
-    vizObj.data.sites.forEach(function(site_data) {
-        var site_id = site_data.id;
+    vizObj.site_ids.forEach(function(site_id) {
+        var site_data = {id: site_id};
 
         // for each potential stem
         for (var i = 0; i < vizObj.view.siteLocationsOnImage.length; i++) {
@@ -212,6 +214,9 @@ function _assignAnatomicLocations(vizObj) {
                 console.warn("No corresponding anatomic site found for site \"" + site_id + "\".")
             }
         }
+
+        // add this site to list of sites
+        vizObj.data.sites.push(site_data);
     })
 }
 
@@ -943,14 +948,9 @@ function _getSitePositioning(vizObj) {
     var dim = vizObj.generalConfig,
         n_sites = vizObj.site_ids.length; // number of sites
 
-    vizObj.data.sites = [];
-
     // for each site
-    vizObj.site_ids.forEach(function(site, site_idx) {
-        var cur_site_obj = {};
-
-        // id
-        cur_site_obj["id"] = site;
+    vizObj.data.sites.forEach(function(cur_site_obj, site_idx) {
+        var site_id = cur_site_obj.id;
 
         // left divider
         cur_site_obj["leftDivider"] = {
@@ -983,7 +983,7 @@ function _getSitePositioning(vizObj) {
 
         // add colour (genotype) information to each vertex
         cur_site_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(vizObj, 
-                                                                        site, 
+                                                                        site_id, 
                                                                         vertices);
 
         // 2D array of x- and y- positions for vertices
@@ -1031,7 +1031,7 @@ function _getSitePositioning(vizObj) {
 
         // PURE, MONOPHYLETIC, OR POLYPHYLETIC SITE
         var phyly;
-        var site_gtypes = vizObj.data["genotypes_to_plot"][site];
+        var site_gtypes = vizObj.data["genotypes_to_plot"][site_id];
         // pure tumour
         if (site_gtypes.length == 1) {
             phyly = "pure";
@@ -1051,18 +1051,7 @@ function _getSitePositioning(vizObj) {
             phyly = "polyphyletic";
         }
         cur_site_obj["phyly"] = phyly;
-
-
-        // add site to array of sites
-        vizObj.data.sites.push(cur_site_obj);
-
     })
-
-    // get anatomic locations on image
-    _getSiteLocationsOnImage(vizObj);
-
-    // assign anatomic locations to each site
-    _assignAnatomicLocations(vizObj);
 }
 
 /*
@@ -1083,10 +1072,11 @@ function _find_angle_of_line_segment(A,B) {
     return angle;
 }
 
-/* function to get order of the sites, from negative x-, negative y- axis
+/* function to get order of the sites, from negative x-, negative y- axis, then reorder the vizObj.data.sites 
+* array accordingly.
 * @param {Object} vizObj
 */
-function _getSiteOrder(vizObj) {
+function _reorderSitesData(vizObj) {
     var sites = [];
 
     vizObj.site_ids.forEach(function(site_id) {
@@ -1120,11 +1110,16 @@ function _getSiteOrder(vizObj) {
         })
     })
 
+    // get the site order
     _sortByKey(sites, "angle");
     var site_order = _.pluck(sites, "site_id");
 
-    
-    return site_order;
+    // rearrange vizObj.data.sites array to reflect new ordering
+    var new_sites_array = [];
+    site_order.forEach(function(site_id) {
+        new_sites_array.push(_.findWhere(vizObj.data.sites, {id: site_id}));
+    })
+    vizObj.data.sites = new_sites_array;
 }
 
 /* function to visually reposition sites to their "snapped" location
@@ -1133,6 +1128,9 @@ function _getSiteOrder(vizObj) {
 */ 
 function _snapSites(vizObj, viewSVG) {
     var dim = vizObj.generalConfig;
+
+    console.log("vizObj.site_ids");
+    console.log(vizObj.site_ids);
 
     // for each site
     vizObj.site_ids.forEach(function(site, site_idx) {
@@ -1237,6 +1235,23 @@ function _plotSite(vizObj, site, viewSVG) {
         site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
         cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")), // svg group for this site
         cols = vizObj.view.colour_assignment;
+
+    // TOOLTIP FUNCTIONS
+
+    var nodeTip = d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([-10, 0])
+        .html(function(d) {
+            var cp;
+            if (vizObj.data["genotypes_to_plot"][d.site].indexOf(d.id) != -1) {
+                cp = (Math.round(vizObj.data.cp_data[d.site][d.id].cp * 100)/100).toFixed(2);
+            }
+            else {
+                cp = "";                    
+            }
+            return "<strong>Prevalence:</strong> <span style='color:white'>" + cp + "</span>";
+        });
+    viewSVG.call(nodeTip);
 
     // PLOT ANATOMIC LINES
 
@@ -1476,12 +1491,89 @@ function _plotSite(vizObj, site, viewSVG) {
 
 }
 
-/* function to sort array of objects by key
-* from: http://stackoverflow.com/questions/8837454/sort-array-of-objects-by-single-key-with-date-value
+/* initial ordering of sites based on their anatomic locations (in the y-direction)
 */
-function _sortByKey(array, key) {
+function _initialSiteOrdering(vizObj) {
+    var sites = []; // sites and their y-coordinates
+
+    // for each site
+    vizObj.data.sites.forEach(function(site) {
+        // anatomic location detected
+        if (site.stem) {
+            sites.push({
+                "site_id": site.id,
+                "stem": site.stem.siteStem,
+                "y": site.stem.y
+            });
+        }
+        // if no anatomic location detected
+        else {
+            sites.push({
+                "site_id": site.id,
+                "stem": "NA", // no site stem (ie. location) found
+                "y": 0.5 // halfway through y-axis
+            });
+        }
+    });
+
+    // sort sites by y-direction and stem
+    _sortByKey(sites, "y", "stem");
+
+    // alternate site stems
+    var site_order = [];
+    var prev_stem = ""; // previously seen site stem
+    var append = false;
+    sites.forEach(function(site) {
+        // check for new site stem
+        if (prev_stem != site.stem) {
+            prev_stem = site.stem;
+            append = !append; // switch between append and prepend
+        }
+
+        // appending site
+        if (append) {
+            site_order.push(site.site_id);
+        }
+        // prepending site 
+        else {
+            site_order.unshift(site.site_id);
+        }
+    });
+
+    // shift by 3/4 of the circle, so the ordering starts at the negative y-axis
+    var three_quarters = Math.floor(site_order.length * 3/4);
+    var shifted_site_order = site_order.slice(three_quarters, site_order.length).concat(
+                                site_order.slice(0, three_quarters));
+
+    // rearrange vizObj.data.sites array to reflect new ordering
+    var new_sites_array = [];
+    shifted_site_order.forEach(function(site_id) {
+        new_sites_array.push(_.findWhere(vizObj.data.sites, {id: site_id}));
+    })
+    vizObj.data.sites = new_sites_array;
+}
+
+/* function to sort array of objects by key
+* modified from: http://stackoverflow.com/questions/8837454/sort-array-of-objects-by-single-key-with-date-value
+*/
+function _sortByKey(array, key, secondKey) {
+    secondKey = secondKey || "NA";
     return array.sort(function(a, b) {
         var x = a[key]; var y = b[key];
-        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+        var res = ((x < y) ? -1 : ((x > y) ? 1 : 0));
+        if (secondKey == "NA") {
+            return res;            
+        }
+        else {
+            if (typeof(a[secondKey] == "string")) {
+                return (res == 0) ? (a[secondKey] > b[secondKey]) : res;
+            }
+            else if (typeof(a[secondKey] == "number")) {
+                return (res == 0) ? (a[secondKey] - b[secondKey]) : res;
+            }
+            else {
+                return res;
+            }
+        }
     });
 }

@@ -16,7 +16,7 @@
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
 #' @param site_ids {Vector} IDS of the sites in the order your wish to display them 
-#'                      (clockwise from positive x-axis, positive y-axis).
+#'                      (clockwise from positive x-axis).
 #' @param show_root Whether or not to plot the root (for tree).
 #' @param n_cells The number of cells to plot (for voronoi tessellation).
 #' @export
