@@ -1129,9 +1129,6 @@ function _reorderSitesData(vizObj) {
 function _snapSites(vizObj, viewSVG) {
     var dim = vizObj.generalConfig;
 
-    console.log("vizObj.site_ids");
-    console.log(vizObj.site_ids);
-
     // for each site
     vizObj.site_ids.forEach(function(site, site_idx) {
 
@@ -1453,8 +1450,10 @@ function _plotSite(vizObj, site, viewSVG) {
         })
         .on('mouseover', function(d) {
             d.site = site;
-            // show tooltip
-            nodeTip.show(d);
+            if (!dim.dragOn) {
+                // show tooltip
+                nodeTip.show(d);
+            }
         })
         .on('mouseout', function(d) {
             // hide tooltip
