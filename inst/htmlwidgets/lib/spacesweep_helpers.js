@@ -30,9 +30,6 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
     });
 };
 
-
-
-
 /* function for mouseover highlighting of legend genotype
 * @param {Object} vizObj
 * @param {String} cur_gtype -- genotype on hover
@@ -874,6 +871,21 @@ function _drawPoint(cx, cy, r, currentPoint, totalPoints) {
     return {x: x, y: y, theta: theta, angle: angle};
 }
 
+/* function to get coordinates for a point given an angle aroud a circle
+* modified from: 
+*    http://stackoverflow.com/questions/24273990/calculating-evenly-spaced-points-on-the-perimeter-of-a-circle
+* @param {Number} cx -- x-coordinate at centre of the circle
+* @param {Number} cy -- y-coordinate at centre of the circle
+* @param {Number} angle -- angle from positive horizontal axis
+*/
+function _drawPointGivenAngle(cx, cy, r, angle) {  
+
+    var x = cx + (r * Math.cos(angle));
+    var y = cy + (r * Math.sin(angle));
+
+    return {x: x, y: y};
+}
+
 
 /* function to get positions of site tab, dividers, voronoi tesselation centre, tree centre for each site
 * @param {Object} vizObj
@@ -898,7 +910,7 @@ function _getSitePositioning(vizObj) {
             x2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).x,
             y2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, site_idx, n_sites).y
         }
-        
+
         // VORONOI
 
         // voronoi placement
@@ -996,4 +1008,22 @@ function _getSitePositioning(vizObj) {
         vizObj.data.sites.push(cur_site_obj);
 
     })
+}
+
+/*
+* Calculates the angle AB forms with the horizontal (in radians) 
+* modified from: http://stackoverflow.com/questions/17763392/how-to-calculate-in-javascript-angle-between-3-points
+*
+* A mouse coordinates
+* B centre of circle coordinates
+*/
+function _find_angle_of_line_segment(A,B) {
+    var AB = Math.sqrt(Math.pow(B.x-A.x,2)+ Math.pow(B.y-A.y,2));    
+    var BC = Math.sqrt(Math.pow(B.x-(B.x+1),2)+ Math.pow(B.y-B.y,2)); 
+    var AC = Math.sqrt(Math.pow((B.x+1)-A.x,2)+ Math.pow(B.y-A.y,2));
+    var angle = Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB));
+    if (A.y < B.y) {
+        return 2*Math.PI - angle;
+    }
+    return angle;
 }

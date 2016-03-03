@@ -117,6 +117,56 @@ HTMLWidgets.widget({
         dim.node_r = (node_r > dim.max_r) ? dim.max_r : node_r;
         dim.legendNode_r = (legendNode_r > dim.max_r) ? dim.max_r : legendNode_r;
 
+        // DRAG BEHAVIOUR
+
+        var drag = d3.behavior.drag()
+            .on("drag", function(d,i) {
+
+                // calculate angle w/the horizontal, formed by the line segment between the mouse & view centre
+                var angle = _find_angle_of_line_segment(
+                                {x: d3.event.x, y: d3.event.y},
+                                {x: dim.viewCentre.x, y: dim.viewCentre.y});
+
+                // current site affected
+                var cur_site = d3.select(this).attr("class").substring(6);
+
+                // move anatomic pointer
+                d3.select(".anatomicPointer."+cur_site)
+                    .attr("x1", function() {
+                        var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
+                                            Math.pow(d.y1 - dim.viewCentre.y, 2)),
+                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                        return point.x;
+                    })
+                    .attr("y1", function() {
+                        var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
+                                            Math.pow(d.y1 - dim.viewCentre.y, 2)),
+                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                        return point.y;
+                    })
+
+                // move oncoMix
+                d3.select(".oncoMixG."+cur_site)
+                    .attr("transform", function(d) {
+                        var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
+                                            Math.pow(d.y - dim.viewCentre.y, 2)),
+                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                        return "translate(" + (point.x-d.x) + "," + 
+                                                (point.y-d.y) + ")";
+                    });
+
+                // move tree * site title
+                d3.select(".treeAndSiteTitleG."+cur_site)
+                    .attr("transform", function(d) {
+                        var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
+                                            Math.pow(d.y - dim.viewCentre.y, 2)),
+                            point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                        return "translate(" + (point.x-d.x) + "," + 
+                                                (point.y-d.y) + ")";
+                    });
+
+            });
+
         // DIVS
 
         var viewDIV = d3.select(el)
@@ -203,7 +253,8 @@ HTMLWidgets.widget({
             .selectAll(".siteG")
             .data(vizObj.data.sites)
             .enter().append("g")
-            .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
+            .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")})
+            .call(drag);
 
         // PLOT CIRCLE BORDER
 
@@ -429,8 +480,14 @@ HTMLWidgets.widget({
                     .append("line")
                     .classed("anatomicPointer", true)
                     .classed(site, true)
-                    .attr("x1", site_data.voronoi.centre.x)
-                    .attr("y1", site_data.voronoi.centre.y)
+                    .attr("x1", function(d) {
+                        d.x1 = site_data.voronoi.centre.x;
+                        return d.x1;
+                    })
+                    .attr("y1", function(d) {
+                        d.y1 = site_data.voronoi.centre.y;
+                        return d.y1;
+                    })
                     .attr("x2", function(d) { 
                         var cropped_x = _getCroppedCoordinate(crop_info, 
                                                                     site_data.stem.x, 
@@ -498,6 +555,15 @@ HTMLWidgets.widget({
 
             // PLOT ONCOMIX
 
+            // create oncoMix group
+            var curSiteOncoMixG = cur_siteG
+                .selectAll(".oncoMixG")
+                .data([{"x": site_data.voronoi.centre.x, "y": site_data.voronoi.centre.y}])
+                .enter()
+                .append("g")
+                .classed("oncoMixG", true)
+                .classed(site, true);
+
             // voronoi function for this site
             var voronoi = d3.geom.voronoi()
                 .clipExtent([[site_data.voronoi.top_l_corner.x, 
@@ -507,7 +573,7 @@ HTMLWidgets.widget({
                 
             // plot cells
             var vertices = site_data.voronoi.vertices;
-            var cells = cur_siteG.append("g")
+            var cells = curSiteOncoMixG.append("g")
                 .attr("class", "cellsG")
                 .selectAll("path")
                 .data(voronoi(site_data.voronoi.vertex_coords), _polygon)
@@ -549,8 +615,17 @@ HTMLWidgets.widget({
                 delete node.tmp;
             });
 
+            // create tree & title group
+            var curSiteTreeAndSiteTitleG = cur_siteG
+                .selectAll(".treeAndSiteTitleG")
+                .data([{"x": site_data.tree.centre.x, "y": site_data.tree.centre.y}])
+                .enter()
+                .append("g")
+                .classed("treeAndSiteTitleG", true)
+                .classed(site, true);
+
             // create links
-            var link = cur_siteG.append("g")
+            var link = curSiteTreeAndSiteTitleG.append("g")
                 .attr("class","treeLinkG")
                 .selectAll(".treeLink")                  
                 .data(links)                   
@@ -568,7 +643,7 @@ HTMLWidgets.widget({
                 }); 
             
             // create nodes
-            var nodeG = cur_siteG.append("g")
+            var nodeG = curSiteTreeAndSiteTitleG.append("g")
                 .attr("class", "treeNodeG")
                 .selectAll(".treeNode")                  
                 .data(nodes)                   
@@ -606,7 +681,7 @@ HTMLWidgets.widget({
 
             // PLOT SITE TITLES
 
-            cur_siteG.append("text")
+            curSiteTreeAndSiteTitleG.append("text")
                 .classed("siteTitle", true)
                 .classed(site, true)
                 .attr("x", site_data.tree.top_middle.x)
