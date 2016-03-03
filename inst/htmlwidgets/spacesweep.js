@@ -129,9 +129,6 @@ HTMLWidgets.widget({
             .on("dragend", function(d) {
                 dim.dragOn = false; 
 
-                // turn off divider highlighting
-                d3.selectAll(".divider").attr("stroke-opacity", 0);
-
                 // get new site order
                 vizObj.site_ids = _getSiteOrder(vizObj);
 
@@ -219,34 +216,6 @@ HTMLWidgets.widget({
             .attr("width", vizObj.crop_info.new_width)
             .attr("x", -vizObj.crop_info.left_shift)
             .attr("y", -vizObj.crop_info.up_shift);          
-
-        // DIVIDERS between each site
-
-        var divider = viewSVG
-            .append("g")
-            .attr("class","dividers")
-            .selectAll(".divider")
-            .data(vizObj.data.sites)
-            .enter()
-            .append("line")
-            .classed("divider", true)
-            .attr("x1", function(d) { return d.leftDivider.x1; })
-            .attr("x2", function(d) { return d.leftDivider.x2; })
-            .attr("y1", function(d) { return d.leftDivider.y1; })
-            .attr("y2", function(d) { return d.leftDivider.y2; })
-            .attr("stroke", "#FF8787")
-            .attr("stroke-width", "10px")
-            .attr("stroke-opacity", 0)
-            .on("mouseover", function(d) {
-                if (dim.dragOn) {
-                    d3.select(this).attr("stroke-opacity", 1);
-                }
-            })
-            .on("mouseout", function(d) {
-                if (dim.dragOn) {
-                    d3.select(this).attr("stroke-opacity", 0);
-                }
-            });
 
         // SITE SVG GROUPS
 
