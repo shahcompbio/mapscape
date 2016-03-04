@@ -436,6 +436,15 @@ HTMLWidgets.widget({
                 _resetView(vizObj);
             });
 
+        // JITTER
+        
+        // get a single jitter value for each genotype
+        vizObj.view.jitter = {};
+        vizObj.data.treeNodes.forEach(function(gtype) {
+            vizObj.view.jitter[gtype] = {x: _getRandom(-dim.siteMark_r*2/3, dim.siteMark_r*2/3),
+                            y: _getRandom(-dim.siteMark_r*2/3, dim.siteMark_r*2/3)};
+        })
+
         // FOR EACH SITE
         vizObj.site_ids.forEach(function(site, site_idx) {
 

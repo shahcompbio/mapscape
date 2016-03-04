@@ -1317,7 +1317,7 @@ function _plotSite(vizObj, site, viewSVG) {
                                                             dim.image_top_l.y,
                                                             dim.image_plot_width
                                                         ).x;
-                return cropped_x;
+                return cropped_x + vizObj.view.jitter[d].x;
             })
             .attr("cy", function(d) { 
                 var cropped_y = _getCroppedCoordinate(vizObj.crop_info, 
@@ -1327,7 +1327,7 @@ function _plotSite(vizObj, site, viewSVG) {
                                                             dim.image_top_l.y,
                                                             dim.image_plot_width
                                                         ).y;
-                return cropped_y;
+                return cropped_y + vizObj.view.jitter[d].y;
             })
             .attr("r", dim.siteMark_r)
             .attr("fill", function(d) { 
@@ -1566,4 +1566,12 @@ function _sortByKey(array, key, secondKey) {
             }
         }
     });
+}
+
+/**
+ * Returns a random number between min (inclusive) and max (exclusive)
+ * from: http://stackoverflow.com/questions/1527803/generating-random-numbers-in-javascript-in-a-specific-range
+ */
+function _getRandom(min, max) {
+    return Math.random() * (max - min) + min;
 }
