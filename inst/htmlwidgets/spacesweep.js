@@ -22,6 +22,7 @@ HTMLWidgets.widget({
             dragOn: false, // whether or not drag is on
             startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
             legendSpacing: 10, // spacing between legend items
+            shadeAlpha: 0.15, // alpha value for shading
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -315,11 +316,11 @@ HTMLWidgets.widget({
             .on("mouseover", function(d) {
 
                 // shade other legend tree nodes & links
-                d3.selectAll(".legendTreeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
-                d3.selectAll(".legendTreeLink").attr("stroke-opacity", 0.15);
+                d3.selectAll(".legendTreeNode").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
+                d3.selectAll(".legendTreeLink").attr("stroke-opacity", dim.shadeAlpha);
 
                 // shade view
-                _shadeView();
+                _shadeView(vizObj);
 
                 // highlight all elements downstream of link
                 _downstreamEffects(vizObj, d.link_id, link_ids);
@@ -347,11 +348,11 @@ HTMLWidgets.widget({
             .on("mouseover", function(d) {
 
                 // shade legend tree nodes & links
-                d3.selectAll(".legendTreeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
-                d3.selectAll(".legendTreeLink").attr("stroke-opacity", 0.15);
+                d3.selectAll(".legendTreeNode").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
+                d3.selectAll(".legendTreeLink").attr("stroke-opacity", dim.shadeAlpha);
 
                 // shade view
-                _shadeView();
+                _shadeView(vizObj);
 
                 // highlight genotype in legend tree, & sites expressing this genotype
                 _legendGtypeHighlight(vizObj, d.id);
@@ -434,7 +435,7 @@ HTMLWidgets.widget({
                     .attr("fill-opacity", 1);
 
                 // shade view
-                _shadeView();
+                _shadeView(vizObj);
 
                 // highlight all sites with this stem
                 _highlightSites(vizObj.data.siteStemsInDataset[d].site_ids);
@@ -454,8 +455,6 @@ HTMLWidgets.widget({
                                                 "site_stem": site.stem.siteStem});
         })
 
-        console.log("mixture_classes");
-        console.log(mixture_classes);
         // plot mixture classification title
         legendSVG.append("text")
             .attr("class", "legendTitle")
@@ -490,20 +489,28 @@ HTMLWidgets.widget({
                 .attr("font-size", dim.mixtureClassFontSize)
                 .text(function() { return " - " + phyly; })
                 .on("mouseover", function() {
-
+                    var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
+                    console.log(phyly + " participating_sites ");
+                    console.log(participating_sites);
                     // shade view
-                    _shadeView();
+                    _shadeView(vizObj);
 
                     // highlight sites
-                    _highlightSites(_.pluck(mixture_classes[phyly], "site_id"));
+                    _highlightSites(participating_sites);
 
+                    // highlight general anatomic marks
                     var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
-                    console.log("stems");
-                    console.log(stems);
                     stems.forEach(function(stem) {
                         d3.select(".anatomicGeneralMark."+stem)
                             .attr("fill-opacity",1);
                     })
+
+                    // highlight only those links that participate in the mixture classification
+                    d3.selectAll(".treeLink").attr("stroke-opacty", 0);
+                    participating_sites.forEach(function(participating_site) {
+                        d3.selectAll(".treeLink." + participating_site).attr("stroke-opacity", dim.shadeAlpha);
+                        d3.selectAll(".mixtureClassTreeLink."+participating_site).attr("stroke-opacity", 1);                        
+                    });
                 })
                 .on("mouseout", function(d) {
                     _resetView(vizObj);

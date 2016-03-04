@@ -46,12 +46,15 @@ function _legendGtypeHighlight(vizObj, cur_gtype) {
 }
 
 /* function to shade all elements of the view
+* @param {Object} vizObj
 */
-function _shadeView() {
-    d3.selectAll(".voronoiCell").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
-    d3.selectAll(".treeNode").attr("fill-opacity", 0.15).attr("stroke-opacity", 0.15);
-    d3.selectAll(".treeLink").attr("stroke-opacity", 0.15);
-    d3.selectAll(".siteTitle").attr("fill-opacity", 0.15);
+function _shadeView(vizObj) {
+    var dim = vizObj.generalConfig;
+    
+    d3.selectAll(".voronoiCell").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
+    d3.selectAll(".treeNode").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
+    d3.selectAll(".treeLink").attr("stroke-opacity", dim.shadeAlpha);
+    d3.selectAll(".siteTitle").attr("fill-opacity", dim.shadeAlpha);
     d3.selectAll(".anatomicPointer").attr("stroke-opacity", 0.25)
 }
 
@@ -72,7 +75,8 @@ function _resetView(vizObj) {
     d3.selectAll(".treeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
     d3.selectAll(".treeLink").attr("stroke-opacity", 1);
     d3.selectAll(".siteTitle").attr("fill-opacity", 1);
-    d3.selectAll(".anatomicPointer").attr("stroke-opacity", 1)
+    d3.selectAll(".anatomicPointer").attr("stroke-opacity", 1);
+    d3.selectAll(".mixtureClassTreeLink").attr("stroke-opacity", 0);
 }
 
 /* function to highlight certain sites in the view
@@ -1413,9 +1417,10 @@ function _plotSite(vizObj, site, viewSVG) {
         .classed(site, true);
 
     // create links
-    var link = curSiteTreeAndSiteTitleG.append("g")
+    var linkG = curSiteTreeAndSiteTitleG.append("g")
         .attr("class","treeLinkG")
-        .selectAll(".treeLink")                  
+
+    linkG.selectAll(".treeLink")                  
         .data(links)                   
         .enter().append("path")                   
         .classed("treeLink", true)
@@ -1428,8 +1433,41 @@ function _plotSite(vizObj, site, viewSVG) {
                 return _elbow(d);
             }
             return _shortElbow(d);
-        }); 
-    
+        });     
+
+    // filter links to show only branches that connect genotypes expressed at this site
+    var filtered_links = [];
+    var gtypes_to_plot = vizObj.data.genotypes_to_plot[site]; // genotypes expressed at this anatomic site
+
+    links.forEach(function(link) {
+
+        var source = link.source.id,
+            target = link.target.id,
+            source_and_ancestors = $.extend([], vizObj.data.treeAncestorsArr[source]),
+            target_and_descendants = $.extend([], vizObj.data.treeDescendantsArr[target]);
+        source_and_ancestors.push(source);
+        target_and_descendants.push(target);
+
+        // if the source (or ancestors) and target (or descendants) are expressed at this anatomic site
+        if ((_getIntersection(source_and_ancestors, gtypes_to_plot).length > 0) && 
+            (_getIntersection(target_and_descendants, gtypes_to_plot).length > 0)) {
+            // add this link
+            filtered_links.push(link);
+        }   
+    })
+
+    // create hidden links for mixture classification hover
+    linkG.selectAll(".mixtureClassTreeLink")                  
+        .data(filtered_links)                   
+        .enter().append("path")                   
+        .classed("mixtureClassTreeLink", true)
+        .classed(site, true)
+        .attr('stroke', '#9E9A9A')
+        .attr('fill', 'none') 
+        .attr('stroke-width', '2px')               
+        .attr("d", function(d) { return _elbow(d); })
+        .attr("stroke-opacity",0); 
+        
     // create nodes
     var nodeG = curSiteTreeAndSiteTitleG.append("g")
         .attr("class", "treeNodeG")
