@@ -16,10 +16,12 @@ HTMLWidgets.widget({
             polyphyleticColour: '000000',
             legendWidth: 100,
             legendTitleHeight: 16,
+            mixtureClassFontSize: 13,
             max_r: 8, // maximum radius for tree nodes
             siteMark_r: 4, // site mark radius
             dragOn: false, // whether or not drag is on
             startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
+            legendSpacing: 10, // spacing between legend items
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -51,9 +53,13 @@ HTMLWidgets.widget({
 
         // anatomical image configurations
         config.image_plot_width = config.innerRadius*2; // width of the plot space for the image
-        config.image_top_l = {x: config.viewDiameter/2 - config.image_plot_width/2, y: config.viewDiameter/2 - config.image_plot_width/2};
+        config.image_top_l = {x: config.viewDiameter/2 - config.image_plot_width/2, 
+                                y: config.viewDiameter/2 - config.image_plot_width/2};
         config.legend_image_plot_width = config.legendWidth; // width of the plot space for the image
-        config.legend_image_top_l = {x: 0, y: config.legendTreeWidth + config.legendTitleHeight*2 + 10};
+        config.legend_image_top_l = {x: 0, y: config.legendTreeWidth + config.legendTitleHeight*2 + config.legendSpacing};
+
+        // legend mixture classification configurations
+        config.legend_mixture_top = config.legend_image_top_l.y + config.legend_image_plot_width + config.legendSpacing;
 
         vizObj.generalConfig = config;
 
@@ -261,7 +267,7 @@ HTMLWidgets.widget({
             .attr("class", "legendTitle")
             .attr("x", dim.legendTreeWidth/2) 
             .attr("y", 22)
-            .attr("fill", '#9E9A9A')
+            .attr("fill", '#616161')
             .attr("text-anchor", "middle")
             .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
@@ -361,7 +367,7 @@ HTMLWidgets.widget({
             .attr("class", "legendTitle")
             .attr("x", dim.legendTreeWidth/2) 
             .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
-            .attr("fill", '#9E9A9A')
+            .attr("fill", '#616161')
             .attr("text-anchor", "middle")
             .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
@@ -436,8 +442,63 @@ HTMLWidgets.widget({
                 _resetView(vizObj);
             });
 
+        // PLOT MIXTURE CLASSIFICATION
+
+        // var mixture_classes = _.uniq(_.pluck(vizObj.data.sites, "phyly")); 
+        var mixture_classes = {};
+        vizObj.data.sites.forEach(function(site) {
+            mixture_classes[site.phyly] = mixture_classes[site.phyly] || [];
+            mixture_classes[site.phyly].push(site.id);
+        })
+
+        // plot mixture classification title
+        legendSVG.append("text")
+            .attr("class", "legendTitle")
+            .attr("x", dim.legendTreeWidth/2) 
+            .attr("y", dim.legend_mixture_top)
+            .attr("dy", "+0.71em")
+            .attr("fill", '#616161')
+            .attr("text-anchor", "middle")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", dim.legendTitleHeight)
+            .text("Mixture");
+        legendSVG.append("text")
+            .attr("class", "legendTitle")
+            .attr("x", dim.legendTreeWidth/2) 
+            .attr("y", dim.legend_mixture_top + dim.legendTitleHeight)
+            .attr("dy", "+0.71em")
+            .attr("fill", '#616161')
+            .attr("text-anchor", "middle")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", dim.legendTitleHeight)
+            .text("Classification");
+
+        var spacing_below_title = 5;
+        Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
+            legendSVG.append("text")
+                .attr("class", "mixtureClass")
+                .attr("x", 0) 
+                .attr("y", dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + phyly_idx*(dim.mixtureClassFontSize + 2))
+                .attr("dy", "+0.71em")
+                .attr("fill", '#9E9A9A')
+                .attr("font-family", "sans-serif")
+                .attr("font-size", dim.mixtureClassFontSize)
+                .text(function() { return " - " + phyly; })
+                .on("mouseover", function() {
+
+                    // shade view
+                    _shadeView();
+
+                    // highlight sites
+                    _highlightSites(mixture_classes[phyly]);
+                })
+                .on("mouseout", function(d) {
+                    _resetView(vizObj);
+                });
+        });
+
         // JITTER
-        
+
         // get a single jitter value for each genotype
         vizObj.view.jitter = {};
         vizObj.data.treeNodes.forEach(function(gtype) {
