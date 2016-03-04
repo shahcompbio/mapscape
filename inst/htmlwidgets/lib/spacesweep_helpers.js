@@ -11,6 +11,11 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
     // get target id & single cell id
     var targetRX = new RegExp("legendTreeLink_.+_(.+)");  
     var target_id = targetRX.exec(link_id)[1];
+    console.log("link_id");
+    console.log(link_id);
+
+    // highlight the current link
+    d3.select("." + link_id).attr("stroke-opacity", 1);
 
     // highlight sites associated with the target genotype
     _legendGtypeHighlight(vizObj, target_id);

@@ -295,7 +295,7 @@ HTMLWidgets.widget({
             .attr("class", function(d) { 
                 d.link_id = "legendTreeLink_" + d.source.id + "_" + d.target.id;
                 link_ids.push(d.link_id);
-                return d.link_id;
+                return "legendTreeLink " + d.link_id;
             })
             .attr('stroke', '#9E9A9A')
             .attr('fill', 'none')
@@ -320,7 +320,7 @@ HTMLWidgets.widget({
             })
             .on("mouseout", function() {
                 _resetView(vizObj);
-            }); 
+            });
         
         // create nodes
         var cols = vizObj.view.colour_assignment;

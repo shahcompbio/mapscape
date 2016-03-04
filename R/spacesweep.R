@@ -108,8 +108,7 @@ spacesweep <- function(clonal_prev,
 
   # SITE IDS
   site_ids <- as.character(site_ids)
-  print(site_ids)
-
+  
 
   # forward options using x
   x = list(
