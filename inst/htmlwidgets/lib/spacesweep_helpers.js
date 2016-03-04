@@ -68,9 +68,11 @@ function _resetView(vizObj) {
     d3.selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // reset all elements of view
-    vizObj.data.sites.forEach(function(site) {
-        d3.selectAll("." + site.id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    });
+    d3.selectAll(".voronoiCell").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.selectAll(".treeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.selectAll(".treeLink").attr("stroke-opacity", 1);
+    d3.selectAll(".siteTitle").attr("fill-opacity", 1);
+    d3.selectAll(".anatomicPointer").attr("stroke-opacity", 1)
 }
 
 /* function to highlight certain sites in the view
@@ -78,7 +80,11 @@ function _resetView(vizObj) {
 */
 function _highlightSites(site_ids) {
     site_ids.forEach(function(site) {
-        d3.selectAll("." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        d3.selectAll(".voronoiCell." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        d3.selectAll(".treeNode." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        d3.selectAll(".treeLink." + site).attr("stroke-opacity", 1);
+        d3.selectAll(".siteTitle." + site).attr("fill-opacity", 1);
+        d3.selectAll(".anatomicPointer." + site).attr("stroke-opacity", 1)
     })
 }
 
@@ -194,8 +200,8 @@ function _assignAnatomicLocations(vizObj) {
             var cur_location = vizObj.view.siteLocationsOnImage[i];
 
             // if this stem is applicable to the current site id
-            var siteStem = cur_location.siteStem.toLowerCase();
-            if (site_id.toLowerCase().startsWith(siteStem)) {
+            var siteStem = cur_location.siteStem;
+            if (site_id.toLowerCase().startsWith(siteStem.toLowerCase())) {
 
                 // add the stem data to the site id data
                 site_data.stem = cur_location;

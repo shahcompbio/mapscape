@@ -402,7 +402,9 @@ HTMLWidgets.widget({
             .data(Object.keys(vizObj.data.siteStemsInDataset))
             .enter()
             .append("circle")
-            .attr("class", "anatomicGeneralMark")
+            .attr("class", function(d) {
+                return d + " anatomicGeneralMark";
+            })
             .attr("cx", function(d) { 
                 var cropped_x = _getCroppedCoordinate(vizObj.crop_info, 
                                             vizObj.data.siteStemsInDataset[d].x, 
@@ -448,9 +450,12 @@ HTMLWidgets.widget({
         var mixture_classes = {};
         vizObj.data.sites.forEach(function(site) {
             mixture_classes[site.phyly] = mixture_classes[site.phyly] || [];
-            mixture_classes[site.phyly].push(site.id);
+            mixture_classes[site.phyly].push({"site_id": site.id, 
+                                                "site_stem": site.stem.siteStem});
         })
 
+        console.log("mixture_classes");
+        console.log(mixture_classes);
         // plot mixture classification title
         legendSVG.append("text")
             .attr("class", "legendTitle")
@@ -490,7 +495,15 @@ HTMLWidgets.widget({
                     _shadeView();
 
                     // highlight sites
-                    _highlightSites(mixture_classes[phyly]);
+                    _highlightSites(_.pluck(mixture_classes[phyly], "site_id"));
+
+                    var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
+                    console.log("stems");
+                    console.log(stems);
+                    stems.forEach(function(stem) {
+                        d3.select(".anatomicGeneralMark."+stem)
+                            .attr("fill-opacity",1);
+                    })
                 })
                 .on("mouseout", function(d) {
                     _resetView(vizObj);
