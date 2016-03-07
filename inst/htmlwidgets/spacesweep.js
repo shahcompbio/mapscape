@@ -14,7 +14,7 @@ HTMLWidgets.widget({
             pureColour: '#D3D2D2',
             monophyleticColour: '767676',
             polyphyleticColour: '000000',
-            legendWidth: 100,
+            legendWidth: 130,
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
             max_r: 8, // maximum radius for tree nodes
@@ -266,7 +266,7 @@ HTMLWidgets.widget({
         // tree title
         legendSVG.append("text")
             .attr("class", "legendTitle")
-            .attr("x", dim.legendTreeWidth/2) 
+            .attr("x", dim.legendWidth/2) 
             .attr("y", 22)
             .attr("fill", '#616161')
             .attr("text-anchor", "middle")
@@ -366,7 +366,7 @@ HTMLWidgets.widget({
         // anatomy title
         legendSVG.append("text")
             .attr("class", "legendTitle")
-            .attr("x", dim.legendTreeWidth/2) 
+            .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
             .attr("fill", '#616161')
             .attr("text-anchor", "middle")
@@ -458,8 +458,8 @@ HTMLWidgets.widget({
 
         // plot mixture classification title
         legendSVG.append("text")
-            .attr("class", "legendTitle")
-            .attr("x", dim.legendTreeWidth/2) 
+            .attr("class", "MixtureLegendTitle")
+            .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_mixture_top)
             .attr("dy", "+0.71em")
             .attr("fill", '#616161')
@@ -468,8 +468,8 @@ HTMLWidgets.widget({
             .attr("font-size", dim.legendTitleHeight)
             .text("Mixture");
         legendSVG.append("text")
-            .attr("class", "legendTitle")
-            .attr("x", dim.legendTreeWidth/2) 
+            .attr("class", "ClassificationLegendTitle")
+            .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_mixture_top + dim.legendTitleHeight)
             .attr("dy", "+0.71em")
             .attr("fill", '#616161')
@@ -478,11 +478,12 @@ HTMLWidgets.widget({
             .attr("font-size", dim.legendTitleHeight)
             .text("Classification");
 
+        var mixtureClassLegendTitle_width = d3.select(".ClassificationLegendTitle").node().getBBox().width;
         var spacing_below_title = 5;
         Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
             legendSVG.append("text")
                 .attr("class", "mixtureClass")
-                .attr("x", 0) 
+                .attr("x", dim.legendWidth/2 - (mixtureClassLegendTitle_width/2)) 
                 .attr("y", dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + phyly_idx*(dim.mixtureClassFontSize + 2))
                 .attr("dy", "+0.71em")
                 .attr("fill", '#9E9A9A')
