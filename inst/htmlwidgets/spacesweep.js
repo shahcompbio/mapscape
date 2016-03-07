@@ -417,13 +417,13 @@ HTMLWidgets.widget({
         // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
 
         viewSVG.append("g")
-            .attr("class", "anatomicGeneralMarksG")
-            .selectAll(".anatomicGeneralMark")
+            .attr("class", "anatomicMarksG")
+            .selectAll(".generalMark")
             .data(Object.keys(vizObj.data.siteStemsInDataset))
             .enter()
             .append("circle")
             .attr("class", function(d) {
-                return d + " anatomicGeneralMark";
+                return d + " generalMark";
             })
             .attr("cx", function(d) { 
                 var cropped_x = _getCroppedCoordinate(vizObj.crop_info, 
@@ -522,7 +522,7 @@ HTMLWidgets.widget({
                     // highlight general anatomic marks
                     var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
                     stems.forEach(function(stem) {
-                        d3.select(".anatomicGeneralMark."+stem)
+                        d3.select(".generalMark."+stem)
                             .attr("fill", "#CBCBCB");
                     })
 

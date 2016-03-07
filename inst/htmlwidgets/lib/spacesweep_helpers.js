@@ -1,6 +1,5 @@
 // D3 EFFECTS FUNCTIONS
 
-
 /* recursive function to perform downstream effects upon tree link highlighting
 * @param {Object} vizObj
 * @param link_id -- id for the link that's currently highlighted
@@ -38,6 +37,9 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
 * @param {String} cur_gtype -- genotype on hover
 */
 function _legendGtypeHighlight(vizObj, cur_gtype) {
+    // hide anatomic general marks
+    d3.selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
+
     // highlight genotype on legend tree
     d3.selectAll("." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
@@ -63,8 +65,8 @@ function _shadeView(vizObj) {
 */
 function _resetView(vizObj) {
     // reset anatomic marks
-    d3.selectAll(".anatomicGtypeMark").attr("fill-opacity", 0);
-    d3.selectAll(".anatomicGeneralMark").attr("fill", "white");
+    d3.selectAll(".gtypeMark").attr("fill-opacity", 0);
+    d3.selectAll(".generalMark").attr("fill", "white").attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // reset legend tree nodes
     d3.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
@@ -1332,15 +1334,16 @@ function _plotSite(vizObj, site, viewSVG) {
 
     // if the site was found on the anatomic image
     if (site_data.stem) {
-        cur_siteG
+        viewSVG
+            .select(".anatomicMarksG")
             .append("g")
-            .attr("class", "anatomicGtypeMarksG")
-            .selectAll(".anatomicGtypeMark")
+            .attr("class", function() { return "gtypeMarksG " + site; })
+            .selectAll(".gtypeMark")
             .data(vizObj.data.genotypes_to_plot[site])
             .enter()
             .append("circle")
             .attr("class", function(d) { 
-                return "anatomicGtypeMark " + d; 
+                return "gtypeMark " + d; 
             })
             .attr("cx", function(d) { 
                 var cropped_x = _getCroppedCoordinate(vizObj.crop_info, 
@@ -1366,7 +1369,8 @@ function _plotSite(vizObj, site, viewSVG) {
             .attr("fill", function(d) { 
                 return cols[d];
             })
-            .attr("fill-opacity", 0);
+            .attr("fill-opacity", 0)
+            .attr("pointer-events", "none");
     }
 
     // PLOT ONCOMIX
