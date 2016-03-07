@@ -119,9 +119,6 @@ HTMLWidgets.widget({
         // get colour palette
         _getColours(vizObj);
 
-        console.log("vizObj");
-        console.log(vizObj);
-
         // VIEW SETUP
 
         // radii (- 7 = how much space to give between nodes)
@@ -138,6 +135,19 @@ HTMLWidgets.widget({
         var drag = d3.behavior.drag()
             .on("dragstart", function(d) {
                 dim.dragOn = true; 
+                
+                // current site affected
+                var cur_site = d3.select(this).attr("class").substring(6);
+
+                // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
+                var voronoiCentre = {
+                    x: d3.select(".anatomicPointer."+cur_site).attr("x1"),
+                    y: d3.select(".anatomicPointer."+cur_site).attr("y1")
+                }
+                vizObj.view.startAngle = _find_angle_of_line_segment(
+                    {x: voronoiCentre.x, y: voronoiCentre.y},
+                    {x: dim.viewCentre.x, y: dim.viewCentre.y});
+
             })
             .on("drag", function(d,i) {
 
@@ -150,14 +160,23 @@ HTMLWidgets.widget({
             .on("dragend", function(d) {
                 dim.dragOn = false; 
 
+                // current site affected
+                var cur_site = d3.select(this).attr("class").substring(6);
+
+                // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
+                var voronoiCentre = {
+                    x: d3.select(".anatomicPointer."+cur_site).attr("x1"),
+                    y: d3.select(".anatomicPointer."+cur_site).attr("y1")
+                }
+                vizObj.view.endAngle = _find_angle_of_line_segment(
+                    {x: voronoiCentre.x, y: voronoiCentre.y},
+                    {x: dim.viewCentre.x, y: dim.viewCentre.y});
+
                 // order sites
                 _reorderSitesData(vizObj);
 
                 // get site positioning coordinates etc
                 _getSitePositioning(vizObj);   
-
-                console.log("vizObj");
-                console.log(vizObj);
 
                 // reposition sites on the screen
                 _snapSites(vizObj, viewSVG);

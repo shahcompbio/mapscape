@@ -1085,7 +1085,7 @@ function _find_angle_of_line_segment(A,B) {
     return angle;
 }
 
-/* function to get order of the sites, from negative x-, negative y- axis, then reorder the vizObj.data.sites 
+/* function to get order of the sites, then reorder the vizObj.data.sites 
 * array accordingly.
 * @param {Object} vizObj
 */
@@ -1132,6 +1132,31 @@ function _reorderSitesData(vizObj) {
     site_order.forEach(function(site_id) {
         new_sites_array.push(_.findWhere(vizObj.data.sites, {id: site_id}));
     })
+
+    // if we crossed the x-axis, adjust site order so the least number of sites move
+    var clockwise_x_cross_angle = (2*Math.PI - vizObj.view.startAngle) + vizObj.view.endAngle;
+    var counterclockwise_x_cross_angle = vizObj.view.startAngle + (2*Math.PI - vizObj.view.endAngle);
+    if ((vizObj.view.startAngle > 3*Math.PI/2) && 
+        (vizObj.view.endAngle < Math.PI) &&
+        (clockwise_x_cross_angle < Math.PI)) {
+        new_sites_array.push(new_sites_array.shift());
+    }
+    else if ((vizObj.view.startAngle < Math.PI/2) && 
+        (vizObj.view.endAngle > Math.PI) &&
+        (counterclockwise_x_cross_angle < Math.PI)) {
+        new_sites_array.unshift(new_sites_array.pop());
+    }
+    else if ((vizObj.view.startAngle > Math.PI) && 
+        (vizObj.view.endAngle < Math.PI/2) &&
+        (clockwise_x_cross_angle < Math.PI)) {
+        new_sites_array.push(new_sites_array.shift());
+    }
+    else if ((vizObj.view.startAngle < Math.PI) && 
+        (vizObj.view.endAngle > 3*Math.PI/2) &&
+        (counterclockwise_x_cross_angle < Math.PI)) {
+        new_sites_array.unshift(new_sites_array.pop());
+    }
+
     vizObj.data.sites = new_sites_array;
 }
 
