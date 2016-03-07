@@ -427,12 +427,13 @@ HTMLWidgets.widget({
                 return cropped_y;
             })
             .attr("r", dim.siteMark_r)
-            .attr("fill", "#747272")
-            .attr("fill-opacity", 0)
+            .attr("fill", "white")
+            .attr("stroke-width", "1.5pxx")
+            .attr("stroke", "#CBCBCB")
             .on("mouseover", function(d) {
                 // highlight this stem location
                 d3.select(this)
-                    .attr("fill-opacity", 1);
+                    .attr("fill", "#CBCBCB");
 
                 // shade view
                 _shadeView(vizObj);
@@ -502,7 +503,7 @@ HTMLWidgets.widget({
                     var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
                     stems.forEach(function(stem) {
                         d3.select(".anatomicGeneralMark."+stem)
-                            .attr("fill-opacity",1);
+                            .attr("fill", "#CBCBCB");
                     })
 
                     // highlight only those links that participate in the mixture classification

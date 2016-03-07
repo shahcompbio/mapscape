@@ -50,7 +50,7 @@ function _legendGtypeHighlight(vizObj, cur_gtype) {
 */
 function _shadeView(vizObj) {
     var dim = vizObj.generalConfig;
-    
+
     d3.selectAll(".voronoiCell").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
     d3.selectAll(".treeNode").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
     d3.selectAll(".treeLink").attr("stroke-opacity", dim.shadeAlpha);
@@ -64,7 +64,7 @@ function _shadeView(vizObj) {
 function _resetView(vizObj) {
     // reset anatomic marks
     d3.selectAll(".anatomicGtypeMark").attr("fill-opacity", 0);
-    d3.selectAll(".anatomicGeneralMark").attr("fill-opacity", 0);
+    d3.selectAll(".anatomicGeneralMark").attr("fill", "white");
 
     // reset legend tree nodes
     d3.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
