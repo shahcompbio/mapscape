@@ -489,10 +489,10 @@ HTMLWidgets.widget({
                 .attr("font-family", "sans-serif")
                 .attr("font-size", dim.mixtureClassFontSize)
                 .text(function() { return " - " + phyly; })
+                .style("cursor", "default")
                 .on("mouseover", function() {
                     var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
-                    console.log(phyly + " participating_sites ");
-                    console.log(participating_sites);
+
                     // shade view
                     _shadeView(vizObj);
 

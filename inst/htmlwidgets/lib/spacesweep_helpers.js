@@ -1385,7 +1385,8 @@ function _plotSite(vizObj, site, viewSVG) {
         .attr("stroke-width", "1.5px")
         .attr("stroke-opacity", function(d, i) {
             return (vertices[i].real_cell) ? 1 : 0;
-        });
+        })
+        .style("cursor", "pointer");
 
 
     // PLOT TREE
@@ -1533,6 +1534,7 @@ function _plotSite(vizObj, site, viewSVG) {
         .attr("font-family", "sans-serif")
         .attr("font-size", dim.viewDiameter/40)
         .attr("fill", '#9E9A9A')
+        .style("cursor", "pointer")
         .text(site_data.id);
 
 }
