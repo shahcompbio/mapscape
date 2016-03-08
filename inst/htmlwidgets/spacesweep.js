@@ -82,7 +82,6 @@ HTMLWidgets.widget({
 
         // GET CONTENT
 
-
         // get anatomic locations on image
         _getSiteLocationsOnImage(curVizObj);
 
@@ -93,7 +92,7 @@ HTMLWidgets.widget({
         _getColours(curVizObj);
 
         // site ids
-        curVizObj.site_ids = (curVizObj.userConfig.site_ids == "NA") ? 
+        curVizObj.data.site_ids = (curVizObj.userConfig.site_ids == "NA") ? 
             _.uniq(_.pluck(curVizObj.userConfig.clonal_prev, "site_id")):
             curVizObj.userConfig.site_ids;
 
@@ -119,18 +118,15 @@ HTMLWidgets.widget({
         // get sites showing each genotype
         _getGenotypeSites(curVizObj);
 
-        // get colour palette
-        _getColours(curVizObj);
-
         console.log("curVizObj");
         console.log(curVizObj);
 
         // VIEW SETUP
 
         // radii (- 7 = how much space to give between nodes)
-        var tree_height = curVizObj.data.tree_height; // height of the tree (# nodes)
-        var node_r = ((dim.treeWidth - 7*tree_height)/tree_height)/2; // site tree
-        var legendNode_r = ((dim.legendTreeWidth - 7*tree_height)/tree_height)/2; // legend tree
+        var tree_height = curVizObj.data.tree_height, // height of the tree (# nodes)
+            node_r = ((dim.treeWidth - 7*tree_height)/tree_height)/2, // site tree
+            legendNode_r = ((dim.legendTreeWidth - 7*tree_height)/tree_height)/2; // legend tree
 
         // make sure radii do not surpass the maximum
         dim.node_r = (node_r > dim.max_r) ? dim.max_r : node_r;
@@ -140,42 +136,28 @@ HTMLWidgets.widget({
 
         var drag = d3.behavior.drag()
             .on("dragstart", function(d) {
+                console.log(d);
                 dim.dragOn = true; 
-                
-                // current site affected
-                var cur_site = d3.select(this).attr("class").substring(10);
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                var voronoiCentre = {
-                    x: d3.select("#" + view_id).select(".anatomicPointer."+cur_site).attr("x1"),
-                    y: d3.select("#" + view_id).select(".anatomicPointer."+cur_site).attr("y1")
-                }
+                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer."+d.site); 
                 curVizObj.view.startAngle = _find_angle_of_line_segment(
-                    {x: voronoiCentre.x, y: voronoiCentre.y},
+                    {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
 
             })
             .on("drag", function(d,i) {
 
-                // current site affected
-                var cur_site = d3.select(this).attr("class").substring(10);
-
                 // operations on drag
-                _dragFunction(curVizObj, cur_site, d, view_id);
+                _dragFunction(curVizObj, d.site, d, view_id);
             })
             .on("dragend", function(d) {
                 dim.dragOn = false; 
 
-                // current site affected
-                var cur_site = d3.select(this).attr("class").substring(10);
-
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                var voronoiCentre = {
-                    x: d3.select("#" + view_id).select(".anatomicPointer."+cur_site).attr("x1"),
-                    y: d3.select("#" + view_id).select(".anatomicPointer."+cur_site).attr("y1")
-                }
+                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer."+d.site); 
                 curVizObj.view.endAngle = _find_angle_of_line_segment(
-                    {x: voronoiCentre.x, y: voronoiCentre.y},
+                    {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
 
                 // order sites
@@ -257,14 +239,14 @@ HTMLWidgets.widget({
         // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
 
         // get scaling information
-        curVizObj.crop_info = _scale(curVizObj);
+        curVizObj.view.crop_info = _scale(curVizObj);
 
         // update the anatomy image with the new cropping
         d3.select("#" + view_id).select(".anatomyImage") 
-            .attr("height", curVizObj.crop_info.new_width)
-            .attr("width", curVizObj.crop_info.new_width)
-            .attr("x", -curVizObj.crop_info.left_shift)
-            .attr("y", -curVizObj.crop_info.up_shift);          
+            .attr("height", curVizObj.view.crop_info.new_width)
+            .attr("width", curVizObj.view.crop_info.new_width)
+            .attr("x", -curVizObj.view.crop_info.left_shift)
+            .attr("y", -curVizObj.view.crop_info.up_shift);          
 
         // SITE SVG GROUPS
 
@@ -349,7 +331,7 @@ HTMLWidgets.widget({
                     .attr("stroke-opacity", dim.shadeAlpha);
 
                 // shade view
-                _shadeView(curVizObj, view_id);
+                _shadeMainView(curVizObj, view_id);
 
                 // highlight all elements downstream of link
                 _downstreamEffects(curVizObj, d.link_id, link_ids, view_id);
@@ -386,7 +368,7 @@ HTMLWidgets.widget({
                     .attr("stroke-opacity", dim.shadeAlpha);
 
                 // shade view
-                _shadeView(curVizObj, view_id);
+                _shadeMainView(curVizObj, view_id);
 
                 // highlight genotype in legend tree, & sites expressing this genotype
                 _legendGtypeHighlight(curVizObj, d.id, view_id);
@@ -426,9 +408,9 @@ HTMLWidgets.widget({
 
         // anatomy region of interest
         legendSVG.append("circle")
-            .attr("cx", dim.legend_image_top_l.x + curVizObj.crop_info.centre_prop.x*dim.legend_image_plot_width)
-            .attr("cy", dim.legend_image_top_l.y + curVizObj.crop_info.centre_prop.y*dim.legend_image_plot_width)
-            .attr("r", (curVizObj.crop_info.crop_width_prop/2)*dim.legend_image_plot_width)
+            .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_plot_width)
+            .attr("cy", dim.legend_image_top_l.y + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_plot_width)
+            .attr("r", (curVizObj.view.crop_info.crop_width_prop/2)*dim.legend_image_plot_width)
             .attr("stroke", "#9E9A9A")
             .attr("fill", "none");
 
@@ -437,32 +419,14 @@ HTMLWidgets.widget({
         viewSVG.append("g")
             .attr("class", "anatomicMarksG")
             .selectAll(".generalMark")
-            .data(Object.keys(curVizObj.data.siteStemsInDataset))
+            .data(Object.keys(curVizObj.data.siteStems))
             .enter()
             .append("circle")
             .attr("class", function(d) {
                 return d + " generalMark";
             })
-            .attr("cx", function(d) { 
-                var cropped_x = _getCroppedCoordinate(curVizObj.crop_info, 
-                                            curVizObj.data.siteStemsInDataset[d].x, 
-                                            curVizObj.data.siteStemsInDataset[d].y,
-                                            dim.image_top_l.x,
-                                            dim.image_top_l.y,
-                                            dim.image_plot_width
-                                        ).x;
-                return cropped_x;
-            })
-            .attr("cy", function(d) { 
-                var cropped_y = _getCroppedCoordinate(curVizObj.crop_info, 
-                                            curVizObj.data.siteStemsInDataset[d].x, 
-                                            curVizObj.data.siteStemsInDataset[d].y,
-                                            dim.image_top_l.x,
-                                            dim.image_top_l.y,
-                                            dim.image_plot_width
-                                        ).y;
-                return cropped_y;
-            })
+            .attr("cx", function(d) { return curVizObj.data.siteStems[d]["cropped_coords"].x; })
+            .attr("cy", function(d) { return curVizObj.data.siteStems[d]["cropped_coords"].y; })
             .attr("r", dim.siteMark_r)
             .attr("fill", "white")
             .attr("stroke-width", "1.5pxx")
@@ -473,10 +437,10 @@ HTMLWidgets.widget({
                     .attr("fill", "#CBCBCB");
 
                 // shade view
-                _shadeView(curVizObj, view_id);
+                _shadeMainView(curVizObj, view_id);
 
                 // highlight all sites with this stem
-                _highlightSites(curVizObj.data.siteStemsInDataset[d].site_ids, view_id);
+                _highlightSites(curVizObj.data.siteStems[d].site_ids, view_id);
 
             })
             .on("mouseout", function(d) {
@@ -534,7 +498,7 @@ HTMLWidgets.widget({
                     var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
 
                     // shade view
-                    _shadeView(curVizObj, view_id);
+                    _shadeMainView(curVizObj, view_id);
 
                     // highlight sites
                     _highlightSites(participating_sites, view_id);
@@ -559,7 +523,7 @@ HTMLWidgets.widget({
         });
 
         // FOR EACH SITE
-        curVizObj.site_ids.forEach(function(site, site_idx) {
+        curVizObj.data.site_ids.forEach(function(site, site_idx) {
 
             // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
             _plotSite(curVizObj, site, view_id, drag);            

@@ -2,9 +2,9 @@
 
 /* recursive function to perform downstream effects upon tree link highlighting
 * @param {Object} curVizObj -- vizObj for the current view
-* @param link_id -- id for the link that's currently highlighted
-* @param link_ids -- ids for all links in tree
-* @param view_id -- the id for the current view
+* @param {String} link_id -- id for the link that's currently highlighted
+* @param {Array} link_ids -- ids for all links in tree
+* @param {String} view_id -- the id for the current view
 */
 function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
 
@@ -12,10 +12,10 @@ function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
     var targetRX = new RegExp("legendTreeLink_.+_(.+)");  
     var target_id = targetRX.exec(link_id)[1];
 
-    // highlight the current link
+    // highlight the current link in the legend
     d3.select("#" + view_id).select(".legendTreeLink." + link_id).attr("stroke-opacity", 1);
 
-    // highlight the current target node
+    // highlight the current target node in the legend
     d3.select("#" + view_id).select(".legendTreeNode." + target_id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // highlight those sites showing the moused-over genotype
@@ -46,7 +46,7 @@ function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
 /* function for highlighting genotype on anatomic image
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} cur_gtype -- genotype on hover
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
 */
 function _legendGtypeHighlight(curVizObj, cur_gtype, view_id) {
     // hide anatomic general marks
@@ -59,11 +59,11 @@ function _legendGtypeHighlight(curVizObj, cur_gtype, view_id) {
     d3.select("#" + view_id).selectAll(".gtypeMark." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 }
 
-/* function to shade all elements of the view
+/* function to shade all elements of the main view
 * @param {Object} curVizObj -- vizObj for the current view
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
 */
-function _shadeView(curVizObj, view_id) {
+function _shadeMainView(curVizObj, view_id) {
     var dim = curVizObj.generalConfig;
 
     d3.select("#" + view_id).selectAll(".voronoiCell")
@@ -82,7 +82,7 @@ function _shadeView(curVizObj, view_id) {
 
 /* function for view reset
 * @param {Object} curVizObj -- vizObj for the current view
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
 */
 function _resetView(curVizObj, view_id) {
 
@@ -95,7 +95,7 @@ function _resetView(curVizObj, view_id) {
     d3.select("#" + view_id).selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
     d3.select("#" + view_id).selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
-    // reset all elements of view
+    // reset all elements of main view
     d3.select("#" + view_id).selectAll(".voronoiCell").attr("fill-opacity", 1).attr("stroke-opacity", 1);
     d3.select("#" + view_id).selectAll(".treeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
     d3.select("#" + view_id).selectAll(".treeLink").attr("stroke-opacity", 1);
@@ -106,7 +106,7 @@ function _resetView(curVizObj, view_id) {
 
 /* function to highlight certain sites in the view
 * @param {Array} site_ids -- site ids to highlight
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
 */
 function _highlightSites(site_ids, view_id) {
     site_ids.forEach(function(site) {
@@ -122,7 +122,7 @@ function _highlightSites(site_ids, view_id) {
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 * @param {String} cur_site -- current site being dragged
 * @param {Object} d -- data object for current site svg group
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
 */
 function _dragFunction(curVizObj, cur_site, d, view_id) {
     var dim = curVizObj.generalConfig;
@@ -135,46 +135,32 @@ function _dragFunction(curVizObj, cur_site, d, view_id) {
     // move anatomic pointer
     d3.select("#" + view_id).select(".anatomicPointer."+cur_site)
         .attr("x1", function(d) {
-            var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
-                                Math.pow(d.y1 - dim.viewCentre.y, 2)),
-                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-            return point.x;
+            return _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, angle).x;
         })
         .attr("y1", function(d) {
-            var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
-                                Math.pow(d.y1 - dim.viewCentre.y, 2)),
-                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-            return point.y;
+            return _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, angle).y;
         })
 
     // move oncoMix
     d3.select("#" + view_id).select(".oncoMixG."+cur_site)
         .attr("transform", function(d) {
-            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                Math.pow(d.y - dim.viewCentre.y, 2)),
-                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-            return "translate(" + (point.x-d.x) + "," + 
-                                    (point.y-d.y) + ")";
+            var point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, angle);
+            return "translate(" + (point.x-d.x) + "," + (point.y-d.y) + ")";
         });
 
     // move tree 
     d3.select("#" + view_id).select(".treeG."+cur_site)
         .attr("transform", function(d) {
-            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                Math.pow(d.y - dim.viewCentre.y, 2)),
-                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-            return "translate(" + (point.x-d.x) + "," + 
-                                    (point.y-d.y) + ")";
+            var point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToTree, angle);
+            return "translate(" + (point.x-d.x) + "," + (point.y-d.y) + ")";
         }); 
 
     // move site title
     d3.select("#" + view_id).select(".siteTitle."+cur_site)
         .attr("transform", function(d) {
-            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                Math.pow(d.y - dim.viewCentre.y, 2)),
+            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + Math.pow(d.y - dim.viewCentre.y, 2)),
                 point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
-            return "translate(" + (point.x-d.x) + "," + 
-                                    (point.y-d.y) + ")";
+            return "translate(" + (point.x-d.x) + "," + (point.y-d.y) + ")";
         });    
 }
 
@@ -228,12 +214,12 @@ function _getSiteLocationsOnImage(curVizObj) {
 function _assignAnatomicLocations(curVizObj) {
 
     // keep track of stems in this dataset, and their corresponding site ids
-    curVizObj.data.siteStemsInDataset = {};
+    curVizObj.data.siteStems = {};
 
     curVizObj.data.sites = [];
 
     // for each site in the data
-    curVizObj.site_ids.forEach(function(site_id) {
+    curVizObj.data.site_ids.forEach(function(site_id) {
         var site_data = {id: site_id};
 
         // for each potential stem
@@ -248,12 +234,12 @@ function _assignAnatomicLocations(curVizObj) {
                 site_data.stem = cur_location;
 
                 // add this site id to the stems data
-                if (curVizObj.data.siteStemsInDataset[siteStem]) {
-                    curVizObj.data.siteStemsInDataset[siteStem].site_ids.push(site_id);
+                if (curVizObj.data.siteStems[siteStem]) {
+                    curVizObj.data.siteStems[siteStem].site_ids.push(site_id);
                 }
                 else {
-                    curVizObj.data.siteStemsInDataset[siteStem] = cur_location;
-                    curVizObj.data.siteStemsInDataset[siteStem].site_ids = [site_id];
+                    curVizObj.data.siteStems[siteStem] = cur_location;
+                    curVizObj.data.siteStems[siteStem].site_ids = [site_id];
                 }
 
                 break;
@@ -279,8 +265,8 @@ function _getImageBounds(curVizObj) {
         min_y = Infinity,
         max_y = -1;
 
-    Object.keys(curVizObj.data.siteStemsInDataset).forEach(function(siteStem) {
-        var cur_siteStem = curVizObj.data.siteStemsInDataset[siteStem];
+    Object.keys(curVizObj.data.siteStems).forEach(function(siteStem) {
+        var cur_siteStem = curVizObj.data.siteStems[siteStem];
         if (min_x > cur_siteStem.x) {
             min_x = cur_siteStem.x;
         }
@@ -304,9 +290,7 @@ function _getImageBounds(curVizObj) {
 }
 
 /* function to scale an image 
-* @param {Number} crop_width -- the width of the crop region 
-* @param {Number} original_width -- the width of the original image
-* @param {Array}
+* @param {Object} curVizObj -- vizObj for the current view
 */
 function _scale(curVizObj) {
 
@@ -348,25 +332,33 @@ function _scale(curVizObj) {
         centre_prop: centre
     }
 
+    // get cropped absolute x, y coordinates for each site stem
+    Object.keys(curVizObj.data.siteStems).forEach(function(stem) {
+        curVizObj.data.siteStems[stem]["cropped_coords"] = _getCroppedCoordinate(
+                                                                crop_info, 
+                                                                curVizObj.data.siteStems[stem],
+                                                                curVizObj.generalConfig.image_top_l,
+                                                                curVizObj.generalConfig.image_plot_width
+                                                            );
+    })
+
     return crop_info;
 }
 
 /* function to transform a coordinate to its cropped equivalent on the anatomy image
 * @param {Object} crop_info -- cropping onformation (shifts, width, etc.)
-* @param {Number} x_prop -- x-coordinate [0,1] on original image
-* @param {Number} y_prop -- y-coordinate [0,1] on original image
-* @param {Number} top_l_x -- absolute x-coordinate for the top left of the plotting area
-* @param {Number} top_l_y -- absolute y-coordinate for the top left of the plotting area
+* @param {Object} prop -- object with x- and y-coordinates [0,1] on original image (properties "x", "y")
+* @param {Object} top_l -- absolute x- and y-coordinates for the top left of the plotting area (properties "x", "y")
 * @param {Number} plot_width -- absolute width for the plotting area
 * @return absolute coordinates
 */
-function _getCroppedCoordinate(crop_info, x_prop, y_prop, top_l_x, top_l_y, plot_width) {
-    var cropped_x_prop = (x_prop - crop_info.left_shift_prop)/crop_info.crop_width_prop;
-    var cropped_y_prop = (y_prop - crop_info.up_shift_prop)/crop_info.crop_width_prop;
+function _getCroppedCoordinate(crop_info, prop, top_l, plot_width) {
+    var cropped_x_prop = (prop.x - crop_info.left_shift_prop)/crop_info.crop_width_prop;
+    var cropped_y_prop = (prop.y - crop_info.up_shift_prop)/crop_info.crop_width_prop;
 
     var cropped_coordinates = {
-        x: top_l_x + (cropped_x_prop*plot_width), 
-        y: top_l_y + (cropped_y_prop*plot_width)
+        x: top_l.x + (cropped_x_prop*plot_width), 
+        y: top_l.y + (cropped_y_prop*plot_width)
     };
     return cropped_coordinates;
 }
@@ -441,7 +433,7 @@ function _getTreeInfo(curVizObj) {
     })
 }
 
-/* function to get the most recent common ancestor for a list of genotypes
+/* function to get the "most recent" common ancestor for a list of genotypes
 * (this function could return one of the genotypes itself)
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {Array} gtypes -- genotypes for which we want a common ancestor
@@ -753,27 +745,6 @@ function _getColours(curVizObj) {
     curVizObj.view.colour_assignment = colour_assignment;
 }
 
-// function to increase brightness of hex colour
-// from: http://stackoverflow.com/questions/6443990/javascript-calculate-brighter-colour
-function _increase_brightness(hex, percent){
-    // strip the leading # if it's there
-    hex = hex.replace(/^\s*#|\s*$/g, '');
-
-    // convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
-    if(hex.length == 3){
-        hex = hex.replace(/(.)/g, '$1$1');
-    }
-
-    var r = parseInt(hex.substr(0, 2), 16),
-        g = parseInt(hex.substr(2, 2), 16),
-        b = parseInt(hex.substr(4, 2), 16);
-
-    return '#' +
-       ((0|(1<<8) + r + (256 - r) * percent / 100).toString(16)).substr(1) +
-       ((0|(1<<8) + g + (256 - g) * percent / 100).toString(16)).substr(1) +
-       ((0|(1<<8) + b + (256 - b) * percent / 100).toString(16)).substr(1);
-}
-
 // function to decrease brightness of hex colour
 // from: http://stackoverflow.com/questions/12660919/javascript-brightness-function-decrease
 function _decrease_brightness(hex, percent){
@@ -814,10 +785,9 @@ function _getCPData(curVizObj) {
 */
 function _thresholdCPData(curVizObj) {
 
-    curVizObj.site_ids.forEach(function(site) {
+    curVizObj.data.site_ids.forEach(function(site) {
 
         // threshold the cellular prevalence 
-        // (> prevalence of one cell in this view)
 
         var threshold = 0.01;
         var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
@@ -836,10 +806,10 @@ function _thresholdCPData(curVizObj) {
             }
         });
 
-        // adjust cellular prevalence values of to sum to 1
+        // adjust cellular prevalence values to sum to 1
 
-        curVizObj.data["genotypes_to_plot"] = curVizObj.data["genotypes_to_plot"] || {};
-        curVizObj.data["genotypes_to_plot"][site] = []; // which genotypes to show for this site
+        curVizObj.data["site_genotypes"] = curVizObj.data["site_genotypes"] || {};
+        curVizObj.data["site_genotypes"][site] = []; // which genotypes to show for this site
         Object.keys(curVizObj.data.cp_data[site]).forEach(function(gtype) {
 
             var cur_cp = curVizObj.data.cp_data[site][gtype].cp;
@@ -847,24 +817,24 @@ function _thresholdCPData(curVizObj) {
             // only add genotypes that will be exhibited in >1 cell
             if (cur_cp > threshold) {
                 curVizObj.data.cp_data[site][gtype].adj_cp = cur_cp/total_legit_cp;
-                curVizObj.data["genotypes_to_plot"][site].push(gtype);
+                curVizObj.data["site_genotypes"][site].push(gtype);
             }
         });
     });
 }
 
-/* function to get the sites expressing each genotype
+/* function to get, for each genotype, the sites expressing that genotype
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
 function _getGenotypeSites(curVizObj) {
     // each site (1st level property) has an array of genotypes at that site
-    var genotypes_to_plot = curVizObj.data.genotypes_to_plot;
-    var genotype_sites = {};
+    var site_genotypes = curVizObj.data.site_genotypes,
+        genotype_sites = {};
 
     curVizObj.data.treeNodes.forEach(function(gtype) {
         var sites_containing_gtype = [];
-        Object.keys(curVizObj.data.genotypes_to_plot).forEach(function(site) {
-            if (curVizObj.data.genotypes_to_plot[site].indexOf(gtype) != -1) {
+        Object.keys(curVizObj.data.site_genotypes).forEach(function(site) {
+            if (curVizObj.data.site_genotypes[site].indexOf(gtype) != -1) {
                 sites_containing_gtype.push(site);
             }
         });
@@ -932,7 +902,7 @@ function _getVoronoiVertices(curVizObj, cx, cy) {
 */
 function _addGtypeInfoToVertices(curVizObj, site, vertices) {
 
-    var gtypes = curVizObj.data["genotypes_to_plot"][site], // genotypes to plot for this site
+    var gtypes = curVizObj.data["site_genotypes"][site], // genotypes to plot for this site
         cumulative_cp = curVizObj.data.cp_data[site][gtypes[0]].adj_cp, // cumulative CP thus far
         gtype_i = 0, // index of the current genotype to show
         cur_gtype, // current genotype
@@ -1030,7 +1000,7 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
 */
 function _getSitePositioning(curVizObj) {
     var dim = curVizObj.generalConfig,
-        n_sites = curVizObj.site_ids.length; // number of sites
+        n_sites = curVizObj.data.site_ids.length; // number of sites
 
     // for each site
     curVizObj.data.sites.forEach(function(cur_site_obj, site_idx) {
@@ -1115,7 +1085,7 @@ function _getSitePositioning(curVizObj) {
 
         // PURE, MONOPHYLETIC, OR POLYPHYLETIC SITE
         var phyly;
-        var site_gtypes = curVizObj.data["genotypes_to_plot"][site_id];
+        var site_gtypes = curVizObj.data["site_genotypes"][site_id];
         // pure tumour
         if (site_gtypes.length == 1) {
             phyly = "pure";
@@ -1159,12 +1129,12 @@ function _find_angle_of_line_segment(A,B) {
 /* function to get order of the sites, then reorder the curVizObj.data.sites 
 * array accordingly.
 * @param {Object} curVizObj -- vizObj for the current view
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
 */
 function _reorderSitesData(curVizObj, view_id) {
     var sites = [];
 
-    curVizObj.site_ids.forEach(function(site_id) {
+    curVizObj.data.site_ids.forEach(function(site_id) {
 
         // current transformation of the site title
         var t = d3.transform(d3.select("#" + view_id).select(".siteTitle."+site_id).attr("transform")),
@@ -1234,13 +1204,13 @@ function _reorderSitesData(curVizObj, view_id) {
 
 /* function to visually reposition sites to their "snapped" location
 * @param {Object} curVizObj -- vizObj for the current view
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
 */ 
 function _snapSites(curVizObj, view_id) {
     var dim = curVizObj.generalConfig;
 
     // for each site
-    curVizObj.site_ids.forEach(function(site, site_idx) {
+    curVizObj.data.site_ids.forEach(function(site, site_idx) {
 
         // get the data
         var site_data = _.findWhere(curVizObj.data.sites, {id: site}), // data for the current site
@@ -1265,24 +1235,10 @@ function _snapSites(curVizObj, view_id) {
                     return d.y1;
                 })
                 .attr("x2", function(d) { 
-                    var cropped_x = _getCroppedCoordinate(curVizObj.crop_info, 
-                                                                site_data.stem.x, 
-                                                                site_data.stem.y,
-                                                                dim.image_top_l.x,
-                                                                dim.image_top_l.y,
-                                                                dim.image_plot_width
-                                                            ).x;
-                    return cropped_x;
+                    return curVizObj.data.siteStems[site_data.stem.siteStem]["cropped_coords"].x;
                 })
                 .attr("y2", function(d) { 
-                    var cropped_y = _getCroppedCoordinate(curVizObj.crop_info, 
-                                                                site_data.stem.x, 
-                                                                site_data.stem.y,
-                                                                dim.image_top_l.x,
-                                                                dim.image_top_l.y,
-                                                                dim.image_plot_width
-                                                            ).y;
-                    return cropped_y;
+                    return curVizObj.data.siteStems[site_data.stem.siteStem]["cropped_coords"].y;
                 });  
         }
 
@@ -1290,9 +1246,7 @@ function _snapSites(curVizObj, view_id) {
         d3.select("#" + view_id).select(".oncoMixG."+site)
             .transition()
             .attr("transform", function(d) {
-                var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                    Math.pow(d.y - dim.viewCentre.y, 2)),
-                    point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                var point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, angle);
                 return "translate(" + (point.x-d.x) + "," + (point.y-d.y) + ")";
             });
 
@@ -1301,9 +1255,7 @@ function _snapSites(curVizObj, view_id) {
         d3.select("#" + view_id).select(".treeG."+site)
             .transition()
             .attr("transform", function(d) {
-                var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
-                                    Math.pow(d.y - dim.viewCentre.y, 2)),
-                    point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                var point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToTree, angle);
                     translation = {x: (point.x-d.x), y: (point.y-d.y)};
                 return "translate(" + translation.x + "," + translation.y + ")";
             });
@@ -1359,7 +1311,7 @@ function _plotSite(curVizObj, site, view_id, drag) {
         .offset([-10, 0])
         .html(function(d) {
             var cp;
-            if (curVizObj.data["genotypes_to_plot"][d.site].indexOf(d.id) != -1) {
+            if (curVizObj.data["site_genotypes"][d.site].indexOf(d.id) != -1) {
                 cp = (Math.round(curVizObj.data.cp_data[d.site][d.id].cp * 100)/100).toFixed(2);
             }
             else {
@@ -1386,24 +1338,10 @@ function _plotSite(curVizObj, site, view_id, drag) {
                 return d.y1;
             })
             .attr("x2", function(d) { 
-                var cropped_x = _getCroppedCoordinate(curVizObj.crop_info, 
-                                                            site_data.stem.x, 
-                                                            site_data.stem.y,
-                                                            dim.image_top_l.x,
-                                                            dim.image_top_l.y,
-                                                            dim.image_plot_width
-                                                        ).x;
-                return cropped_x;
+                return curVizObj.data.siteStems[site_data.stem.siteStem]["cropped_coords"].x;
             })
             .attr("y2", function(d) { 
-                var cropped_y = _getCroppedCoordinate(curVizObj.crop_info, 
-                                                            site_data.stem.x, 
-                                                            site_data.stem.y,
-                                                            dim.image_top_l.x,
-                                                            dim.image_top_l.y,
-                                                            dim.image_plot_width
-                                                        ).y;
-                return cropped_y;
+                return curVizObj.data.siteStems[site_data.stem.siteStem]["cropped_coords"].y;
             })
             .attr("stroke", "#CBCBCB")
             .attr("stroke-width", "2px");  
@@ -1418,31 +1356,17 @@ function _plotSite(curVizObj, site, view_id, drag) {
             .append("g")
             .attr("class", function() { return "gtypeMarksG " + site; })
             .selectAll(".gtypeMark")
-            .data(curVizObj.data.genotypes_to_plot[site])
+            .data(curVizObj.data.site_genotypes[site])
             .enter()
             .append("circle")
             .attr("class", function(d) { 
                 return "gtypeMark " + d; 
             })
             .attr("cx", function(d) { 
-                var cropped_x = _getCroppedCoordinate(curVizObj.crop_info, 
-                                                            site_data.stem.x, 
-                                                            site_data.stem.y,
-                                                            dim.image_top_l.x,
-                                                            dim.image_top_l.y,
-                                                            dim.image_plot_width
-                                                        ).x;
-                return cropped_x;
+                return curVizObj.data.siteStems[site_data.stem.siteStem]["cropped_coords"].x;
             })
             .attr("cy", function(d) { 
-                var cropped_y = _getCroppedCoordinate(curVizObj.crop_info, 
-                                                            site_data.stem.x, 
-                                                            site_data.stem.y,
-                                                            dim.image_top_l.x,
-                                                            dim.image_top_l.y,
-                                                            dim.image_plot_width
-                                                        ).y;
-                return cropped_y;
+                return curVizObj.data.siteStems[site_data.stem.siteStem]["cropped_coords"].y;
             })
             .attr("r", dim.siteMark_r)
             .attr("fill", function(d) { 
@@ -1515,16 +1439,11 @@ function _plotSite(curVizObj, site, view_id, drag) {
         delete node.tmp;
     });
 
-    // create tree & title group
-    var curSiteTreeAndSiteTitleG = cur_siteG
-        .selectAll(".treeAndSiteTitleG")
+    // tree group
+    var treeG = cur_siteG
+        .selectAll(".treeG")
         .data([{"x": site_data.tree.centre.x, "y": site_data.tree.centre.y}])
         .enter()
-        .append("g")
-        .classed("treeAndSiteTitleG", true)
-        .classed(site, true);
-
-    var treeG = curSiteTreeAndSiteTitleG
         .append("g")
         .classed("treeG", true)
         .classed(site, true);
@@ -1551,9 +1470,9 @@ function _plotSite(curVizObj, site, view_id, drag) {
 
     // filter links to show only branches that connect genotypes expressed at this site
     var filtered_links = [];
-    var gtypes_to_plot = $.extend([], curVizObj.data.genotypes_to_plot[site]); // genotypes expressed at this anatomic site
 
     // add the most recent common ancestor for this set of genotypes
+    var gtypes_to_plot = $.extend([], curVizObj.data.site_genotypes[site]); // genotypes expressed at this anatomic site
     gtypes_to_plot.push(_getMRCA(curVizObj, gtypes_to_plot));
     gtypes_to_plot = _.uniq(gtypes_to_plot);
 
@@ -1602,17 +1521,17 @@ function _plotSite(curVizObj, site, view_id, drag) {
         .classed(site, true)
         .attr("fill", function(d) {
             // clone present at this site or not
-            return (curVizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
+            return (curVizObj.data["site_genotypes"][site].indexOf(d.id) != -1) ? 
                 cols[d.id] : "#FFFFFF";
         })
         .attr("stroke", function(d) {
             // clone present at this site or not
-            return (curVizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
+            return (curVizObj.data["site_genotypes"][site].indexOf(d.id) != -1) ? 
                 cols[d.id] : "#FFFFFF";
         })
         .attr("r", function(d) {
             // clone present at this site or not
-            return (curVizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.node_r : 0;
+            return (curVizObj.data["site_genotypes"][site].indexOf(d.id) != -1) ? dim.node_r : 0;
         })
         .on('mouseover', function(d) {
             d.site = site;
@@ -1628,11 +1547,18 @@ function _plotSite(curVizObj, site, view_id, drag) {
 
     // PLOT SITE TITLES
 
-    curSiteTreeAndSiteTitleG.append("text")
+    cur_siteG
+        .selectAll(".siteTitle")
+        .data([{"x": site_data.tree.centre.x, "y": site_data.tree.centre.y}])
+        .enter()
+        .append("text")
         .classed("siteTitle", true)
         .classed(site, true)
         .attr("x", site_data.tree.top_middle.x)
         .attr("y", function(d) {
+            // set site name in data object
+            d.site = site_data.id;
+
             if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
                 d.position = "top";
                 return site_data.tree.top_middle.y;
@@ -1642,10 +1568,8 @@ function _plotSite(curVizObj, site, view_id, drag) {
         })
         .attr("dy", function(d) {
             if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
-                d.position = "top";
                 return "+0.71em";
             }
-            d.position = "bottom";
             return "0em";
         })
         .attr("text-anchor", "middle")
@@ -1653,7 +1577,7 @@ function _plotSite(curVizObj, site, view_id, drag) {
         .attr("font-size", dim.viewDiameter/40)
         .attr("fill", '#9E9A9A')
         .style("cursor", "pointer")
-        .text(site_data.id)
+        .text(function(d) { return d.site; })
         .call(drag);
 
 }
