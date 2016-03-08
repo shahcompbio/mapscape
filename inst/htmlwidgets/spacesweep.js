@@ -140,7 +140,7 @@ HTMLWidgets.widget({
                 dim.dragOn = true; 
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer."+d.site); 
+                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site); 
                 curVizObj.view.startAngle = _find_angle_of_line_segment(
                     {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
@@ -155,7 +155,7 @@ HTMLWidgets.widget({
                 dim.dragOn = false; 
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer."+d.site); 
+                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site); 
                 curVizObj.view.endAngle = _find_angle_of_line_segment(
                     {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
@@ -255,7 +255,7 @@ HTMLWidgets.widget({
             .selectAll(".siteG")
             .data(curVizObj.data.sites)
             .enter().append("g")
-            .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
+            .attr("class", function(d) { return "siteG site_" + d.id.replace(/ /g,"_")});
 
         // PLOT CIRCLE BORDER
 
@@ -349,7 +349,7 @@ HTMLWidgets.widget({
             .enter()
             .append("circle")     
             .attr("class", function(d) {
-                return "legendTreeNode " + d.id;
+                return "legendTreeNode clone_" + d.id;
             })
             .attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })              
@@ -423,7 +423,7 @@ HTMLWidgets.widget({
             .enter()
             .append("circle")
             .attr("class", function(d) {
-                return d + " generalMark";
+                return "stem_" + d + " generalMark";
             })
             .attr("cx", function(d) { return curVizObj.data.siteStems[d]["cropped_coords"].x; })
             .attr("cy", function(d) { return curVizObj.data.siteStems[d]["cropped_coords"].y; })
@@ -506,15 +506,15 @@ HTMLWidgets.widget({
                     // highlight general anatomic marks
                     var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
                     stems.forEach(function(stem) {
-                        d3.select("#" + view_id).select(".generalMark."+stem)
+                        d3.select("#" + view_id).select(".generalMark.stem_"+stem)
                             .attr("fill", "#CBCBCB");
                     });
 
                     // highlight only those links that participate in the mixture classification
                     viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
                     participating_sites.forEach(function(participating_site) {
-                        viewSVG.selectAll(".treeLink." + participating_site).attr("stroke-opacity", dim.shadeAlpha);
-                        viewSVG.selectAll(".mixtureClassTreeLink."+participating_site).attr("stroke-opacity", 1);                        
+                        viewSVG.selectAll(".treeLink.site_" + participating_site).attr("stroke-opacity", dim.shadeAlpha);
+                        viewSVG.selectAll(".mixtureClassTreeLink.site_"+participating_site).attr("stroke-opacity", 1);                        
                     });
                 })
                 .on("mouseout", function(d) {

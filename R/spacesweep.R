@@ -89,7 +89,7 @@ spacesweep <- function(clonal_prev,
         !("colour" %in% colnames(clone_colours))) {
       stop(paste("Node colour data frame must have the following column names: ", 
           "\"clone_id\", \"colour\"", sep=""))
-    }
+    }    
   }
 
   # NUMBER OF CELLS
