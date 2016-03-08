@@ -12,17 +12,17 @@
 #'   Format: columns are (1) {String} "source" - source node id
 #'                       (2) {String} "target" - target node id.
 #' @param gender Gender of the patient (M/F). 
-#' @param clone_colours Data frame with clone ids and their corresponding colours 
+#' @param clone_colours (Optional) Data frame with clone ids and their corresponding colours 
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
-#' @param site_ids {Vector} IDS of the sites in the order your wish to display them 
+#' @param site_ids {Vector} (Optional) Ids of the sites in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
-#' @param show_root Whether or not to plot the root (for tree).
-#' @param n_cells The number of cells to plot (for voronoi tessellation).
+#' @param show_root (Optional) Whether or not to plot the root (for tree).
+#' @param n_cells (Optional) The number of cells to plot (for voronoi tessellation).
 #' @export
 spacesweep <- function(clonal_prev, 
                       tree_edges,
-                      clone_colours,
+                      clone_colours = "NA",
                       gender,
                       site_ids = "NA",
                       show_root = TRUE,
@@ -37,9 +37,6 @@ spacesweep <- function(clonal_prev,
   }
   if (missing(tree_edges)) {
     stop("Tree edge data frame must be provided.")
-  }
-  if (missing(clone_colours)) {
-    stop("Clonal colours frame must be provided.")
   }
   if (missing(gender)) {
     stop("The gender of the patient must be provided.")
@@ -108,7 +105,7 @@ spacesweep <- function(clonal_prev,
 
   # SITE IDS
   site_ids <- as.character(site_ids)
-  
+
 
   # forward options using x
   x = list(

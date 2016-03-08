@@ -611,25 +611,35 @@ function _getLinearTreeSegments(curNode, chains, base) {
 // COLOUR FUNCTIONS
 
 function _getColours(curVizObj) {
-    var dim = curVizObj.generalConfig,
-        colour_assignment = {}, // standard colour assignment
-        patient_id = curVizObj.patient_id,
+    var colour_assignment = {}, // standard colour assignment
         cur_colours = curVizObj.userConfig.clone_cols;
 
-    // get colour assignment - use specified colours
-    // handling different inputs -- TODO should probably be done in R
-    cur_colours.forEach(function(col, col_idx) {
-        var col_value = col.colour;
-        if (col_value[0] != "#") { // append a hashtag if necessary
-            col_value = "#".concat(col_value);
-        }
-        if (col_value.length > 7) { // remove any alpha that may be present in the hex value
-            col_value = col_value.substring(0,7);
-        }
-        colour_assignment[col.clone_id] = col_value;
-    });
-    colour_assignment['Root'] = dim.rootColour;
-    curVizObj.view.colour_assignment = colour_assignment;
+    // clone colours specified
+    if (cur_colours != "NA") {
+        // get colour assignment - use specified colours
+        // handling different inputs -- TODO should probably be done in R
+        cur_colours.forEach(function(col, col_idx) {
+            var col_value = col.colour;
+            if (col_value[0] != "#") { // append a hashtag if necessary
+                col_value = "#".concat(col_value);
+            }
+            if (col_value.length > 7) { // remove any alpha that may be present in the hex value
+                col_value = col_value.substring(0,7);
+            }
+            colour_assignment[col.clone_id] = col_value;
+        });
+        colour_assignment['Root'] = curVizObj.generalConfig.rootColour;
+    }
+
+    // clone colours not specified
+    else {
+        var colour_palette = _getColourPalette(),
+            chains = _getLinearTreeSegments(curVizObj.data.treeStructure, {}, "");
+        colour_assignment = _colourTree(curVizObj, chains, curVizObj.data.treeStructure, 
+            colour_palette, {}, "Greys");
+    }
+    curVizObj.view.colour_assignment = colour_assignment;  
+
 }
 
 /* function to get a colour palette
@@ -735,14 +745,6 @@ function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, cur
     }
 
     return colour_assignment;
-}
-
-function _getColours(curVizObj) {
-    var colour_palette = _getColourPalette();
-    var chains = _getLinearTreeSegments(curVizObj.data.treeStructure, {}, "");
-    colour_assignment = _colourTree(curVizObj, chains, curVizObj.data.treeStructure, 
-        colour_palette, {}, "Greys");
-    curVizObj.view.colour_assignment = colour_assignment;
 }
 
 // function to decrease brightness of hex colour

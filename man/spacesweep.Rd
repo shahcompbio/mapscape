@@ -4,8 +4,9 @@
 \alias{spacesweep}
 \title{SpaceSweep}
 \usage{
-spacesweep(clonal_prev, tree_edges, clone_colours, show_root = TRUE,
-  n_cells = 100, width = 960, height = 960)
+spacesweep(clonal_prev, tree_edges, clone_colours = "NA", gender,
+  site_ids = "NA", show_root = TRUE, n_cells = 100, width = 960,
+  height = 960)
 }
 \arguments{
 \item{clonal_prev}{Clonal prevalence data frame.
@@ -17,13 +18,18 @@ Format: columns are (1) {String} "site_id" - id for the anatomic site
 Format: columns are (1) {String} "source" - source node id
                     (2) {String} "target" - target node id.}
 
-\item{clone_colours}{Data frame with clone ids and their corresponding colours 
+\item{clone_colours}{(Optional) Data frame with clone ids and their corresponding colours 
 Format: columns are (1) {String} "clone_id" - the clone ids
                     (2) {String} "colour" - the corresponding Hex colour for each clone id.}
 
-\item{show_root}{Whether or not to plot the root (for tree).}
+\item{gender}{Gender of the patient (M/F).}
 
-\item{n_cells}{The number of cells to plot (for voronoi tessellation).}
+\item{site_ids}{{Vector} (Optional) Ids of the sites in the order your wish to display them 
+(clockwise from positive x-axis).}
+
+\item{show_root}{(Optional) Whether or not to plot the root (for tree).}
+
+\item{n_cells}{(Optional) The number of cells to plot (for voronoi tessellation).}
 }
 \description{
 Generates patient clonal SpaceSweeps.
