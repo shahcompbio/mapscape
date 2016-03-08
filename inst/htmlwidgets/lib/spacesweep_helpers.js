@@ -636,7 +636,7 @@ function _getColours(curVizObj) {
         var colour_palette = _getColourPalette(),
             chains = _getLinearTreeSegments(curVizObj.data.treeStructure, {}, "");
         colour_assignment = _colourTree(curVizObj, chains, curVizObj.data.treeStructure, 
-            colour_palette, {}, "Greys");
+            colour_palette, {}, "Greys", $.extend({}, colour_palette));
     }
     curVizObj.view.colour_assignment = colour_assignment;  
 
@@ -687,11 +687,12 @@ function _getColourPalette() {
 * @param {Object} chains -- the linear segments (chains) in the genotype tree 
 *                           (key is segment start key, value is array of descendants in this chain)
 * @param {Object} curNode -- current key in the tree
-* @param {Array} palette -- colour themes to choose from
+* @param {Array} palette -- (modified throughout function) colour themes to choose from
 * @param {Object} colour_assignment -- originally empty array of the final colour assignments
 * @param {String} curTheme -- the colour theme currently in use
+* @param {Array} originalPalette -- (original array) colour themes to choose from
 */
-function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, curTheme) {
+function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, curTheme, originalPalette) {
 
     // colour node
     if (curNode.id == "Root") {
@@ -712,13 +713,22 @@ function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, cur
 
         // remove its colour theme from the colour themes available
         delete palette[curTheme];
+
     }
 
+    // if the palette is finished, start again
+    if (Object.keys(palette).length == 0) {
+        console.warn("Colour palette isn't big enough to accommodate this dataset - for optimal colours, " +
+            "provide your own as an input parameter in R ('clone_colours' parameter).")
+        palette = $.extend({}, originalPalette);
+        curTheme = Object.keys(palette)[0];            
+    }
+        
     // if the current key has one child only
     if (curNode.children.length == 1) {
 
         // colour child with the same theme as its parent
-        _colourTree(curVizObj, chains, curNode.children[0], palette, colour_assignment, curTheme)
+        _colourTree(curVizObj, chains, curNode.children[0], palette, colour_assignment, curTheme, originalPalette)
     }
 
     // otherwise
@@ -746,7 +756,7 @@ function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, cur
             palette[curTheme] = tmp_palette;
 
             // colour child
-            _colourTree(curVizObj, chains, tmpChildren[i], palette, colour_assignment, curTheme)
+            _colourTree(curVizObj, chains, tmpChildren[i], palette, colour_assignment, curTheme, originalPalette)
         }
     }
 
