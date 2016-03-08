@@ -378,6 +378,9 @@ HTMLWidgets.widget({
 
                 // highlight genotype in legend tree, & sites expressing this genotype
                 _legendGtypeHighlight(vizObj, d.id);
+
+                // highlight those sites showing the moused-over genotype
+                _highlightSites(vizObj.data.genotype_sites[d.id]);
             })
             .on("mouseout", function(d) {
                 _resetView(vizObj);

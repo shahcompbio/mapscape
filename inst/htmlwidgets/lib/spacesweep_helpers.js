@@ -14,8 +14,18 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
     // highlight the current link
     d3.select("." + link_id).attr("stroke-opacity", 1);
 
-    // highlight sites associated with the target genotype
-    _legendGtypeHighlight(vizObj, target_id);
+    // highlight the current target node
+    d3.select(".legendTreeNode." + target_id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+
+    // highlight those sites showing the moused-over genotype
+    var sites = vizObj.data.genotype_sites[target_id];
+    _highlightSites(sites);
+
+    // highlight the general anatomic marks for those sites showing the moused-over genotype
+    sites.forEach(function(site) {
+        var stem = _.findWhere(vizObj.data.sites, {id: site}).stem.siteStem;
+        d3.select(".generalMark." + stem).attr("fill", "#CBCBCB");
+    })
 
     // get the targets of this target
     var sourceRX = new RegExp("legendTreeLink_" + target_id + "_(.+)");
@@ -32,7 +42,7 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
     });
 };
 
-/* function for mouseover highlighting of legend genotype
+/* function for highlighting genotype on anatomic image
 * @param {Object} vizObj
 * @param {String} cur_gtype -- genotype on hover
 */
@@ -41,10 +51,10 @@ function _legendGtypeHighlight(vizObj, cur_gtype) {
     d3.selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
 
     // highlight genotype on legend tree
-    d3.selectAll("." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.selectAll(".legendTreeNode." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
-    // highlight those sites showing the moused-over genotype
-    _highlightSites(vizObj.data.genotype_sites[cur_gtype]);
+    // highlight genotype on anatomic image
+    d3.selectAll(".gtypeMark." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 }
 
 /* function to shade all elements of the view
