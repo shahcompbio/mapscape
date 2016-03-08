@@ -406,6 +406,38 @@ function _getTreeInfo(vizObj) {
     })
 }
 
+/* function to get the most recent common ancestor for a list of genotypes
+* (this function could return one of the genotypes itself)
+* @param {Object} vizObj
+* @param {Array} gtypes -- genotypes for which we want a common ancestor
+*/
+function _getMRCA(vizObj, gtypes) {
+    var ancestorsList = []; // list of ancestors for each genotype
+    gtypes.forEach(function(gtype) {
+        // the current genotype and its ancestors
+        var gtype_and_ancestors = $.extend([], vizObj.data.treeAncestorsArr[gtype]);
+        gtype_and_ancestors.push(gtype);
+
+        ancestorsList.push(gtype_and_ancestors);
+    })
+
+    // common ancestors between the two genotypes
+    var common_ancestors = _getIntersectionManyArrays(ancestorsList);
+
+    // determine the common ancestor with the most ancestors itself (will be the MRCA)
+    var most_ancestors = -1;
+    var MRCA = "NA";
+    common_ancestors.forEach(function(anc) {
+        var n_ancestors = vizObj.data.treeAncestorsArr[anc].length;
+        if (n_ancestors > most_ancestors) {
+            most_ancestors = n_ancestors;
+            MRCA = anc;
+        }
+    })
+
+    return MRCA;
+}
+
 /* function to get the DIRECT ancestor id for all nodes
 * @param {Object} curNode -- current node in the tree (originally the root)
 * @param {Object} dir_ancestors -- originally empty array of direct descendants for each node
@@ -1467,7 +1499,11 @@ function _plotSite(vizObj, site, viewSVG) {
 
     // filter links to show only branches that connect genotypes expressed at this site
     var filtered_links = [];
-    var gtypes_to_plot = vizObj.data.genotypes_to_plot[site]; // genotypes expressed at this anatomic site
+    var gtypes_to_plot = $.extend([], vizObj.data.genotypes_to_plot[site]); // genotypes expressed at this anatomic site
+
+    // add the most recent common ancestor for this set of genotypes
+    gtypes_to_plot.push(_getMRCA(vizObj, gtypes_to_plot));
+    gtypes_to_plot = _.uniq(gtypes_to_plot);
 
     links.forEach(function(link) {
 
@@ -1647,4 +1683,19 @@ function _sortByKey(array, key, secondKey) {
  */
 function _getRandom(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+/* function to get the intersection of many arrays.
+* modified from: http://stackoverflow.com/questions/11076067/finding-matches-between-multiple-javascript-arrays
+* @param {Array} array - array of arrays from which to find common elements across all arrays.
+*/
+function _getIntersectionManyArrays(arrays) {
+    var arrays_copy = $.extend([], arrays);
+    var result = arrays_copy.shift().filter(function(v) {
+        return arrays.every(function(a) {
+            return a.indexOf(v) !== -1;
+        });
+    });
+
+    return result;
 }

@@ -119,6 +119,9 @@ HTMLWidgets.widget({
         // get colour palette
         _getColours(vizObj);
 
+        console.log("vizObj");
+        console.log(vizObj);
+
         // VIEW SETUP
 
         // radii (- 7 = how much space to give between nodes)
