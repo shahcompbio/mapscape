@@ -144,8 +144,8 @@ HTMLWidgets.widget({
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
                 var voronoiCentre = {
-                    x: d3.select(".anatomicPointer."+cur_site).attr("x1"),
-                    y: d3.select(".anatomicPointer."+cur_site).attr("y1")
+                    x: vizObj.view.viewSVG.select(".anatomicPointer."+cur_site).attr("x1"),
+                    y: vizObj.view.viewSVG.select(".anatomicPointer."+cur_site).attr("y1")
                 }
                 vizObj.view.startAngle = _find_angle_of_line_segment(
                     {x: voronoiCentre.x, y: voronoiCentre.y},
@@ -168,8 +168,8 @@ HTMLWidgets.widget({
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
                 var voronoiCentre = {
-                    x: d3.select(".anatomicPointer."+cur_site).attr("x1"),
-                    y: d3.select(".anatomicPointer."+cur_site).attr("y1")
+                    x: vizObj.view.viewSVG.select(".anatomicPointer."+cur_site).attr("x1"),
+                    y: vizObj.view.viewSVG.select(".anatomicPointer."+cur_site).attr("y1")
                 }
                 vizObj.view.endAngle = _find_angle_of_line_segment(
                     {x: voronoiCentre.x, y: voronoiCentre.y},
@@ -211,6 +211,7 @@ HTMLWidgets.widget({
             .attr("y", 0)
             .attr("width", dim.viewDiameter + "px")
             .attr("height", dim.viewDiameter + "px");
+        vizObj.view.viewSVG = viewSVG;
 
         var legendSVG = legendDIV.append("svg:svg")
             .attr("class", "legendSVG")
@@ -218,6 +219,7 @@ HTMLWidgets.widget({
             .attr("y", 0)
             .attr("width", dim.legendWidth)
             .attr("height", dim.legendHeight);
+        vizObj.view.legendSVG = legendSVG;
 
         // PLOT ANATOMY IMAGE IN MAIN VIEW
 
@@ -257,7 +259,7 @@ HTMLWidgets.widget({
         vizObj.crop_info = _scale(vizObj);
 
         // update the anatomy image with the new cropping
-        d3.select(".anatomyImage") 
+        vizObj.view.viewSVG.select(".anatomyImage") 
             .attr("height", vizObj.crop_info.new_width)
             .attr("width", vizObj.crop_info.new_width)
             .attr("x", -vizObj.crop_info.left_shift)
@@ -338,8 +340,13 @@ HTMLWidgets.widget({
             .on("mouseover", function(d) {
 
                 // shade other legend tree nodes & links
-                d3.selectAll(".legendTreeNode").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
-                d3.selectAll(".legendTreeLink").attr("stroke-opacity", dim.shadeAlpha);
+                vizObj.view.legendSVG
+                    .selectAll(".legendTreeNode")
+                    .attr("fill-opacity", dim.shadeAlpha)
+                    .attr("stroke-opacity", dim.shadeAlpha);
+                vizObj.view.legendSVG
+                    .selectAll(".legendTreeLink")
+                    .attr("stroke-opacity", dim.shadeAlpha);
 
                 // shade view
                 _shadeView(vizObj);
@@ -370,8 +377,13 @@ HTMLWidgets.widget({
             .on("mouseover", function(d) {
 
                 // shade legend tree nodes & links
-                d3.selectAll(".legendTreeNode").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
-                d3.selectAll(".legendTreeLink").attr("stroke-opacity", dim.shadeAlpha);
+                vizObj.view.legendSVG
+                    .selectAll(".legendTreeNode")
+                    .attr("fill-opacity", dim.shadeAlpha)
+                    .attr("stroke-opacity", dim.shadeAlpha);
+                vizObj.view.legendSVG
+                    .selectAll(".legendTreeLink")
+                    .attr("stroke-opacity", dim.shadeAlpha);
 
                 // shade view
                 _shadeView(vizObj);
@@ -503,7 +515,8 @@ HTMLWidgets.widget({
             .attr("font-size", dim.legendTitleHeight)
             .text("Classification");
 
-        var mixtureClassLegendTitle_width = d3.select(".ClassificationLegendTitle").node().getBBox().width;
+        var mixtureClassLegendTitle_width = 
+            vizObj.view.legendSVG.select(".ClassificationLegendTitle").node().getBBox().width;
         var spacing_below_title = 5;
         Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
             legendSVG.append("text")
@@ -517,6 +530,7 @@ HTMLWidgets.widget({
                 .text(function() { return " - " + phyly; })
                 .style("cursor", "default")
                 .on("mouseover", function() {
+                    var viewSVG = vizObj.view.viewSVG;
                     var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
 
                     // shade view
@@ -528,15 +542,15 @@ HTMLWidgets.widget({
                     // highlight general anatomic marks
                     var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
                     stems.forEach(function(stem) {
-                        d3.select(".generalMark."+stem)
+                        vizObj.view.viewSVG.select(".generalMark."+stem)
                             .attr("fill", "#CBCBCB");
-                    })
+                    });
 
                     // highlight only those links that participate in the mixture classification
-                    d3.selectAll(".treeLink").attr("stroke-opacty", 0);
+                    viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
                     participating_sites.forEach(function(participating_site) {
-                        d3.selectAll(".treeLink." + participating_site).attr("stroke-opacity", dim.shadeAlpha);
-                        d3.selectAll(".mixtureClassTreeLink."+participating_site).attr("stroke-opacity", 1);                        
+                        viewSVG.selectAll(".treeLink." + participating_site).attr("stroke-opacity", dim.shadeAlpha);
+                        viewSVG.selectAll(".mixtureClassTreeLink."+participating_site).attr("stroke-opacity", 1);                        
                     });
                 })
                 .on("mouseout", function(d) {

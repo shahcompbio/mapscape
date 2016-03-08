@@ -12,10 +12,10 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
     var target_id = targetRX.exec(link_id)[1];
 
     // highlight the current link
-    d3.select("." + link_id).attr("stroke-opacity", 1);
+    vizObj.view.legendSVG.select(".legendTreeLink." + link_id).attr("stroke-opacity", 1);
 
     // highlight the current target node
-    d3.select(".legendTreeNode." + target_id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    vizObj.view.legendSVG.select(".legendTreeNode." + target_id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // highlight those sites showing the moused-over genotype
     var sites = vizObj.data.genotype_sites[target_id];
@@ -24,7 +24,7 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
     // highlight the general anatomic marks for those sites showing the moused-over genotype
     sites.forEach(function(site) {
         var stem = _.findWhere(vizObj.data.sites, {id: site}).stem.siteStem;
-        d3.select(".generalMark." + stem).attr("fill", "#CBCBCB");
+        vizObj.view.viewSVG.select(".generalMark." + stem).attr("fill", "#CBCBCB");
     })
 
     // get the targets of this target
@@ -48,59 +48,72 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
 */
 function _legendGtypeHighlight(vizObj, cur_gtype) {
     // hide anatomic general marks
-    d3.selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
+    vizObj.view.viewSVG.selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
 
     // highlight genotype on legend tree
-    d3.selectAll(".legendTreeNode." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    vizObj.view.legendSVG.selectAll(".legendTreeNode." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // highlight genotype on anatomic image
-    d3.selectAll(".gtypeMark." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    vizObj.view.viewSVG.selectAll(".gtypeMark." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 }
 
 /* function to shade all elements of the view
 * @param {Object} vizObj
 */
 function _shadeView(vizObj) {
-    var dim = vizObj.generalConfig;
+    var dim = vizObj.generalConfig,
+        viewSVG = vizObj.view.viewSVG;
 
-    d3.selectAll(".voronoiCell").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
-    d3.selectAll(".treeNode").attr("fill-opacity", dim.shadeAlpha).attr("stroke-opacity", dim.shadeAlpha);
-    d3.selectAll(".treeLink").attr("stroke-opacity", dim.shadeAlpha);
-    d3.selectAll(".siteTitle").attr("fill-opacity", dim.shadeAlpha);
-    d3.selectAll(".anatomicPointer").attr("stroke-opacity", 0.25)
+    viewSVG.selectAll(".voronoiCell")
+        .attr("fill-opacity", dim.shadeAlpha)
+        .attr("stroke-opacity", dim.shadeAlpha);
+    viewSVG.selectAll(".treeNode")
+        .attr("fill-opacity", dim.shadeAlpha)
+        .attr("stroke-opacity", dim.shadeAlpha);
+    viewSVG.selectAll(".treeLink")
+        .attr("stroke-opacity", dim.shadeAlpha);
+    viewSVG.selectAll(".siteTitle")
+        .attr("fill-opacity", dim.shadeAlpha);
+    viewSVG.selectAll(".anatomicPointer")
+        .attr("stroke-opacity", 0.25);
 }
 
 /* function for view reset
 * @param {Object} vizObj
 */
 function _resetView(vizObj) {
+    var viewSVG = vizObj.view.viewSVG,
+        legendSVG = vizObj.view.legendSVG;
+
     // reset anatomic marks
-    d3.selectAll(".gtypeMark").attr("fill-opacity", 0);
-    d3.selectAll(".generalMark").attr("fill", "white").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    viewSVG.selectAll(".gtypeMark").attr("fill-opacity", 0);
+    viewSVG.selectAll(".generalMark").attr("fill", "white").attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // reset legend tree nodes
-    d3.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    d3.selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    legendSVG.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    legendSVG.selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // reset all elements of view
-    d3.selectAll(".voronoiCell").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    d3.selectAll(".treeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    d3.selectAll(".treeLink").attr("stroke-opacity", 1);
-    d3.selectAll(".siteTitle").attr("fill-opacity", 1);
-    d3.selectAll(".anatomicPointer").attr("stroke-opacity", 1);
-    d3.selectAll(".mixtureClassTreeLink").attr("stroke-opacity", 0);
+    viewSVG.selectAll(".voronoiCell").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    viewSVG.selectAll(".treeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    viewSVG.selectAll(".treeLink").attr("stroke-opacity", 1);
+    viewSVG.selectAll(".siteTitle").attr("fill-opacity", 1);
+    viewSVG.selectAll(".anatomicPointer").attr("stroke-opacity", 1);
+    viewSVG.selectAll(".mixtureClassTreeLink").attr("stroke-opacity", 0);
 }
 
 /* function to highlight certain sites in the view
 * @param {Array} site_ids -- site ids to highlight
 */
 function _highlightSites(site_ids) {
+    var viewSVG = vizObj.view.viewSVG;
+
     site_ids.forEach(function(site) {
-        d3.selectAll(".voronoiCell." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-        d3.selectAll(".treeNode." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-        d3.selectAll(".treeLink." + site).attr("stroke-opacity", 1);
-        d3.selectAll(".siteTitle." + site).attr("fill-opacity", 1);
-        d3.selectAll(".anatomicPointer." + site).attr("stroke-opacity", 1)
+        viewSVG.selectAll(".voronoiCell." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        viewSVG.selectAll(".treeNode." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        viewSVG.selectAll(".treeLink." + site).attr("stroke-opacity", 1);
+        viewSVG.selectAll(".siteTitle." + site).attr("fill-opacity", 1);
+        viewSVG.selectAll(".anatomicPointer." + site).attr("stroke-opacity", 1)
     })
 }
 
@@ -110,7 +123,8 @@ function _highlightSites(site_ids) {
 * @param {Object} d -- data object for current site svg group
 */
 function _dragFunction(vizObj, cur_site, d) {
-    var dim = vizObj.generalConfig;
+    var dim = vizObj.generalConfig,
+        viewSVG = vizObj.view.viewSVG;
 
     // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
     var angle = _find_angle_of_line_segment(
@@ -118,7 +132,7 @@ function _dragFunction(vizObj, cur_site, d) {
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
 
     // move anatomic pointer
-    d3.select(".anatomicPointer."+cur_site)
+    viewSVG.select(".anatomicPointer."+cur_site)
         .attr("x1", function() {
             var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y1 - dim.viewCentre.y, 2)),
@@ -133,7 +147,7 @@ function _dragFunction(vizObj, cur_site, d) {
         })
 
     // move oncoMix
-    d3.select(".oncoMixG."+cur_site)
+    viewSVG.select(".oncoMixG."+cur_site)
         .attr("transform", function(d) {
             var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y - dim.viewCentre.y, 2)),
@@ -143,7 +157,7 @@ function _dragFunction(vizObj, cur_site, d) {
         });
 
     // move tree * site title
-    d3.select(".treeAndSiteTitleG."+cur_site)
+    viewSVG.select(".treeAndSiteTitleG."+cur_site)
         .attr("transform", function(d) {
             var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y - dim.viewCentre.y, 2)),
@@ -1134,25 +1148,26 @@ function _find_angle_of_line_segment(A,B) {
 * @param {Object} vizObj
 */
 function _reorderSitesData(vizObj) {
-    var sites = [];
+    var sites = [],
+        viewSVG = vizObj.view.viewSVG;
 
     vizObj.site_ids.forEach(function(site_id) {
 
         // current transformation of the site title / tree group
-        var t = d3.transform(d3.select(".treeAndSiteTitleG."+site_id).attr("transform")),
+        var t = d3.transform(viewSVG.select(".treeAndSiteTitleG."+site_id).attr("transform")),
             t_x = t.translate[0],
             t_y = t.translate[1];
 
         // current coordinates
         var x = (t) ? 
-                    parseFloat(d3.select(".siteTitle."+site_id).attr("x")) + t_x :
-                    parseFloat(d3.select(".siteTitle."+site_id).attr("x"));
+                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("x")) + t_x :
+                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("x"));
         var y = (t) ? 
-                    parseFloat(d3.select(".siteTitle."+site_id).attr("y")) + t_y :
-                    parseFloat(d3.select(".siteTitle."+site_id).attr("y"));
+                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("y")) + t_y :
+                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("y"));
 
         // depending on placement of title, move y-coordinate up or down
-        y = (d3.select(".siteTitle."+site_id).data()[0].position == "top") ? 
+        y = (viewSVG.select(".siteTitle."+site_id).data()[0].position == "top") ? 
             y + vizObj.generalConfig.treeWidth/2 :
             y - vizObj.generalConfig.treeWidth/2;
 
@@ -1209,7 +1224,8 @@ function _reorderSitesData(vizObj) {
 * @param {d3 Object} viewSVG -- svg for the central view
 */ 
 function _snapSites(vizObj, viewSVG) {
-    var dim = vizObj.generalConfig;
+    var dim = vizObj.generalConfig,
+        viewSVG = vizObj.view.viewSVG;
 
     // for each site
     vizObj.site_ids.forEach(function(site, site_idx) {
@@ -1259,7 +1275,7 @@ function _snapSites(vizObj, viewSVG) {
         }
 
         // move oncoMix
-        d3.select(".oncoMixG."+site)
+        viewSVG.select(".oncoMixG."+site)
             .transition()
             .attr("transform", function(d) {
                 var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
@@ -1271,7 +1287,7 @@ function _snapSites(vizObj, viewSVG) {
         // move tree * site title
         // keep track of translation
         var translation = {};
-        d3.select(".treeAndSiteTitleG."+site)
+        viewSVG.select(".treeAndSiteTitleG."+site)
             .transition()
             .attr("transform", function(d) {
                 var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
@@ -1282,7 +1298,7 @@ function _snapSites(vizObj, viewSVG) {
             });
 
         // change site title location (depending on placement of site, above or below view centre)
-        d3.select(".siteTitle." + site)
+        viewSVG.select(".siteTitle." + site)
             .transition()
             .attr("y", function(d) {
                 if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
