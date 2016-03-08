@@ -1,30 +1,31 @@
 // D3 EFFECTS FUNCTIONS
 
 /* recursive function to perform downstream effects upon tree link highlighting
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 * @param link_id -- id for the link that's currently highlighted
 * @param link_ids -- ids for all links in tree
+* @param view_id -- the id for the current view
 */
-function _downstreamEffects(vizObj, link_id, link_ids) {
+function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
 
     // get target id & single cell id
     var targetRX = new RegExp("legendTreeLink_.+_(.+)");  
     var target_id = targetRX.exec(link_id)[1];
 
     // highlight the current link
-    vizObj.view.legendSVG.select(".legendTreeLink." + link_id).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).select(".legendTreeLink." + link_id).attr("stroke-opacity", 1);
 
     // highlight the current target node
-    vizObj.view.legendSVG.select(".legendTreeNode." + target_id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).select(".legendTreeNode." + target_id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // highlight those sites showing the moused-over genotype
-    var sites = vizObj.data.genotype_sites[target_id];
-    _highlightSites(sites);
+    var sites = curVizObj.data.genotype_sites[target_id];
+    _highlightSites(sites, view_id);
 
     // highlight the general anatomic marks for those sites showing the moused-over genotype
     sites.forEach(function(site) {
-        var stem = _.findWhere(vizObj.data.sites, {id: site}).stem.siteStem;
-        vizObj.view.viewSVG.select(".generalMark." + stem).attr("fill", "#CBCBCB");
+        var stem = _.findWhere(curVizObj.data.sites, {id: site}).stem.siteStem;
+        d3.select("#" + view_id).select(".generalMark." + stem).attr("fill", "#CBCBCB");
     })
 
     // get the targets of this target
@@ -38,93 +39,93 @@ function _downstreamEffects(vizObj, link_id, link_ids) {
 
     // for each of the target's targets, highlight their downstream links
     targetLinks_of_targetNode.map(function(target_link_id) {
-        _downstreamEffects(vizObj, target_link_id, link_ids);
+        _downstreamEffects(curVizObj, target_link_id, link_ids, view_id);
     });
 };
 
 /* function for highlighting genotype on anatomic image
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 * @param {String} cur_gtype -- genotype on hover
+* @param view_id -- the id for the current view
 */
-function _legendGtypeHighlight(vizObj, cur_gtype) {
+function _legendGtypeHighlight(curVizObj, cur_gtype, view_id) {
     // hide anatomic general marks
-    vizObj.view.viewSVG.selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
+    d3.select("#" + view_id).selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
 
     // highlight genotype on legend tree
-    vizObj.view.legendSVG.selectAll(".legendTreeNode." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".legendTreeNode." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // highlight genotype on anatomic image
-    vizObj.view.viewSVG.selectAll(".gtypeMark." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".gtypeMark." + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 }
 
 /* function to shade all elements of the view
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
+* @param view_id -- the id for the current view
 */
-function _shadeView(vizObj) {
-    var dim = vizObj.generalConfig,
-        viewSVG = vizObj.view.viewSVG;
+function _shadeView(curVizObj, view_id) {
+    var dim = curVizObj.generalConfig;
 
-    viewSVG.selectAll(".voronoiCell")
+    d3.select("#" + view_id).selectAll(".voronoiCell")
         .attr("fill-opacity", dim.shadeAlpha)
         .attr("stroke-opacity", dim.shadeAlpha);
-    viewSVG.selectAll(".treeNode")
+    d3.select("#" + view_id).selectAll(".treeNode")
         .attr("fill-opacity", dim.shadeAlpha)
         .attr("stroke-opacity", dim.shadeAlpha);
-    viewSVG.selectAll(".treeLink")
+    d3.select("#" + view_id).selectAll(".treeLink")
         .attr("stroke-opacity", dim.shadeAlpha);
-    viewSVG.selectAll(".siteTitle")
+    d3.select("#" + view_id).selectAll(".siteTitle")
         .attr("fill-opacity", dim.shadeAlpha);
-    viewSVG.selectAll(".anatomicPointer")
+    d3.select("#" + view_id).selectAll(".anatomicPointer")
         .attr("stroke-opacity", 0.25);
 }
 
 /* function for view reset
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
+* @param view_id -- the id for the current view
 */
-function _resetView(vizObj) {
-    var viewSVG = vizObj.view.viewSVG,
-        legendSVG = vizObj.view.legendSVG;
+function _resetView(curVizObj, view_id) {
 
     // reset anatomic marks
-    viewSVG.selectAll(".gtypeMark").attr("fill-opacity", 0);
-    viewSVG.selectAll(".generalMark").attr("fill", "white").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".gtypeMark").attr("fill-opacity", 0);
+    d3.select("#" + view_id).selectAll(".generalMark").attr("fill", "white").attr("fill-opacity", 1)
+        .attr("stroke-opacity", 1);
 
     // reset legend tree nodes
-    legendSVG.selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    legendSVG.selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
     // reset all elements of view
-    viewSVG.selectAll(".voronoiCell").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    viewSVG.selectAll(".treeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    viewSVG.selectAll(".treeLink").attr("stroke-opacity", 1);
-    viewSVG.selectAll(".siteTitle").attr("fill-opacity", 1);
-    viewSVG.selectAll(".anatomicPointer").attr("stroke-opacity", 1);
-    viewSVG.selectAll(".mixtureClassTreeLink").attr("stroke-opacity", 0);
+    d3.select("#" + view_id).selectAll(".voronoiCell").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".treeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".treeLink").attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".siteTitle").attr("fill-opacity", 1);
+    d3.select("#" + view_id).selectAll(".anatomicPointer").attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".mixtureClassTreeLink").attr("stroke-opacity", 0);
 }
 
 /* function to highlight certain sites in the view
 * @param {Array} site_ids -- site ids to highlight
+* @param view_id -- the id for the current view
 */
-function _highlightSites(site_ids) {
-    var viewSVG = vizObj.view.viewSVG;
-
+function _highlightSites(site_ids, view_id) {
     site_ids.forEach(function(site) {
-        viewSVG.selectAll(".voronoiCell." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-        viewSVG.selectAll(".treeNode." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-        viewSVG.selectAll(".treeLink." + site).attr("stroke-opacity", 1);
-        viewSVG.selectAll(".siteTitle." + site).attr("fill-opacity", 1);
-        viewSVG.selectAll(".anatomicPointer." + site).attr("stroke-opacity", 1)
+        d3.select("#" + view_id).selectAll(".voronoiCell." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        d3.select("#" + view_id).selectAll(".treeNode." + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        d3.select("#" + view_id).selectAll(".treeLink." + site).attr("stroke-opacity", 1);
+        d3.select("#" + view_id).selectAll(".siteTitle." + site).attr("fill-opacity", 1);
+        d3.select("#" + view_id).selectAll(".anatomicPointer." + site).attr("stroke-opacity", 1)
     })
 }
 
 /* function during drag event
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 * @param {String} cur_site -- current site being dragged
 * @param {Object} d -- data object for current site svg group
+* @param view_id -- the id for the current view
 */
-function _dragFunction(vizObj, cur_site, d) {
-    var dim = vizObj.generalConfig,
-        viewSVG = vizObj.view.viewSVG;
+function _dragFunction(curVizObj, cur_site, d, view_id) {
+    var dim = curVizObj.generalConfig;
 
     // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
     var angle = _find_angle_of_line_segment(
@@ -132,7 +133,7 @@ function _dragFunction(vizObj, cur_site, d) {
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
 
     // move anatomic pointer
-    viewSVG.select(".anatomicPointer."+cur_site)
+    d3.select("#" + view_id).select(".anatomicPointer."+cur_site)
         .attr("x1", function() {
             var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y1 - dim.viewCentre.y, 2)),
@@ -147,7 +148,7 @@ function _dragFunction(vizObj, cur_site, d) {
         })
 
     // move oncoMix
-    viewSVG.select(".oncoMixG."+cur_site)
+    d3.select("#" + view_id).select(".oncoMixG."+cur_site)
         .attr("transform", function(d) {
             var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y - dim.viewCentre.y, 2)),
@@ -157,7 +158,7 @@ function _dragFunction(vizObj, cur_site, d) {
         });
 
     // move tree * site title
-    viewSVG.select(".treeAndSiteTitleG."+cur_site)
+    d3.select("#" + view_id).select(".treeAndSiteTitleG."+cur_site)
         .attr("transform", function(d) {
             var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y - dim.viewCentre.y, 2)),
@@ -170,12 +171,12 @@ function _dragFunction(vizObj, cur_site, d) {
 // ANATOMY IMAGE FUNCTIONS
 
 /* function to get proportional anatomic locations on the anatomic diagram
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
-function _getSiteLocationsOnImage(vizObj) {
+function _getSiteLocationsOnImage(curVizObj) {
     // female anatomy
-    if (vizObj.userConfig.gender == "F") {
-        vizObj.view.siteLocationsOnImage = [
+    if (curVizObj.userConfig.gender == "F") {
+        curVizObj.view.siteLocationsOnImage = [
             {siteStem: "Om", x: 0.503, y: 0.40},
             {siteStem: "RFT", x: 0.482, y: 0.435},
             {siteStem: "LFT", x: 0.524, y: 0.435},
@@ -196,7 +197,7 @@ function _getSiteLocationsOnImage(vizObj) {
     }
     // male anatomy
     else {
-        vizObj.view.siteLocationsOnImage = [
+        curVizObj.view.siteLocationsOnImage = [
             {siteStem: "Om", x: 0.503, y: 0.40},
             {siteStem: "Cln", x: 0.503, y: 0.478},
             {siteStem: "RPv", x: 0.459, y: 0.454},
@@ -212,22 +213,22 @@ function _getSiteLocationsOnImage(vizObj) {
 /* function to assign site stems (e.g. "Om") to site ids (e.g. "Om1"), and vice versa
 * Note: "stem" = anatomic site stem (e.g. "Om")
 *       "id" = site id (e.g. "Om1")
-* @param {Object} vizObj 
+* @param {Object} curVizObj -- vizObj for the current view 
 */
-function _assignAnatomicLocations(vizObj) {
+function _assignAnatomicLocations(curVizObj) {
 
     // keep track of stems in this dataset, and their corresponding site ids
-    vizObj.data.siteStemsInDataset = {};
+    curVizObj.data.siteStemsInDataset = {};
 
-    vizObj.data.sites = [];
+    curVizObj.data.sites = [];
 
     // for each site in the data
-    vizObj.site_ids.forEach(function(site_id) {
+    curVizObj.site_ids.forEach(function(site_id) {
         var site_data = {id: site_id};
 
         // for each potential stem
-        for (var i = 0; i < vizObj.view.siteLocationsOnImage.length; i++) {
-            var cur_location = vizObj.view.siteLocationsOnImage[i];
+        for (var i = 0; i < curVizObj.view.siteLocationsOnImage.length; i++) {
+            var cur_location = curVizObj.view.siteLocationsOnImage[i];
 
             // if this stem is applicable to the current site id
             var siteStem = cur_location.siteStem;
@@ -237,39 +238,39 @@ function _assignAnatomicLocations(vizObj) {
                 site_data.stem = cur_location;
 
                 // add this site id to the stems data
-                if (vizObj.data.siteStemsInDataset[siteStem]) {
-                    vizObj.data.siteStemsInDataset[siteStem].site_ids.push(site_id);
+                if (curVizObj.data.siteStemsInDataset[siteStem]) {
+                    curVizObj.data.siteStemsInDataset[siteStem].site_ids.push(site_id);
                 }
                 else {
-                    vizObj.data.siteStemsInDataset[siteStem] = cur_location;
-                    vizObj.data.siteStemsInDataset[siteStem].site_ids = [site_id];
+                    curVizObj.data.siteStemsInDataset[siteStem] = cur_location;
+                    curVizObj.data.siteStemsInDataset[siteStem].site_ids = [site_id];
                 }
 
                 break;
             }
 
             // no site found - throw warning
-            if (i == vizObj.view.siteLocationsOnImage.length-1) {
+            if (i == curVizObj.view.siteLocationsOnImage.length-1) {
                 console.warn("No corresponding anatomic site found for site \"" + site_id + "\".")
             }
         }
 
         // add this site to list of sites
-        vizObj.data.sites.push(site_data);
+        curVizObj.data.sites.push(site_data);
     })
 }
 
 /* function to get image bounds for the anatomic data in this dataset
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 */
-function _getImageBounds(vizObj) {
+function _getImageBounds(curVizObj) {
     var min_x = Infinity,
         max_x = -1
         min_y = Infinity,
         max_y = -1;
 
-    Object.keys(vizObj.data.siteStemsInDataset).forEach(function(siteStem) {
-        var cur_siteStem = vizObj.data.siteStemsInDataset[siteStem];
+    Object.keys(curVizObj.data.siteStemsInDataset).forEach(function(siteStem) {
+        var cur_siteStem = curVizObj.data.siteStemsInDataset[siteStem];
         if (min_x > cur_siteStem.x) {
             min_x = cur_siteStem.x;
         }
@@ -284,7 +285,7 @@ function _getImageBounds(vizObj) {
         }
     })
 
-    vizObj.view.imageBounds = {
+    curVizObj.view.imageBounds = {
         min_x: min_x,
         min_y: min_y,
         max_x: max_x,
@@ -297,17 +298,17 @@ function _getImageBounds(vizObj) {
 * @param {Number} original_width -- the width of the original image
 * @param {Array}
 */
-function _scale(vizObj) {
+function _scale(curVizObj) {
 
     var anatomy_padding = 0.05; // 5% of the image
-    var original_width = vizObj.generalConfig.image_plot_width;
+    var original_width = curVizObj.generalConfig.image_plot_width;
 
     // get the width (width == height) of the cropped section
-    var bounds = vizObj.view.imageBounds;
+    var bounds = curVizObj.view.imageBounds;
     var crop_width_prop = ((bounds.max_x - bounds.min_x) > (bounds.max_y - bounds.min_y)) ? 
         (bounds.max_x - bounds.min_x + anatomy_padding*2) :
         (bounds.max_y - bounds.min_y + anatomy_padding*2);
-    var crop_width = crop_width_prop*vizObj.generalConfig.image_plot_width; 
+    var crop_width = crop_width_prop*curVizObj.generalConfig.image_plot_width; 
 
     // scaling factor
     var scaling_factor = crop_width/original_width; 
@@ -363,20 +364,20 @@ function _getCroppedCoordinate(crop_info, x_prop, y_prop, top_l_x, top_l_y, plot
 // TREE FUNCTIONS
 
 /* extract all info from tree about nodes, edges, ancestors, descendants
-* @param {Object} vizObj 
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
-function _getTreeInfo(vizObj) {
-    var userConfig = vizObj.userConfig,
+function _getTreeInfo(curVizObj) {
+    var userConfig = curVizObj.userConfig,
         rootName = 'Root',
         cur_edges = userConfig.tree_edges;
 
     // get tree nodes
-    vizObj.data.treeNodes = _.uniq(_.pluck(cur_edges, "source").concat(_.pluck(cur_edges, "target")));
+    curVizObj.data.treeNodes = _.uniq(_.pluck(cur_edges, "source").concat(_.pluck(cur_edges, "target")));
 
     // get tree edges
-    vizObj.data.treeEdges = [];
+    curVizObj.data.treeEdges = [];
     for (var i = 0; i < cur_edges.length; i++) {
-        vizObj.data.treeEdges.push({
+        curVizObj.data.treeEdges.push({
             "source": cur_edges[i].source,
             "target": cur_edges[i].target
         })
@@ -384,16 +385,16 @@ function _getTreeInfo(vizObj) {
 
     // get tree structure
     var nodesByName = [];
-    for (var i = 0; i < vizObj.data.treeEdges.length; i++) {
-        var parent = _findNodeByName(nodesByName, vizObj.data.treeEdges[i].source);
-        var child = _findNodeByName(nodesByName, vizObj.data.treeEdges[i].target);
+    for (var i = 0; i < curVizObj.data.treeEdges.length; i++) {
+        var parent = _findNodeByName(nodesByName, curVizObj.data.treeEdges[i].source);
+        var child = _findNodeByName(nodesByName, curVizObj.data.treeEdges[i].target);
         parent["children"].push(child);
     }
 
     // if we want to show the root
     var root_tree = _findNodeByName(nodesByName, rootName);
     if (userConfig.show_root) {
-       vizObj.data.treeStructure = root_tree;
+       curVizObj.data.treeStructure = root_tree;
     }
 
     // we do not want to show the root
@@ -404,42 +405,42 @@ function _getTreeInfo(vizObj) {
         }
         rootName = root_tree.children[0].id;
         var new_root_tree = _findNodeByName(nodesByName, rootName);
-        vizObj.data.treeStructure = new_root_tree;
+        curVizObj.data.treeStructure = new_root_tree;
     }    
 
     // get descendants for each node
-    vizObj.data.treeDescendantsArr = {};
-    vizObj.data.treeNodes.forEach(function(node, idx) {
+    curVizObj.data.treeDescendantsArr = {};
+    curVizObj.data.treeNodes.forEach(function(node, idx) {
         var curRoot = _findNodeByName(nodesByName, node);
         var curDescendants = _getDescendantIds(curRoot, []);
-        vizObj.data.treeDescendantsArr[node] = curDescendants;
+        curVizObj.data.treeDescendantsArr[node] = curDescendants;
     })
-    vizObj.data.direct_descendants = _getDirectDescendants(vizObj.data.treeStructure, {});
+    curVizObj.data.direct_descendants = _getDirectDescendants(curVizObj.data.treeStructure, {});
 
     // get ancestors for each node
-    vizObj.data.treeAncestorsArr = _getAncestorIds(vizObj);
-    vizObj.data.direct_ancestors = _getDirectAncestors(vizObj.data.treeStructure, {});
+    curVizObj.data.treeAncestorsArr = _getAncestorIds(curVizObj);
+    curVizObj.data.direct_ancestors = _getDirectAncestors(curVizObj.data.treeStructure, {});
 
     // get the height of the tree
-    vizObj.data.tree_height = 0;
-    Object.keys(vizObj.data.treeAncestorsArr).forEach(function(key) {
-        var ancestor_arr = vizObj.data.treeAncestorsArr[key];
-        if (ancestor_arr.length > vizObj.data.tree_height) {
-            vizObj.data.tree_height = ancestor_arr.length;
+    curVizObj.data.tree_height = 0;
+    Object.keys(curVizObj.data.treeAncestorsArr).forEach(function(key) {
+        var ancestor_arr = curVizObj.data.treeAncestorsArr[key];
+        if (ancestor_arr.length > curVizObj.data.tree_height) {
+            curVizObj.data.tree_height = ancestor_arr.length;
         }
     })
 }
 
 /* function to get the most recent common ancestor for a list of genotypes
 * (this function could return one of the genotypes itself)
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 * @param {Array} gtypes -- genotypes for which we want a common ancestor
 */
-function _getMRCA(vizObj, gtypes) {
+function _getMRCA(curVizObj, gtypes) {
     var ancestorsList = []; // list of ancestors for each genotype
     gtypes.forEach(function(gtype) {
         // the current genotype and its ancestors
-        var gtype_and_ancestors = $.extend([], vizObj.data.treeAncestorsArr[gtype]);
+        var gtype_and_ancestors = $.extend([], curVizObj.data.treeAncestorsArr[gtype]);
         gtype_and_ancestors.push(gtype);
 
         ancestorsList.push(gtype_and_ancestors);
@@ -452,7 +453,7 @@ function _getMRCA(vizObj, gtypes) {
     var most_ancestors = -1;
     var MRCA = "NA";
     common_ancestors.forEach(function(anc) {
-        var n_ancestors = vizObj.data.treeAncestorsArr[anc].length;
+        var n_ancestors = curVizObj.data.treeAncestorsArr[anc].length;
         if (n_ancestors > most_ancestors) {
             most_ancestors = n_ancestors;
             MRCA = anc;
@@ -513,13 +514,13 @@ function _getDescendantIds(root, descendants) {
 }
 
 /* function to get the ancestor ids for all nodes
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 */
-function _getAncestorIds(vizObj) {
+function _getAncestorIds(curVizObj) {
     var ancestors = {},
         curDescendants,
-        descendants_arr = vizObj.data.treeDescendantsArr,
-        treeNodes = vizObj.data.treeNodes;
+        descendants_arr = curVizObj.data.treeDescendantsArr,
+        treeNodes = curVizObj.data.treeNodes;
 
     // set up each node as originally containing an empty list of ancestors
     treeNodes.forEach(function(node, idx) {
@@ -607,11 +608,11 @@ function _getLinearTreeSegments(curNode, chains, base) {
 
 // COLOUR FUNCTIONS
 
-function _getColours(vizObj) {
-    var dim = vizObj.generalConfig,
+function _getColours(curVizObj) {
+    var dim = curVizObj.generalConfig,
         colour_assignment = {}, // standard colour assignment
-        patient_id = vizObj.patient_id,
-        cur_colours = vizObj.userConfig.clone_cols;
+        patient_id = curVizObj.patient_id,
+        cur_colours = curVizObj.userConfig.clone_cols;
 
     // get colour assignment - use specified colours
     // handling different inputs -- TODO should probably be done in R
@@ -626,7 +627,7 @@ function _getColours(vizObj) {
         colour_assignment[col.clone_id] = col_value;
     });
     colour_assignment['Root'] = dim.rootColour;
-    vizObj.view.colour_assignment = colour_assignment;
+    curVizObj.view.colour_assignment = colour_assignment;
 }
 
 /* function to get a colour palette
@@ -664,7 +665,7 @@ function _getColourPalette() {
 
 /*
 * function to, using the tree hierarchy, get appropriate colours for each genotype
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 * @param {Object} chains -- the linear segments (chains) in the genotype tree 
 *                           (key is segment start key, value is array of descendants in this chain)
 * @param {Object} curNode -- current key in the tree
@@ -672,11 +673,11 @@ function _getColourPalette() {
 * @param {Object} colour_assignment -- originally empty array of the final colour assignments
 * @param {String} curTheme -- the colour theme currently in use
 */
-function _colourTree(vizObj, chains, curNode, palette, colour_assignment, curTheme) {
+function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, curTheme) {
 
     // colour node
     if (curNode.id == "Root") {
-        colour_assignment[curNode.id] = vizObj.generalConfig.rootColour; // grey
+        colour_assignment[curNode.id] = curVizObj.generalConfig.rootColour; // grey
         var n = chains[curNode.id].length+1; // + 1 to include the base key (this child)
         var tmp_palette = [];
         for (var j = 8; j >= 0; j -= Math.floor(9/n)) {
@@ -699,7 +700,7 @@ function _colourTree(vizObj, chains, curNode, palette, colour_assignment, curThe
     if (curNode.children.length == 1) {
 
         // colour child with the same theme as its parent
-        _colourTree(vizObj, chains, curNode.children[0], palette, colour_assignment, curTheme)
+        _colourTree(curVizObj, chains, curNode.children[0], palette, colour_assignment, curTheme)
     }
 
     // otherwise
@@ -727,19 +728,19 @@ function _colourTree(vizObj, chains, curNode, palette, colour_assignment, curThe
             palette[curTheme] = tmp_palette;
 
             // colour child
-            _colourTree(vizObj, chains, tmpChildren[i], palette, colour_assignment, curTheme)
+            _colourTree(curVizObj, chains, tmpChildren[i], palette, colour_assignment, curTheme)
         }
     }
 
     return colour_assignment;
 }
 
-function _getColours(vizObj) {
+function _getColours(curVizObj) {
     var colour_palette = _getColourPalette();
-    var chains = _getLinearTreeSegments(vizObj.data.treeStructure, {}, "");
-    colour_assignment = _colourTree(vizObj, chains, vizObj.data.treeStructure, 
+    var chains = _getLinearTreeSegments(curVizObj.data.treeStructure, {}, "");
+    colour_assignment = _colourTree(curVizObj, chains, curVizObj.data.treeStructure, 
         colour_palette, {}, "Greys");
-    vizObj.view.colour_assignment = colour_assignment;
+    curVizObj.view.colour_assignment = colour_assignment;
 }
 
 // function to increase brightness of hex colour
@@ -781,8 +782,8 @@ function _decrease_brightness(hex, percent){
 /* function to get the cellular prevalence data in a better format 
 * (properties at level 1 is site, at level 2 is gtype)
 */
-function _getCPData(vizObj) {
-    var clonal_prev = vizObj.userConfig.clonal_prev;
+function _getCPData(curVizObj) {
+    var clonal_prev = curVizObj.userConfig.clonal_prev;
 
     // for each time point, for each genotype, get cellular prevalence
     var cp_data = {};
@@ -793,30 +794,30 @@ function _getCPData(vizObj) {
         cp_data[hit["site_id"]][hit["clone_id"]]["cp"] = parseFloat(hit["clonal_prev"]); 
     });
 
-    vizObj.data.cp_data = cp_data;
+    curVizObj.data.cp_data = cp_data;
 }
 
 /* function to threshold and adjust cellular prevalences 
 * (genotypes with small cellular prevalences will not be plotted;
 * the rest will be adjusted such that the sum of adjusted CPs is 1)
-* @param {Object} vizObj 
+* @param {Object} curVizObj -- vizObj for the current view 
 */
-function _thresholdCPData(vizObj) {
+function _thresholdCPData(curVizObj) {
 
-    vizObj.site_ids.forEach(function(site) {
+    curVizObj.site_ids.forEach(function(site) {
 
         // threshold the cellular prevalence 
         // (> prevalence of one cell in this view)
 
         var threshold = 0.01;
         var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
-        Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
+        Object.keys(curVizObj.data.cp_data[site]).forEach(function(gtype) {
 
-            var cur_cp = vizObj.data.cp_data[site][gtype].cp;
+            var cur_cp = curVizObj.data.cp_data[site][gtype].cp;
 
             // only add genotypes that will be exhibited in >1 cell
             if (cur_cp > threshold) {
-                total_legit_cp += vizObj.data.cp_data[site][gtype].cp;
+                total_legit_cp += curVizObj.data.cp_data[site][gtype].cp;
             }
             // warn if this genotype will not be shown
             else {
@@ -827,38 +828,40 @@ function _thresholdCPData(vizObj) {
 
         // adjust cellular prevalence values of to sum to 1
 
-        vizObj.data["genotypes_to_plot"] = vizObj.data["genotypes_to_plot"] || {};
-        vizObj.data["genotypes_to_plot"][site] = []; // which genotypes to show for this site
-        Object.keys(vizObj.data.cp_data[site]).forEach(function(gtype) {
+        curVizObj.data["genotypes_to_plot"] = curVizObj.data["genotypes_to_plot"] || {};
+        curVizObj.data["genotypes_to_plot"][site] = []; // which genotypes to show for this site
+        Object.keys(curVizObj.data.cp_data[site]).forEach(function(gtype) {
 
-            var cur_cp = vizObj.data.cp_data[site][gtype].cp;
+            var cur_cp = curVizObj.data.cp_data[site][gtype].cp;
 
             // only add genotypes that will be exhibited in >1 cell
             if (cur_cp > threshold) {
-                vizObj.data.cp_data[site][gtype].adj_cp = cur_cp/total_legit_cp;
-                vizObj.data["genotypes_to_plot"][site].push(gtype);
+                curVizObj.data.cp_data[site][gtype].adj_cp = cur_cp/total_legit_cp;
+                curVizObj.data["genotypes_to_plot"][site].push(gtype);
             }
         });
     });
 }
 
 /* function to get the sites expressing each genotype
-* @param {Object} genotypes_to_plot -- each site (1st level property) has an array of genotypes at that site
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
-function _getGenotypeSites(genotypes_to_plot) {
+function _getGenotypeSites(curVizObj) {
+    // each site (1st level property) has an array of genotypes at that site
+    var genotypes_to_plot = curVizObj.data.genotypes_to_plot;
     var genotype_sites = {};
 
-    vizObj.data.treeNodes.forEach(function(gtype) {
+    curVizObj.data.treeNodes.forEach(function(gtype) {
         var sites_containing_gtype = [];
-        Object.keys(vizObj.data.genotypes_to_plot).forEach(function(site) {
-            if (vizObj.data.genotypes_to_plot[site].indexOf(gtype) != -1) {
+        Object.keys(curVizObj.data.genotypes_to_plot).forEach(function(site) {
+            if (curVizObj.data.genotypes_to_plot[site].indexOf(gtype) != -1) {
                 sites_containing_gtype.push(site);
             }
         });
         genotype_sites[gtype] = sites_containing_gtype;
     })
 
-    vizObj.data.genotype_sites = genotype_sites;
+    curVizObj.data.genotype_sites = genotype_sites;
 }
 
 // VORONOI FUNCTIONS
@@ -869,12 +872,12 @@ function _polygon(d) {
 
 /* function to get voronoi vertices for this anatomic site (randomly fill a rectangle, keeping all within a certain 
 * radius from the centre as "real cells", all others as "fake cells") 
-* @param {Object} vizObj 
+* @param {Object} curVizObj -- vizObj for the current view 
 * @param {Number} cx -- x-coordinate at centre of oncoMix
 * @param {Number} cy -- y-coordinate at centre of oncoMix
 */
-function _getVoronoiVertices(vizObj, cx, cy) {
-    var dim = vizObj.generalConfig;
+function _getVoronoiVertices(curVizObj, cx, cy) {
+    var dim = curVizObj.generalConfig;
 
     // voronoi vertices 
     var circleRadius = dim.oncoMixWidth*1/3;
@@ -913,14 +916,14 @@ function _getVoronoiVertices(vizObj, cx, cy) {
 }
 
 /* function to add colour (genotype) information to each vertex for this anatomic site
-* @param {Object} vizObj 
+* @param {Object} curVizObj -- vizObj for the current view 
 * @param {String} site -- current anatomic site of interest
 * @param {Array} vertices -- array of voronoi vertices objects (properties: x, y, real_cell) for this site 
 */
-function _addGtypeInfoToVertices(vizObj, site, vertices) {
+function _addGtypeInfoToVertices(curVizObj, site, vertices) {
 
-    var gtypes = vizObj.data["genotypes_to_plot"][site], // genotypes to plot for this site
-        cumulative_cp = vizObj.data.cp_data[site][gtypes[0]].adj_cp, // cumulative CP thus far
+    var gtypes = curVizObj.data["genotypes_to_plot"][site], // genotypes to plot for this site
+        cumulative_cp = curVizObj.data.cp_data[site][gtypes[0]].adj_cp, // cumulative CP thus far
         gtype_i = 0, // index of the current genotype to show
         cur_gtype, // current genotype
         n_real_cells = 1; // # real cells seen
@@ -934,13 +937,13 @@ function _addGtypeInfoToVertices(vizObj, site, vertices) {
         if (v.real_cell) {
 
             // if the current genotype has been allocated enough cells, advance one genotype
-            if (n_real_cells/vizObj.generalConfig.nCells > Math.round(cumulative_cp * 100)/100) {
+            if (n_real_cells/curVizObj.generalConfig.nCells > Math.round(cumulative_cp * 100)/100) {
                 cur_gtype = gtypes[++gtype_i]; // update current genotype
-                cumulative_cp += vizObj.data.cp_data[site][cur_gtype].adj_cp; // update cumulative CP
+                cumulative_cp += curVizObj.data.cp_data[site][cur_gtype].adj_cp; // update cumulative CP
             }
 
             // note colour for this vertex, based on appropriate genotype
-            v.col = vizObj.view.colour_assignment[cur_gtype];
+            v.col = curVizObj.view.colour_assignment[cur_gtype];
 
             // we've seen another real cell
             n_real_cells++;
@@ -1013,14 +1016,14 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
 
 
 /* function to get positions of site tab, dividers, voronoi tesselation centre, tree centre for each site
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 */
-function _getSitePositioning(vizObj) {
-    var dim = vizObj.generalConfig,
-        n_sites = vizObj.site_ids.length; // number of sites
+function _getSitePositioning(curVizObj) {
+    var dim = curVizObj.generalConfig,
+        n_sites = curVizObj.site_ids.length; // number of sites
 
     // for each site
-    vizObj.data.sites.forEach(function(cur_site_obj, site_idx) {
+    curVizObj.data.sites.forEach(function(cur_site_obj, site_idx) {
         var site_id = cur_site_obj.id;
 
         // left divider
@@ -1047,13 +1050,13 @@ function _getSitePositioning(vizObj) {
         // voronoi vertices (randomly fill a rectangle, keeping all within a certain 
         // radius from the centre as "real cells", all others as "fake cells")
         var vertices = _getVoronoiVertices(
-                vizObj, 
+                curVizObj, 
                 cur_site_obj["voronoi"]["centre"].x,
                 cur_site_obj["voronoi"]["centre"].y
             );
 
         // add colour (genotype) information to each vertex
-        cur_site_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(vizObj, 
+        cur_site_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(curVizObj, 
                                                                         site_id, 
                                                                         vertices);
 
@@ -1102,7 +1105,7 @@ function _getSitePositioning(vizObj) {
 
         // PURE, MONOPHYLETIC, OR POLYPHYLETIC SITE
         var phyly;
-        var site_gtypes = vizObj.data["genotypes_to_plot"][site_id];
+        var site_gtypes = curVizObj.data["genotypes_to_plot"][site_id];
         // pure tumour
         if (site_gtypes.length == 1) {
             phyly = "pure";
@@ -1110,7 +1113,7 @@ function _getSitePositioning(vizObj) {
         // monophyletic tumour
         else {
             for (var i = 0; i < site_gtypes.length; i++) {
-                var gtypeAndAncestors = vizObj.data.treeAncestorsArr[site_gtypes[i]].slice();
+                var gtypeAndAncestors = curVizObj.data.treeAncestorsArr[site_gtypes[i]].slice();
                 gtypeAndAncestors.push(site_gtypes[i]);
                 if (_getIntersection(gtypeAndAncestors, site_gtypes).length == site_gtypes.length) {
                     phyly = "monophyletic";
@@ -1143,39 +1146,39 @@ function _find_angle_of_line_segment(A,B) {
     return angle;
 }
 
-/* function to get order of the sites, then reorder the vizObj.data.sites 
+/* function to get order of the sites, then reorder the curVizObj.data.sites 
 * array accordingly.
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
+* @param view_id -- the id for the current view
 */
-function _reorderSitesData(vizObj) {
-    var sites = [],
-        viewSVG = vizObj.view.viewSVG;
+function _reorderSitesData(curVizObj, view_id) {
+    var sites = [];
 
-    vizObj.site_ids.forEach(function(site_id) {
+    curVizObj.site_ids.forEach(function(site_id) {
 
         // current transformation of the site title / tree group
-        var t = d3.transform(viewSVG.select(".treeAndSiteTitleG."+site_id).attr("transform")),
+        var t = d3.transform(d3.select("#" + view_id).select(".treeAndSiteTitleG."+site_id).attr("transform")),
             t_x = t.translate[0],
             t_y = t.translate[1];
 
         // current coordinates
         var x = (t) ? 
-                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("x")) + t_x :
-                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("x"));
+                    parseFloat(d3.select("#" + view_id).select(".siteTitle."+site_id).attr("x")) + t_x :
+                    parseFloat(d3.select("#" + view_id).select(".siteTitle."+site_id).attr("x"));
         var y = (t) ? 
-                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("y")) + t_y :
-                    parseFloat(viewSVG.select(".siteTitle."+site_id).attr("y"));
+                    parseFloat(d3.select("#" + view_id).select(".siteTitle."+site_id).attr("y")) + t_y :
+                    parseFloat(d3.select("#" + view_id).select(".siteTitle."+site_id).attr("y"));
 
         // depending on placement of title, move y-coordinate up or down
-        y = (viewSVG.select(".siteTitle."+site_id).data()[0].position == "top") ? 
-            y + vizObj.generalConfig.treeWidth/2 :
-            y - vizObj.generalConfig.treeWidth/2;
+        y = (d3.select("#" + view_id).select(".siteTitle."+site_id).data()[0].position == "top") ? 
+            y + curVizObj.generalConfig.treeWidth/2 :
+            y - curVizObj.generalConfig.treeWidth/2;
 
         // find the angle formed with the positive x-axis, by the line segment from the title to the view centre
         var angle = _find_angle_of_line_segment({x: x, 
                                                     y: y},
-                                                {x: vizObj.generalConfig.viewCentre.x, 
-                                                    y: vizObj.generalConfig.viewCentre.y});
+                                                {x: curVizObj.generalConfig.viewCentre.x, 
+                                                    y: curVizObj.generalConfig.viewCentre.y});
         sites.push({
             "site_id": site_id,
             "angle": angle
@@ -1186,53 +1189,52 @@ function _reorderSitesData(vizObj) {
     _sortByKey(sites, "angle");
     var site_order = _.pluck(sites, "site_id");
 
-    // rearrange vizObj.data.sites array to reflect new ordering
+    // rearrange curVizObj.data.sites array to reflect new ordering
     var new_sites_array = [];
     site_order.forEach(function(site_id) {
-        new_sites_array.push(_.findWhere(vizObj.data.sites, {id: site_id}));
+        new_sites_array.push(_.findWhere(curVizObj.data.sites, {id: site_id}));
     })
 
     // if we crossed the x-axis, adjust site order so the least number of sites move
-    var clockwise_x_cross_angle = (2*Math.PI - vizObj.view.startAngle) + vizObj.view.endAngle;
-    var counterclockwise_x_cross_angle = vizObj.view.startAngle + (2*Math.PI - vizObj.view.endAngle);
-    if ((vizObj.view.startAngle > 3*Math.PI/2) && 
-        (vizObj.view.endAngle < Math.PI) &&
+    var clockwise_x_cross_angle = (2*Math.PI - curVizObj.view.startAngle) + curVizObj.view.endAngle;
+    var counterclockwise_x_cross_angle = curVizObj.view.startAngle + (2*Math.PI - curVizObj.view.endAngle);
+    if ((curVizObj.view.startAngle > 3*Math.PI/2) && 
+        (curVizObj.view.endAngle < Math.PI) &&
         (clockwise_x_cross_angle < Math.PI)) {
         new_sites_array.push(new_sites_array.shift());
     }
-    else if ((vizObj.view.startAngle < Math.PI/2) && 
-        (vizObj.view.endAngle > Math.PI) &&
+    else if ((curVizObj.view.startAngle < Math.PI/2) && 
+        (curVizObj.view.endAngle > Math.PI) &&
         (counterclockwise_x_cross_angle < Math.PI)) {
         new_sites_array.unshift(new_sites_array.pop());
     }
-    else if ((vizObj.view.startAngle > Math.PI) && 
-        (vizObj.view.endAngle < Math.PI/2) &&
+    else if ((curVizObj.view.startAngle > Math.PI) && 
+        (curVizObj.view.endAngle < Math.PI/2) &&
         (clockwise_x_cross_angle < Math.PI)) {
         new_sites_array.push(new_sites_array.shift());
     }
-    else if ((vizObj.view.startAngle < Math.PI) && 
-        (vizObj.view.endAngle > 3*Math.PI/2) &&
+    else if ((curVizObj.view.startAngle < Math.PI) && 
+        (curVizObj.view.endAngle > 3*Math.PI/2) &&
         (counterclockwise_x_cross_angle < Math.PI)) {
         new_sites_array.unshift(new_sites_array.pop());
     }
 
-    vizObj.data.sites = new_sites_array;
+    curVizObj.data.sites = new_sites_array;
 }
 
 /* function to visually reposition sites to their "snapped" location
-* @param {Object} vizObj
-* @param {d3 Object} viewSVG -- svg for the central view
+* @param {Object} curVizObj -- vizObj for the current view
+* @param view_id -- the id for the current view
 */ 
-function _snapSites(vizObj, viewSVG) {
-    var dim = vizObj.generalConfig,
-        viewSVG = vizObj.view.viewSVG;
+function _snapSites(curVizObj, view_id) {
+    var dim = curVizObj.generalConfig;
 
     // for each site
-    vizObj.site_ids.forEach(function(site, site_idx) {
+    curVizObj.site_ids.forEach(function(site, site_idx) {
 
         // get the data
-        var site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
-            cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")); // svg group for this site
+        var site_data = _.findWhere(curVizObj.data.sites, {id: site}), // data for the current site
+            cur_siteG = d3.select("#" + view_id).select(".siteG." + site.replace(/ /g,"_")); // svg group for this site
 
         // calculate angle w/the positive x-axis, formed by the line segment between the 
         // "snapped" site position & view centre
@@ -1253,7 +1255,7 @@ function _snapSites(vizObj, viewSVG) {
                     return d.y1;
                 })
                 .attr("x2", function(d) { 
-                    var cropped_x = _getCroppedCoordinate(vizObj.crop_info, 
+                    var cropped_x = _getCroppedCoordinate(curVizObj.crop_info, 
                                                                 site_data.stem.x, 
                                                                 site_data.stem.y,
                                                                 dim.image_top_l.x,
@@ -1263,7 +1265,7 @@ function _snapSites(vizObj, viewSVG) {
                     return cropped_x;
                 })
                 .attr("y2", function(d) { 
-                    var cropped_y = _getCroppedCoordinate(vizObj.crop_info, 
+                    var cropped_y = _getCroppedCoordinate(curVizObj.crop_info, 
                                                                 site_data.stem.x, 
                                                                 site_data.stem.y,
                                                                 dim.image_top_l.x,
@@ -1275,7 +1277,7 @@ function _snapSites(vizObj, viewSVG) {
         }
 
         // move oncoMix
-        viewSVG.select(".oncoMixG."+site)
+        d3.select("#" + view_id).select(".oncoMixG."+site)
             .transition()
             .attr("transform", function(d) {
                 var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
@@ -1287,7 +1289,7 @@ function _snapSites(vizObj, viewSVG) {
         // move tree * site title
         // keep track of translation
         var translation = {};
-        viewSVG.select(".treeAndSiteTitleG."+site)
+        d3.select("#" + view_id).select(".treeAndSiteTitleG."+site)
             .transition()
             .attr("transform", function(d) {
                 var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
@@ -1298,7 +1300,7 @@ function _snapSites(vizObj, viewSVG) {
             });
 
         // change site title location (depending on placement of site, above or below view centre)
-        viewSVG.select(".siteTitle." + site)
+        d3.select("#" + view_id).select(".siteTitle." + site)
             .transition()
             .attr("y", function(d) {
                 if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
@@ -1321,15 +1323,15 @@ function _snapSites(vizObj, viewSVG) {
 }
 
 /* function to plot all the elements for this site (oncoMix, tree, title, anatomic lines, anatomic marks)
-* @param {Object} vizObj
+* @param {Object} curVizObj -- vizObj for the current view
 * @param {String} site -- current anatomic site
-* @param {Object} viewSVG -- main view svg
+* @param view_id -- the id for the current view
 */
-function _plotSite(vizObj, site, viewSVG) {
-    var dim = vizObj.generalConfig,
-        site_data = _.findWhere(vizObj.data.sites, {id: site}), // data for the current site
-        cur_siteG = viewSVG.select(".siteG." + site.replace(/ /g,"_")), // svg group for this site
-        cols = vizObj.view.colour_assignment;
+function _plotSite(curVizObj, site, view_id) {
+    var dim = curVizObj.generalConfig,
+        site_data = _.findWhere(curVizObj.data.sites, {id: site}), // data for the current site
+        cur_siteG = d3.select("#" + view_id).select(".siteG." + site.replace(/ /g,"_")), // svg group for this site
+        cols = curVizObj.view.colour_assignment;
 
     // TOOLTIP FUNCTIONS
 
@@ -1338,15 +1340,15 @@ function _plotSite(vizObj, site, viewSVG) {
         .offset([-10, 0])
         .html(function(d) {
             var cp;
-            if (vizObj.data["genotypes_to_plot"][d.site].indexOf(d.id) != -1) {
-                cp = (Math.round(vizObj.data.cp_data[d.site][d.id].cp * 100)/100).toFixed(2);
+            if (curVizObj.data["genotypes_to_plot"][d.site].indexOf(d.id) != -1) {
+                cp = (Math.round(curVizObj.data.cp_data[d.site][d.id].cp * 100)/100).toFixed(2);
             }
             else {
                 cp = "";                    
             }
             return "<strong>Prevalence:</strong> <span style='color:white'>" + cp + "</span>";
         });
-    viewSVG.call(nodeTip);
+    d3.select("#" + view_id).select(".viewSVG").call(nodeTip);
 
     // PLOT ANATOMIC LINES
 
@@ -1365,7 +1367,7 @@ function _plotSite(vizObj, site, viewSVG) {
                 return d.y1;
             })
             .attr("x2", function(d) { 
-                var cropped_x = _getCroppedCoordinate(vizObj.crop_info, 
+                var cropped_x = _getCroppedCoordinate(curVizObj.crop_info, 
                                                             site_data.stem.x, 
                                                             site_data.stem.y,
                                                             dim.image_top_l.x,
@@ -1375,7 +1377,7 @@ function _plotSite(vizObj, site, viewSVG) {
                 return cropped_x;
             })
             .attr("y2", function(d) { 
-                var cropped_y = _getCroppedCoordinate(vizObj.crop_info, 
+                var cropped_y = _getCroppedCoordinate(curVizObj.crop_info, 
                                                             site_data.stem.x, 
                                                             site_data.stem.y,
                                                             dim.image_top_l.x,
@@ -1392,19 +1394,19 @@ function _plotSite(vizObj, site, viewSVG) {
 
     // if the site was found on the anatomic image
     if (site_data.stem) {
-        viewSVG
+        d3.select("#" + view_id)
             .select(".anatomicMarksG")
             .append("g")
             .attr("class", function() { return "gtypeMarksG " + site; })
             .selectAll(".gtypeMark")
-            .data(vizObj.data.genotypes_to_plot[site])
+            .data(curVizObj.data.genotypes_to_plot[site])
             .enter()
             .append("circle")
             .attr("class", function(d) { 
                 return "gtypeMark " + d; 
             })
             .attr("cx", function(d) { 
-                var cropped_x = _getCroppedCoordinate(vizObj.crop_info, 
+                var cropped_x = _getCroppedCoordinate(curVizObj.crop_info, 
                                                             site_data.stem.x, 
                                                             site_data.stem.y,
                                                             dim.image_top_l.x,
@@ -1414,7 +1416,7 @@ function _plotSite(vizObj, site, viewSVG) {
                 return cropped_x;
             })
             .attr("cy", function(d) { 
-                var cropped_y = _getCroppedCoordinate(vizObj.crop_info, 
+                var cropped_y = _getCroppedCoordinate(curVizObj.crop_info, 
                                                             site_data.stem.x, 
                                                             site_data.stem.y,
                                                             dim.image_top_l.x,
@@ -1483,7 +1485,7 @@ function _plotSite(vizObj, site, viewSVG) {
             .size([dim.treeWidth - dim.node_r*2, dim.treeWidth - dim.node_r*2]); 
 
     // get nodes and links
-    var root = $.extend({}, vizObj.data.treeStructure), // copy tree into new variable
+    var root = $.extend({}, curVizObj.data.treeStructure), // copy tree into new variable
         nodes = treeLayout.nodes(root), 
         links = treeLayout.links(nodes); 
 
@@ -1517,7 +1519,7 @@ function _plotSite(vizObj, site, viewSVG) {
         .attr('fill', 'none') 
         .attr('stroke-width', '2px')               
         .attr("d", function(d) {
-            if (vizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
+            if (curVizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
                 return _elbow(d);
             }
             return _shortElbow(d);
@@ -1525,18 +1527,18 @@ function _plotSite(vizObj, site, viewSVG) {
 
     // filter links to show only branches that connect genotypes expressed at this site
     var filtered_links = [];
-    var gtypes_to_plot = $.extend([], vizObj.data.genotypes_to_plot[site]); // genotypes expressed at this anatomic site
+    var gtypes_to_plot = $.extend([], curVizObj.data.genotypes_to_plot[site]); // genotypes expressed at this anatomic site
 
     // add the most recent common ancestor for this set of genotypes
-    gtypes_to_plot.push(_getMRCA(vizObj, gtypes_to_plot));
+    gtypes_to_plot.push(_getMRCA(curVizObj, gtypes_to_plot));
     gtypes_to_plot = _.uniq(gtypes_to_plot);
 
     links.forEach(function(link) {
 
         var source = link.source.id,
             target = link.target.id,
-            source_and_ancestors = $.extend([], vizObj.data.treeAncestorsArr[source]),
-            target_and_descendants = $.extend([], vizObj.data.treeDescendantsArr[target]);
+            source_and_ancestors = $.extend([], curVizObj.data.treeAncestorsArr[source]),
+            target_and_descendants = $.extend([], curVizObj.data.treeDescendantsArr[target]);
         source_and_ancestors.push(source);
         target_and_descendants.push(target);
 
@@ -1575,17 +1577,17 @@ function _plotSite(vizObj, site, viewSVG) {
         .classed(site, true)
         .attr("fill", function(d) {
             // clone present at this site or not
-            return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
+            return (curVizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
                 cols[d.id] : "#FFFFFF";
         })
         .attr("stroke", function(d) {
             // clone present at this site or not
-            return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
+            return (curVizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? 
                 cols[d.id] : "#FFFFFF";
         })
         .attr("r", function(d) {
             // clone present at this site or not
-            return (vizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.node_r : 0;
+            return (curVizObj.data["genotypes_to_plot"][site].indexOf(d.id) != -1) ? dim.node_r : 0;
         })
         .on('mouseover', function(d) {
             d.site = site;
@@ -1633,17 +1635,17 @@ function _plotSite(vizObj, site, viewSVG) {
 /* initial ordering of sites based on their anatomic locations 
 * (angle with positive x-axis, formed by the line segment between the site position on the image & view centre)
 */
-function _initialSiteOrdering(vizObj) {
+function _initialSiteOrdering(curVizObj) {
     var sites = [], // sites and their y-coordinates
-        dim = vizObj.generalConfig;
+        dim = curVizObj.generalConfig;
 
     // for each site
-    vizObj.data.sites.forEach(function(site) {
+    curVizObj.data.sites.forEach(function(site) {
         // anatomic location detected
         if (site.stem) {
 
             // cropped x, y positions 
-            var centre = _scale(vizObj).centre_prop;
+            var centre = _scale(curVizObj).centre_prop;
 
             // calculate angle w/the positive x-axis, formed by the line segment between the 
             // site position & view centre
@@ -1670,12 +1672,12 @@ function _initialSiteOrdering(vizObj) {
     // sort sites by y-direction and stem
     _sortByKey(sites, "angle", "stem");
 
-    // rearrange vizObj.data.sites array to reflect new ordering
+    // rearrange curVizObj.data.sites array to reflect new ordering
     var new_sites_array = [];
     sites.forEach(function(site) {
-        new_sites_array.push(_.findWhere(vizObj.data.sites, {id: site.site_id}));
+        new_sites_array.push(_.findWhere(curVizObj.data.sites, {id: site.site_id}));
     })
-    vizObj.data.sites = new_sites_array;
+    curVizObj.data.sites = new_sites_array;
 }
 
 /* function to sort array of objects by key
