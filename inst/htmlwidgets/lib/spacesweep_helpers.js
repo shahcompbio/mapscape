@@ -1411,7 +1411,7 @@ function _plotSite(vizObj, site, viewSVG) {
                                                             dim.image_top_l.y,
                                                             dim.image_plot_width
                                                         ).x;
-                return cropped_x + vizObj.view.jitter[d].x;
+                return cropped_x;
             })
             .attr("cy", function(d) { 
                 var cropped_y = _getCroppedCoordinate(vizObj.crop_info, 
@@ -1421,7 +1421,7 @@ function _plotSite(vizObj, site, viewSVG) {
                                                             dim.image_top_l.y,
                                                             dim.image_plot_width
                                                         ).y;
-                return cropped_y + vizObj.view.jitter[d].y;
+                return cropped_y;
             })
             .attr("r", dim.siteMark_r)
             .attr("fill", function(d) { 
