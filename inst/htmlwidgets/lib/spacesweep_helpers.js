@@ -648,8 +648,8 @@ function _getColourPalette() {
 
     var colours = {
         "Reds": 
-            ["#F8766D","#f8837b", "#f9918a", "#fa9f99", "#fbada7", "#fcbbb6", "#fcc8c5", "#fdd6d3", 
-            "#fee4e2", "#fff2f1"].reverse(),
+            ["#df6a62", "#F8766D", "#f8837b", "#f9918a", "#fa9f99", "#fbada7", "#fcbbb6", "#fcc8c5", 
+            "#fdd6d3", "#fee4e2"].reverse(),
         "Greens":
             ["#53B400", "#64bb19", "#75c333", "#86ca4c", "#98d266", "#a9da80", "#bae199", "#cce9b3", 
             "#ddf0cc", "#eef8e6"].reverse(),
@@ -659,6 +659,9 @@ function _getColourPalette() {
         "Turquoises":
             ["#00C094", "#19c69e", "#33cca9", "#4cd3b4", "#66d9bf", "#80e0ca", "#99e6d4", "#b3ecdf", 
             "#ccf3ea", "#e6f9f5"].reverse(),
+        "Oranges":
+            ["#FF8D15", "#ff982c", "#ffa444", "#ffaf5b", "#ffbb73", "#ffc68a", "#ffd2a2", "#ffddb9", 
+            "#ffe9d1", "#fff4e8"].reverse(),
         "Purples":
             ["#A58AFF", "#ae95ff", "#b7a1ff", "#c0adff", "#c9b9ff", "#d2c5ff", "#dbd0ff", "#e4dcff", 
             "#ede8ff", "#f6f4ff"].reverse(),
@@ -668,6 +671,9 @@ function _getColourPalette() {
         "Yellows":
             ["#C49A00","#caa419", "#d0ae33", "#d6b84c", "#dcc266", "#e2cd80", "#e8d799", "#eee1b3", 
             "#f4ebcc", "#faf5e6"].reverse(),
+        "Browns":
+            ["#91553A", "#9c664d", "#a77761", "#b28875", "#bd9989", "#c8aa9d", "#d3bbb0", "#deccc4", 
+            "#e9ddd8", "#f4eeec"].reverse(),
         "Greys":
             ["#CBCBCB"]
     }
