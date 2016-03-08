@@ -10,7 +10,7 @@ HTMLWidgets.widget({
         var defaults = {
             smallMargin: 5,
             widgetMargin: 10, // marging between widgets
-            rootColour: '#DDDADA',
+            rootColour: '#717171',
             pureColour: '#D3D2D2',
             monophyleticColour: '767676',
             polyphyleticColour: '000000',

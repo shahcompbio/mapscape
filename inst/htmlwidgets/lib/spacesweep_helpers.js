@@ -675,7 +675,8 @@ function _getColourPalette() {
             ["#91553A", "#9c664d", "#a77761", "#b28875", "#bd9989", "#c8aa9d", "#d3bbb0", "#deccc4", 
             "#e9ddd8", "#f4eeec"].reverse(),
         "Greys":
-            ["#CBCBCB"]
+            ["#CBCBCB", "#d0d0d0", "#d5d5d5", "#dadada", "#e0e0e0", "#e5e5e5", "#eaeaea", "#f0f0f0", 
+            "#f5f5f5", "#fafafa"]
     }
 
     return colours;
@@ -696,13 +697,7 @@ function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, cur
 
     // colour node
     if (curNode.id == "Root") {
-        colour_assignment[curNode.id] = curVizObj.generalConfig.rootColour; // grey
-        var n = chains[curNode.id].length+1; // + 1 to include the base key (this child)
-        var tmp_palette = [];
-        for (var j = 8; j >= 0; j -= Math.floor(9/n)) {
-            tmp_palette.push(palette[curTheme][j])
-        }
-        palette[curTheme] = tmp_palette;
+        colour_assignment[curNode.id] = curVizObj.generalConfig.rootColour; // dark grey
     }
     else {
         colour_assignment[curNode.id] = palette[curTheme].shift();
