@@ -143,7 +143,7 @@ HTMLWidgets.widget({
                 dim.dragOn = true; 
                 
                 // current site affected
-                var cur_site = d3.select(this).attr("class").substring(6);
+                var cur_site = d3.select(this).attr("class").substring(10);
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
                 var voronoiCentre = {
@@ -158,7 +158,7 @@ HTMLWidgets.widget({
             .on("drag", function(d,i) {
 
                 // current site affected
-                var cur_site = d3.select(this).attr("class").substring(6);
+                var cur_site = d3.select(this).attr("class").substring(10);
 
                 // operations on drag
                 _dragFunction(curVizObj, cur_site, d, view_id);
@@ -167,7 +167,7 @@ HTMLWidgets.widget({
                 dim.dragOn = false; 
 
                 // current site affected
-                var cur_site = d3.select(this).attr("class").substring(6);
+                var cur_site = d3.select(this).attr("class").substring(10);
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
                 var voronoiCentre = {
@@ -273,8 +273,7 @@ HTMLWidgets.widget({
             .selectAll(".siteG")
             .data(curVizObj.data.sites)
             .enter().append("g")
-            .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")})
-            .call(drag);
+            .attr("class", function(d) { return "siteG " + d.id.replace(/ /g,"_")});
 
         // PLOT CIRCLE BORDER
 
@@ -563,7 +562,7 @@ HTMLWidgets.widget({
         curVizObj.site_ids.forEach(function(site, site_idx) {
 
             // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
-            _plotSite(curVizObj, site, view_id);            
+            _plotSite(curVizObj, site, view_id, drag);            
         });
     },
 

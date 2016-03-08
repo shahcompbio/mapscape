@@ -134,13 +134,13 @@ function _dragFunction(curVizObj, cur_site, d, view_id) {
 
     // move anatomic pointer
     d3.select("#" + view_id).select(".anatomicPointer."+cur_site)
-        .attr("x1", function() {
+        .attr("x1", function(d) {
             var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y1 - dim.viewCentre.y, 2)),
                 point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
             return point.x;
         })
-        .attr("y1", function() {
+        .attr("y1", function(d) {
             var r = Math.sqrt(Math.pow(d.x1 - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y1 - dim.viewCentre.y, 2)),
                 point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
@@ -157,8 +157,18 @@ function _dragFunction(curVizObj, cur_site, d, view_id) {
                                     (point.y-d.y) + ")";
         });
 
-    // move tree * site title
-    d3.select("#" + view_id).select(".treeAndSiteTitleG."+cur_site)
+    // move tree 
+    d3.select("#" + view_id).select(".treeG."+cur_site)
+        .attr("transform", function(d) {
+            var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
+                                Math.pow(d.y - dim.viewCentre.y, 2)),
+                point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+            return "translate(" + (point.x-d.x) + "," + 
+                                    (point.y-d.y) + ")";
+        }); 
+
+    // move site title
+    d3.select("#" + view_id).select(".siteTitle."+cur_site)
         .attr("transform", function(d) {
             var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
                                 Math.pow(d.y - dim.viewCentre.y, 2)),
@@ -1156,8 +1166,8 @@ function _reorderSitesData(curVizObj, view_id) {
 
     curVizObj.site_ids.forEach(function(site_id) {
 
-        // current transformation of the site title / tree group
-        var t = d3.transform(d3.select("#" + view_id).select(".treeAndSiteTitleG."+site_id).attr("transform")),
+        // current transformation of the site title
+        var t = d3.transform(d3.select("#" + view_id).select(".siteTitle."+site_id).attr("transform")),
             t_x = t.translate[0],
             t_y = t.translate[1];
 
@@ -1286,10 +1296,9 @@ function _snapSites(curVizObj, view_id) {
                 return "translate(" + (point.x-d.x) + "," + (point.y-d.y) + ")";
             });
 
-        // move tree * site title
-        // keep track of translation
+        // move tree (keep track of translation)
         var translation = {};
-        d3.select("#" + view_id).select(".treeAndSiteTitleG."+site)
+        d3.select("#" + view_id).select(".treeG."+site)
             .transition()
             .attr("transform", function(d) {
                 var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
@@ -1299,9 +1308,18 @@ function _snapSites(curVizObj, view_id) {
                 return "translate(" + translation.x + "," + translation.y + ")";
             });
 
+        // move site title (keep track of translation)
         // change site title location (depending on placement of site, above or below view centre)
-        d3.select("#" + view_id).select(".siteTitle." + site)
+        var translation = {};
+        d3.select("#" + view_id).select(".siteTitle."+site)
             .transition()
+            .attr("transform", function(d) {
+                var r = Math.sqrt(Math.pow(d.x - dim.viewCentre.x, 2) + 
+                                    Math.pow(d.y - dim.viewCentre.y, 2)),
+                    point = _drawPointGivenAngle(dim.viewCentre.x, dim.viewCentre.y, r, angle);
+                    translation = {x: (point.x-d.x), y: (point.y-d.y)};
+                return "translate(" + translation.x + "," + translation.y + ")";
+            })
             .attr("y", function(d) {
                 if (site_data.angle > Math.PI && site_data.angle < 2*Math.PI) {
                     d.position = "top";
@@ -1325,9 +1343,10 @@ function _snapSites(curVizObj, view_id) {
 /* function to plot all the elements for this site (oncoMix, tree, title, anatomic lines, anatomic marks)
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} site -- current anatomic site
-* @param view_id -- the id for the current view
+* @param {String} view_id -- the id for the current view
+* @param {Object} drag -- drag object
 */
-function _plotSite(curVizObj, site, view_id) {
+function _plotSite(curVizObj, site, view_id, drag) {
     var dim = curVizObj.generalConfig,
         site_data = _.findWhere(curVizObj.data.sites, {id: site}), // data for the current site
         cur_siteG = d3.select("#" + view_id).select(".siteG." + site.replace(/ /g,"_")), // svg group for this site
@@ -1474,8 +1493,7 @@ function _plotSite(curVizObj, site, view_id) {
         .attr("stroke-width", "1.5px")
         .attr("stroke-opacity", function(d, i) {
             return (vertices[i].real_cell) ? 1 : 0;
-        })
-        .style("cursor", "pointer");
+        });
 
 
     // PLOT TREE
@@ -1506,8 +1524,14 @@ function _plotSite(curVizObj, site, view_id) {
         .classed("treeAndSiteTitleG", true)
         .classed(site, true);
 
+    var treeG = curSiteTreeAndSiteTitleG
+        .append("g")
+        .classed("treeG", true)
+        .classed(site, true);
+
     // create links
-    var linkG = curSiteTreeAndSiteTitleG.append("g")
+    var linkG = treeG
+        .append("g")
         .attr("class","treeLinkG")
 
     linkG.selectAll(".treeLink")                  
@@ -1563,7 +1587,8 @@ function _plotSite(curVizObj, site, view_id) {
         .attr("stroke-opacity",0); 
         
     // create nodes
-    var nodeG = curSiteTreeAndSiteTitleG.append("g")
+    var nodeG = treeG
+        .append("g")
         .attr("class", "treeNodeG")
         .selectAll(".treeNode")                  
         .data(nodes)                   
@@ -1628,7 +1653,8 @@ function _plotSite(curVizObj, site, view_id) {
         .attr("font-size", dim.viewDiameter/40)
         .attr("fill", '#9E9A9A')
         .style("cursor", "pointer")
-        .text(site_data.id);
+        .text(site_data.id)
+        .call(drag);
 
 }
 
