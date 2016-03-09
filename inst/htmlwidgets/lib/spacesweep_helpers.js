@@ -1331,7 +1331,8 @@ function _plotSite(curVizObj, site, view_id, drag) {
             else {
                 cp = "";                    
             }
-            return "<strong>Prevalence:</strong> <span style='color:white'>" + cp + "</span>";
+            return "<span style='color:white; font-family: sans-serif; font-weight:normal'>" + 
+                "Prevalence: " + cp + "</span>";
         });
     d3.select("#" + view_id).select(".viewSVG").call(nodeTip);
 
@@ -1340,7 +1341,8 @@ function _plotSite(curVizObj, site, view_id, drag) {
         .attr('class', 'd3-tip')
         .offset([-10, 0])
         .html(function(d) {
-            return "<strong>Site:</strong> <span style='color:white'>" + d.site + "</span>";
+            return "<span style='color:white; font-family: sans-serif; font-weight:normal'>" +
+                "Site: " + d.site + "</span>";
         });
     d3.select("#" + view_id).select(".viewSVG").call(siteTitleTip);
 
