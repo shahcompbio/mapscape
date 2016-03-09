@@ -683,7 +683,7 @@ function _getColourPalette() {
             ["#91553A", "#9c664d", "#a77761", "#b28875", "#bd9989", "#c8aa9d", "#d3bbb0", "#deccc4", 
             "#e9ddd8", "#f4eeec"].reverse(),
         "Greys":
-            [dim.anatomicLineColour, "#d0d0d0", "#d5d5d5", "#dadada", "#e0e0e0", "#e5e5e5", "#eaeaea", "#f0f0f0", 
+            ["#CBCBCB", "#d0d0d0", "#d5d5d5", "#dadada", "#e0e0e0", "#e5e5e5", "#eaeaea", "#f0f0f0", 
             "#f5f5f5", "#fafafa"]
     }
 

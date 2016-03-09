@@ -11,6 +11,11 @@
 #' @param tree_edges Tree edges data frame. The root of the tree (id: "Root") must be specified as a source.
 #'   Format: columns are (1) {String} "source" - source node id
 #'                       (2) {String} "target" - target node id.
+#' @param mutations (Optional) Data frame of mutations occurring before the appearance of each clone.
+#'   Format: columns are (1) {String} "chrom" - chromosome number
+#'                       (2) {Number} "coord" - coordinate of mutation on chromosome
+#'                       (3) {String} "clone_id" - clone id
+#'                       (4) {String} "gene_name" - name of the affected gene (can be "" if none affected).
 #' @param gender Gender of the patient (M/F). 
 #' @param clone_colours (Optional) Data frame with clone ids and their corresponding colours 
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
@@ -23,6 +28,7 @@
 spacesweep <- function(clonal_prev, 
                       tree_edges,
                       clone_colours = "NA",
+                      mutations = "NA",
                       gender,
                       site_ids = "NA",
                       show_root = TRUE,
@@ -55,7 +61,7 @@ spacesweep <- function(clonal_prev,
       !("clone_id" %in% colnames(clonal_prev)) ||
       !("clonal_prev" %in% colnames(clonal_prev))) {
     stop(paste("Clonal prevalence data frame must have the following column names: ", 
-        "\"site_id\", \"clone_id\", \"clonal_prev\"", sep=""))
+        "\"site_id\", \"clone_id\", \"clonal_prev\".", sep=""))
   }
 
   # ensure data is of the correct type
@@ -63,13 +69,30 @@ spacesweep <- function(clonal_prev,
   clonal_prev$clone_id <- as.character(clonal_prev$clone_id)
   clonal_prev$clonal_prev <- as.numeric(as.character(clonal_prev$clonal_prev))
 
+  # MUTATIONS DATA
+
+  # ensure column names are correct
+  if (!("chrom" %in% colnames(mutations)) ||
+      !("coord" %in% colnames(mutations)) ||
+      !("clone_id" %in% colnames(mutations)) ||
+      !("gene_name" %in% colnames(mutations))) {
+    stop(paste("Mutations data frame must have the following column names: ", 
+        "\"chrom\", \"coord\", \"clone_id\", \"gene_name\".", sep=""))
+  }
+
+  # ensure data is of the correct type
+  mutations$chrom <- as.character(mutations$chrom)
+  mutations$coord <- as.numeric(as.character(mutations$coord))
+  mutations$clone_id <- as.character(mutations$clone_id)
+  mutations$gene_name <- as.character(mutations$gene_name)
+
   # TREE EDGES DATA
 
   # ensure column names are correct
   if (!("source" %in% colnames(tree_edges)) ||
       !("target" %in% colnames(tree_edges))) {
     stop(paste("Tree edges data frame must have the following column names: ", 
-        "\"source\", \"target\"", sep=""))
+        "\"source\", \"target\".", sep=""))
   }
 
   # ensure data is of the correct type
@@ -88,7 +111,7 @@ spacesweep <- function(clonal_prev,
     if (!("clone_id" %in% colnames(clone_colours)) ||
         !("colour" %in% colnames(clone_colours))) {
       stop(paste("Node colour data frame must have the following column names: ", 
-          "\"clone_id\", \"colour\"", sep=""))
+          "\"clone_id\", \"colour\".", sep=""))
     }    
   }
 
@@ -112,6 +135,7 @@ spacesweep <- function(clonal_prev,
     clonal_prev = jsonlite::toJSON(clonal_prev),
     tree_edges = jsonlite::toJSON(tree_edges),
     clone_cols = jsonlite::toJSON(clone_colours),
+    mutations = jsonlite::toJSON(mutations),
     gender = gender,
     site_ids = site_ids,
     n_cells = n_cells,
