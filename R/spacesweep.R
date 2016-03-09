@@ -71,21 +71,23 @@ spacesweep <- function(clonal_prev,
 
   # MUTATIONS DATA
 
-  # ensure column names are correct
-  if (!("chrom" %in% colnames(mutations)) ||
-      !("coord" %in% colnames(mutations)) ||
-      !("clone_id" %in% colnames(mutations)) ||
-      !("gene_name" %in% colnames(mutations))) {
-    stop(paste("Mutations data frame must have the following column names: ", 
-        "\"chrom\", \"coord\", \"clone_id\", \"gene_name\".", sep=""))
+  if (is.data.frame(clone_colours)) {
+    # ensure column names are correct
+    if (!("chrom" %in% colnames(mutations)) ||
+        !("coord" %in% colnames(mutations)) ||
+        !("clone_id" %in% colnames(mutations)) ||
+        !("gene_name" %in% colnames(mutations))) {
+      stop(paste("Mutations data frame must have the following column names: ", 
+          "\"chrom\", \"coord\", \"clone_id\", \"gene_name\".", sep=""))
+    }
+
+    # ensure data is of the correct type
+    mutations$chrom <- as.character(mutations$chrom)
+    mutations$coord <- as.numeric(as.character(mutations$coord))
+    mutations$clone_id <- as.character(mutations$clone_id)
+    mutations$gene_name <- as.character(mutations$gene_name)
   }
-
-  # ensure data is of the correct type
-  mutations$chrom <- as.character(mutations$chrom)
-  mutations$coord <- as.numeric(as.character(mutations$coord))
-  mutations$clone_id <- as.character(mutations$clone_id)
-  mutations$gene_name <- as.character(mutations$gene_name)
-
+  
   # TREE EDGES DATA
 
   # ensure column names are correct

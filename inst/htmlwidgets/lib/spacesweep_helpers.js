@@ -884,7 +884,7 @@ function _getVoronoiVertices(curVizObj, cx, cy) {
     var circleRadius = dim.oncoMixWidth*1/3;
     var n_real_cells = 1;
     var vertices = [];
-    while (n_real_cells <= dim.nCells) {
+    while (n_real_cells <= curVizObj.userConfig.n_cells) {
         var x = (cx - dim.oncoMixWidth/2) + (Math.random() * dim.oncoMixWidth);
         var y = (cy - dim.oncoMixWidth/2) + (Math.random() * dim.oncoMixWidth);
         var dist = Math.sqrt(Math.pow(x-cx, 2) + Math.pow(y-cy, 2));
@@ -938,7 +938,7 @@ function _addGtypeInfoToVertices(curVizObj, site, vertices) {
         if (v.real_cell) {
 
             // if the current genotype has been allocated enough cells, advance one genotype
-            if (n_real_cells/curVizObj.generalConfig.nCells > Math.round(cumulative_cp * 100)/100) {
+            if (n_real_cells/curVizObj.userConfig.n_cells > Math.round(cumulative_cp * 100)/100) {
                 cur_gtype = gtypes[++gtype_i]; // update current genotype
                 cumulative_cp += curVizObj.data.cp_data[site][cur_gtype].adj_cp; // update cumulative CP
             }

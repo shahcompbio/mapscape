@@ -32,31 +32,6 @@ HTMLWidgets.widget({
         var config = $.extend(true, {}, defaults);
         config.containerWidth = width;
         config.containerHeight = height;
-        // diameter of the main view
-        config.viewDiameter = ((config.containerWidth - config.legendWidth) < config.containerHeight) ? 
-            (config.containerWidth - config.legendWidth) :
-            config.containerHeight; 
-        config.viewCentre = { x: config.viewDiameter/2, y: config.viewDiameter/2 };
-        config.outerRadius = config.viewDiameter/2; 
-        config.innerRadius = config.viewDiameter/6; // radius for centre circle (where anatomy will go)
-        config.circBorderWidth = 3; // width for circular border width
-        config.legendHeight = config.viewDiameter;
-        // - 3, - 10 for extra space
-        config.oncoMixWidth = ((config.outerRadius - config.circBorderWidth - config.innerRadius)/2) - 3; 
-        config.treeWidth = ((config.outerRadius - config.circBorderWidth - config.innerRadius)/2) - 10; 
-        config.radiusToOncoMix = config.innerRadius + config.oncoMixWidth/2; // radius to oncoMix centre
-        config.radiusToTree = config.innerRadius + config.oncoMixWidth + config.treeWidth/2; // radius to tree centre
-        config.legendTreeWidth = config.legendWidth - 2; // width of the tree in the legend
-
-        // anatomical image configurations
-        config.image_plot_width = config.innerRadius*2; // width of the plot space for the image
-        config.image_top_l = {x: config.viewDiameter/2 - config.image_plot_width/2, 
-                                y: config.viewDiameter/2 - config.image_plot_width/2};
-        config.legend_image_plot_width = config.legendWidth; // width of the plot space for the image
-        config.legend_image_top_l = {x: 0, y: config.legendTreeWidth + config.legendTitleHeight*2 + config.legendSpacing};
-
-        // legend mixture classification configurations
-        config.legend_mixture_top = config.legend_image_top_l.y + config.legend_image_plot_width + config.legendSpacing;
 
         // global variable vizObj
         vizObj = {};
@@ -72,14 +47,47 @@ HTMLWidgets.widget({
 
     renderValue: function(el, x, instance) {
 
+
+        // vizObj for the current view
         var view_id = el.id;
-        var curVizObj = vizObj[view_id]; // vizObj for the current view
+        var curVizObj = vizObj[view_id]; 
         var dim = curVizObj.generalConfig;
-        var viewType = "tree"; // choose from: "voronoi", "tree"
 
         // get params from R
         curVizObj.userConfig = x;
-        dim.nCells = x.n_cells;
+
+        // SET CONFIGURATIONS FOR THIS VIEW
+
+        // height of genome viewer
+        dim.genomeViewerHeight = (curVizObj.userConfig.mutations == "NA") ? 0 : 200; 
+
+        // main view layout
+        dim.viewDiameter = ((dim.containerWidth - dim.legendWidth) < (dim.containerHeight - dim.genomeViewerHeight)) ? 
+            (dim.containerWidth - dim.legendWidth) :
+            (dim.containerHeight - dim.genomeViewerHeight); 
+        dim.viewCentre = { x: dim.viewDiameter/2, y: dim.viewDiameter/2 };
+        dim.outerRadius = dim.viewDiameter/2; 
+        dim.innerRadius = dim.viewDiameter/6; // radius for centre circle (where anatomy will go)
+        dim.circBorderWidth = 3; // width for circular border width
+        
+        // - 3, - 10 for extra space
+        dim.oncoMixWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 3; 
+        dim.treeWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 10; 
+        dim.radiusToOncoMix = dim.innerRadius + dim.oncoMixWidth/2; // radius to oncoMix centre
+        dim.radiusToTree = dim.innerRadius + dim.oncoMixWidth + dim.treeWidth/2; // radius to tree centre
+
+        // legend layout
+        dim.legendHeight = dim.viewDiameter;
+        dim.legendTreeWidth = dim.legendWidth - 2; // width of the tree in the legend
+        dim.legend_image_plot_width = dim.legendWidth; // width of the plot space for the image
+        dim.legend_image_top_l = {x: 0, y: dim.legendTreeWidth + dim.legendTitleHeight*2 + dim.legendSpacing};
+        // legend mixture classification configurations
+        dim.legend_mixture_top = dim.legend_image_top_l.y + dim.legend_image_plot_width + dim.legendSpacing;
+
+        // anatomical image configurations
+        dim.image_plot_width = dim.innerRadius*2; // width of the plot space for the image
+        dim.image_top_l = {x: dim.viewDiameter/2 - dim.image_plot_width/2, 
+                                y: dim.viewDiameter/2 - dim.image_plot_width/2};
 
         // GET CONTENT
 
@@ -187,6 +195,14 @@ HTMLWidgets.widget({
             .style("position", "relative")
             .style("width", dim.legendWidth + "px")
             .style("height", dim.legendHeight + "px")
+            .style("float", "left");
+
+        var genomeViewerDIV = d3.select(el)
+            .append("div")
+            .attr("class", "genomeViewerDIV")
+            .style("position", "relative")
+            .style("width", dim.viewDiameter + "px")
+            .style("height", dim.genomeViewerHeight + "px")
             .style("float", "left");
 
         // SVGS
