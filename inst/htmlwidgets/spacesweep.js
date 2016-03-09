@@ -58,13 +58,10 @@ HTMLWidgets.widget({
 
         // SET CONFIGURATIONS FOR THIS VIEW
 
-        // height of genome viewer
-        dim.genomeViewerHeight = (curVizObj.userConfig.mutations == "NA") ? 0 : 200; 
-
         // main view layout
-        dim.viewDiameter = ((dim.containerWidth - dim.legendWidth) < (dim.containerHeight - dim.genomeViewerHeight)) ? 
+        dim.viewDiameter = ((dim.containerWidth - dim.legendWidth) < dim.containerHeight) ? 
             (dim.containerWidth - dim.legendWidth) :
-            (dim.containerHeight - dim.genomeViewerHeight); 
+            dim.containerHeight; 
         dim.viewCentre = { x: dim.viewDiameter/2, y: dim.viewDiameter/2 };
         dim.outerRadius = dim.viewDiameter/2; 
         dim.innerRadius = dim.viewDiameter/6; // radius for centre circle (where anatomy will go)
@@ -89,13 +86,7 @@ HTMLWidgets.widget({
         dim.image_top_l = {x: dim.viewDiameter/2 - dim.image_plot_width/2, 
                                 y: dim.viewDiameter/2 - dim.image_plot_width/2};
 
-        // genome viewer width
-        dim.genomeViewerWidth = dim.viewDiameter;
-
         // GET CONTENT
-
-        // get chromosome boundaries
-        _getChromBounds(curVizObj, dim.genomeViewerWidth);
 
         // get anatomic locations on image
         _getSiteLocationsOnImage(curVizObj);
@@ -201,14 +192,6 @@ HTMLWidgets.widget({
             .style("position", "relative")
             .style("width", dim.legendWidth + "px")
             .style("height", dim.legendHeight + "px")
-            .style("float", "left");
-
-        var genomeViewerDIV = d3.select(el)
-            .append("div")
-            .attr("class", "genomeViewerDIV")
-            .style("position", "relative")
-            .style("width", dim.genomeViewerWidth + "px")
-            .style("height", dim.genomeViewerHeight + "px")
             .style("float", "left");
 
         // SVGS
