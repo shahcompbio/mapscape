@@ -1319,6 +1319,7 @@ function _plotSite(curVizObj, site, view_id, drag) {
 
     // TOOLTIP FUNCTIONS
 
+    // tip for tree node cellular prevalences
     var nodeTip = d3.tip()
         .attr('class', 'd3-tip')
         .offset([-10, 0])
@@ -1333,6 +1334,15 @@ function _plotSite(curVizObj, site, view_id, drag) {
             return "<strong>Prevalence:</strong> <span style='color:white'>" + cp + "</span>";
         });
     d3.select("#" + view_id).select(".viewSVG").call(nodeTip);
+
+    // tip for site titles, if they're too long to display
+    var siteTitleTip = d3.tip()
+        .attr('class', 'd3-tip')
+        .offset([-10, 0])
+        .html(function(d) {
+            return "<strong>Site:</strong> <span style='color:white'>" + d.site + "</span>";
+        });
+    d3.select("#" + view_id).select(".viewSVG").call(siteTitleTip);
 
     // PLOT ANATOMIC LINES
 
@@ -1590,7 +1600,25 @@ function _plotSite(curVizObj, site, view_id, drag) {
         .attr("font-size", dim.viewDiameter/40)
         .attr("fill", '#9E9A9A')
         .style("cursor", "pointer")
-        .text(function(d) { return d.site; })
+        .text(function(d) { 
+            // if title is too long, append "..." to the first few letters
+            if (d.site.length > 6) {
+                return d.site.slice(0,6) + "...";
+            }
+            return d.site; 
+        })
+        .on("mouseover", function(d) { 
+            // if title is too long, make mouseover to see full name
+            if (d.site.length > 6) {
+                return siteTitleTip.show(d);
+            }
+        })
+        .on("mouseout", function(d) {
+            // if title is too long, make mouseout to hide full name
+            if (d.site.length > 6) {
+                return siteTitleTip.hide(d);
+            }
+        })
         .call(drag);
 
 }
