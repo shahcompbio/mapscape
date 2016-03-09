@@ -89,8 +89,6 @@ spacesweep <- function(clonal_prev,
 
     # check X & Y chromosomes are labelled "X" and "Y", not "23", "24"
     num_23 <- mutations[which(mutations$chrom == "23"),]
-    print("HI")
-    print(head(num_23))
     if (nrow(num_23) > 0) {
       stop(paste("Chromosome numbered \"23\" was detected in mutations data frame - X and Y chromosomes ",
         "must be labelled \"X\" and \"Y\".", sep=""))

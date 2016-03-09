@@ -1660,8 +1660,9 @@ function _initialSiteOrdering(curVizObj) {
 
 /* function to get the standard chromosome boundaries for each chromosome
 * @param {Object} curVizObj -- vizObj for the current view
+* @param {Number} plot_width -- width of the plot
 */
-function _getChromBounds(curVizObj) {
+function _getChromBounds(curVizObj, plot_width) {
     var chrom_bounds = {};
     chrom_bounds["1"] = {"start":1, "end":249300000};
     chrom_bounds["2"] = {"start":1, "end":243300000};
@@ -1686,7 +1687,37 @@ function _getChromBounds(curVizObj) {
     chrom_bounds["21"] = {"start":1, "end":48300000};
     chrom_bounds["22"] = {"start":1, "end":51600000};
     chrom_bounds["X"] = {"start":1, "end":155400000};
-    chrom_bounds["Y"] = {"start":1, "end":59400000};
+    if (curVizObj.userConfig.gender == "M") {
+        chrom_bounds["Y"] = {"start":1, "end":59400000};
+    }
+
+    // get the genome length
+    var genome_length = 0;
+    Object.keys(chrom_bounds).forEach(function(chrom) {
+        genome_length += chrom_bounds[chrom]["end"] - chrom_bounds[chrom]["start"];
+    });
+
+    // pixel specs
+    var n_data_pixels = plot_width - 2*(Object.keys(chrom_bounds).length - 1); // number of pixels for data
+                                                                               // (2px between each chrom)
+    curVizObj.data.n_bp_per_pixel = {}; // store the number of bp per pixel for each chromosome
+
+    // get the proportionate and absolute (pixel) positional information for each chromosome
+    var pixels_used = 0;
+    Object.keys(chrom_bounds).forEach(function(chrom) {
+        var chrom_width_prop = (chrom_bounds[chrom]["end"]-chrom_bounds[chrom]["start"])/genome_length;
+        var chrom_width_px = Math.round(chrom_width_prop*n_data_pixels);
+        curVizObj.data.n_bp_per_pixel[chrom] = 
+            (chrom_bounds[chrom]["end"]-chrom_bounds[chrom]["start"])/chrom_width_px;
+        chrom_bounds[chrom]["start_px"] = pixels_used;
+        chrom_bounds[chrom]["end_px"] = pixels_used + chrom_width_px;
+        chrom_bounds[chrom]["start_prop"] = chrom_bounds[chrom]["start_px"]/plot_width;
+        chrom_bounds[chrom]["end_prop"] = chrom_bounds[chrom]["end_px"]/plot_width;
+        chrom_bounds[chrom]["width_px"] = chrom_width_px;
+        chrom_bounds[chrom]["width_prop"] = chrom_width_prop; // proportionate with the # data pixels
+
+        pixels_used += chrom_width_px + 2;
+    });
 
     curVizObj.data.chrom_bounds = chrom_bounds;
 }

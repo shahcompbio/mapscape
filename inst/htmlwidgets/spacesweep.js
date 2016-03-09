@@ -89,10 +89,13 @@ HTMLWidgets.widget({
         dim.image_top_l = {x: dim.viewDiameter/2 - dim.image_plot_width/2, 
                                 y: dim.viewDiameter/2 - dim.image_plot_width/2};
 
+        // genome viewer width
+        dim.genomeViewerWidth = dim.viewDiameter;
+
         // GET CONTENT
 
         // get chromosome boundaries
-        _getChromBounds(curVizObj);
+        _getChromBounds(curVizObj, dim.genomeViewerWidth);
 
         // get anatomic locations on image
         _getSiteLocationsOnImage(curVizObj);
@@ -204,7 +207,7 @@ HTMLWidgets.widget({
             .append("div")
             .attr("class", "genomeViewerDIV")
             .style("position", "relative")
-            .style("width", dim.viewDiameter + "px")
+            .style("width", dim.genomeViewerWidth + "px")
             .style("height", dim.genomeViewerHeight + "px")
             .style("float", "left");
 
