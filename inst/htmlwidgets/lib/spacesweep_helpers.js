@@ -1656,6 +1656,42 @@ function _initialSiteOrdering(curVizObj) {
     curVizObj.data.sites = new_sites_array;
 }
 
+// GENE FUNCTIONS
+
+/* function to get the mutated genes into a better format
+*/
+function _getMutatedGenes(curVizObj) {
+    var muts = curVizObj.userConfig.mutations, // mutations from user data
+        genes = {}; // object of genes (gene name is the property), and a list of clones where gene 
+                    // was mutated on the prior branch
+
+    // reformat mutation data
+    muts.forEach(function(mut) {
+        genes[mut.gene_name] = genes[mut.gene_name] || {};
+        genes[mut.gene_name].clones = genes[mut.gene_name].clones || [];
+        genes[mut.gene_name].clones.push(mut.clone_id);
+        genes[mut.gene_name].locations = genes[mut.gene_name].locations || [];
+        genes[mut.gene_name].locations.push(mut.chrom + ":" + mut.coord);
+    });
+
+    // make sure we have a unique set of clones for each gene
+    Object.keys(genes).forEach(function(gene_key) {
+        genes[gene_key].clones = _.uniq(genes[gene_key].clones);
+    });
+
+    // convert object into array
+    var genes_arr = [];
+    Object.keys(genes).sort().forEach(function(gene_key) {
+        genes_arr.push({
+            "name": gene_key,
+            "clones": genes[gene_key].clones,
+            "locations": genes[gene_key].locations
+        })
+    });
+
+    curVizObj.data.genes = genes_arr;
+}
+
 // GENERAL FUNCTIONS
 
 /**

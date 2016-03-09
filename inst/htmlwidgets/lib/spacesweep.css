@@ -39,3 +39,7 @@ ul {
     top: 100%;
     left: 0;
 }
+
+.geneTableDIV {
+    overflow: scroll;
+}

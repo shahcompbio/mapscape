@@ -22,8 +22,10 @@ HTMLWidgets.widget({
             siteMark_r: 4, // site mark radius
             dragOn: false, // whether or not drag is on
             startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
-            legendSpacing: 10, // spacing between legend items
+            legendSpacing: 15, // spacing between legend items
             shadeAlpha: 0.15, // alpha value for shading
+            neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
+            legendTitleColour: '#616161', // colour used for legend titles
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -87,6 +89,9 @@ HTMLWidgets.widget({
                                 y: dim.viewDiameter/2 - dim.image_plot_width/2};
 
         // GET CONTENT
+
+        // get mutated genes
+        _getMutatedGenes(curVizObj);
 
         // get anatomic locations on image
         _getSiteLocationsOnImage(curVizObj);
@@ -280,7 +285,7 @@ HTMLWidgets.widget({
             .attr("class", "legendTitle")
             .attr("x", dim.legendWidth/2) 
             .attr("y", 22)
-            .attr("fill", '#616161')
+            .attr("fill", dim.legendTitleColour)
             .attr("text-anchor", "middle")
             .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
@@ -316,7 +321,7 @@ HTMLWidgets.widget({
                 link_ids.push(d.link_id);
                 return "legendTreeLink " + d.link_id;
             })
-            .attr('stroke', '#9E9A9A')
+            .attr('stroke', dim.neutralGrey)
             .attr('fill', 'none')
             .attr('stroke-width', '2px')               
             .attr("d", function(d) {
@@ -393,7 +398,7 @@ HTMLWidgets.widget({
             .attr("class", "legendTitle")
             .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
-            .attr("fill", '#616161')
+            .attr("fill", dim.legendTitleColour)
             .attr("text-anchor", "middle")
             .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
@@ -417,7 +422,7 @@ HTMLWidgets.widget({
             .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_plot_width)
             .attr("cy", dim.legend_image_top_l.y + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_plot_width)
             .attr("r", (curVizObj.view.crop_info.crop_width_prop/2)*dim.legend_image_plot_width)
-            .attr("stroke", "#9E9A9A")
+            .attr("stroke", dim.neutralGrey)
             .attr("fill", "none");
 
         // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
@@ -468,7 +473,7 @@ HTMLWidgets.widget({
             .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_mixture_top)
             .attr("dy", "+0.71em")
-            .attr("fill", '#616161')
+            .attr("fill", dim.legendTitleColour)
             .attr("text-anchor", "middle")
             .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
@@ -478,7 +483,7 @@ HTMLWidgets.widget({
             .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_mixture_top + dim.legendTitleHeight)
             .attr("dy", "+0.71em")
-            .attr("fill", '#616161')
+            .attr("fill", dim.legendTitleColour)
             .attr("text-anchor", "middle")
             .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
@@ -487,13 +492,20 @@ HTMLWidgets.widget({
         var mixtureClassLegendTitle_width = 
             d3.select("#" + view_id).select(".ClassificationLegendTitle").node().getBBox().width;
         var spacing_below_title = 5;
+        var legend_lowest_y = dim.legend_mixture_top + dim.legendTitleHeight; // lowest y-value for legend thus far
         Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
             legendSVG.append("text")
                 .attr("class", "mixtureClass")
                 .attr("x", dim.legendWidth/2 - (mixtureClassLegendTitle_width/2)) 
-                .attr("y", dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + phyly_idx*(dim.mixtureClassFontSize + 2))
+                .attr("y", function() {
+                    var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title 
+                            + phyly_idx*(dim.mixtureClassFontSize + 2);
+                    // note the lowest y-value of the legend
+                    legend_lowest_y = y + dim.mixtureClassFontSize + dim.legendSpacing;
+                    return y;
+                })
                 .attr("dy", "+0.71em")
-                .attr("fill", '#9E9A9A')
+                .attr("fill", dim.neutralGrey)
                 .attr("font-family", "sans-serif")
                 .attr("font-size", dim.mixtureClassFontSize)
                 .text(function() { return " - " + phyly; })
@@ -518,8 +530,10 @@ HTMLWidgets.widget({
                     // highlight only those links that participate in the mixture classification
                     viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
                     participating_sites.forEach(function(participating_site) {
-                        viewSVG.selectAll(".treeLink.site_" + participating_site).attr("stroke-opacity", dim.shadeAlpha);
-                        viewSVG.selectAll(".mixtureClassTreeLink.site_"+participating_site).attr("stroke-opacity", 1);                        
+                        viewSVG.selectAll(".treeLink.site_" + participating_site)
+                            .attr("stroke-opacity", dim.shadeAlpha);
+                        viewSVG.selectAll(".mixtureClassTreeLink.site_"+participating_site)
+                            .attr("stroke-opacity", 1);                        
                     });
                 })
                 .on("mouseout", function(d) {
@@ -527,7 +541,67 @@ HTMLWidgets.widget({
                 });
         });
 
+        // GENE TABLE
+
+
+        // if mutations are specified by the user
+        if (curVizObj.userConfig.mutations != "NA") {
+
+            // gene table title
+            legendSVG
+                .append("text")
+                .attr("class", "geneTableLegendTitle")
+                .attr("x", dim.legendWidth/2) 
+                .attr("y", legend_lowest_y)
+                .attr("dy", "+0.71em")
+                .attr("fill", dim.legendTitleColour)
+                .attr("text-anchor", "middle")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", dim.legendTitleHeight)
+                .text("Gene Table");
+            legend_lowest_y += dim.legendTitleHeight;
+
+            // set legend height to lowest y-value of legend
+            legendSVG.attr("height", legend_lowest_y);
+            legendDIV.style("height", legend_lowest_y + "px");
+
+            // create DIV for table
+            var geneTableDIV = d3.select(el)
+                .append("div")
+                .attr("class", "geneTableDIV")
+                .style("position", "relative")
+                .style("width", dim.legendWidth + "px")
+                .style("height", (dim.legendHeight - legend_lowest_y) + "px")
+                .style("float", "left");
+
+            var table = geneTableDIV.append("table"),
+                thead = table.append("thead"),
+                tbody = table.append("tbody");
+
+            // create a row for each object in the data
+            var rows = tbody.selectAll("tr")
+                            .data(curVizObj.data.genes)
+                            .enter()
+                            .append("tr");
+
+            // create a cell in each row for each column
+            var cells = rows.append("td")
+                            .style("font-family", "sans-serif")
+                            .style("color", dim.neutralGrey)
+                            .html(function(d) { return d.name; })
+                            .on("mouseover", function() {
+                                // highlight gene in table
+                                d3.select(this).attr("bgcolor", "#FFFDC3");
+                            })
+                            .on("mouseout", function() {
+                                // unhighlight gene in table
+                                d3.select(this).attr("bgcolor", "white");
+                            })
+                            .style("cursor", "default");
+        }
+
         // FOR EACH SITE
+
         curVizObj.data.site_ids.forEach(function(site, site_idx) {
 
             // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
