@@ -91,6 +91,9 @@ HTMLWidgets.widget({
 
         // GET CONTENT
 
+        // get chromosome boundaries
+        _getChromBounds(curVizObj);
+
         // get anatomic locations on image
         _getSiteLocationsOnImage(curVizObj);
 

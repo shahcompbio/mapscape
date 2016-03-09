@@ -954,31 +954,6 @@ function _addGtypeInfoToVertices(curVizObj, site, vertices) {
     return vertices;
 }
 
-// GENERAL FUNCTIONS
-
-/**
- * Returns a random number between min (inclusive) and max (exclusive)
- * From: http://stackoverflow.com/questions/1527803/generating-random-numbers-in-javascript-in-a-specific-range
- */
-function _getRandomArbitrary(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-/* function to get the intersection of two arrays
-* @param {Array} array1 -- first array
-* @param {Array} array2 -- second array
-*/
-function _getIntersection(array1, array2) {
-
-    if (array1 == undefined || array2 == undefined) {
-        return [];
-    }
-
-    return array1.filter(function(n) {
-        return array2.indexOf(n) != -1
-    });
-}
-
 // LAYOUT FUNCTIONS
 
 /* function to get coordinates for a point evenly spaced around circle perimeter
@@ -1679,6 +1654,66 @@ function _initialSiteOrdering(curVizObj) {
         new_sites_array.push(_.findWhere(curVizObj.data.sites, {id: site.site_id}));
     })
     curVizObj.data.sites = new_sites_array;
+}
+
+// GENOME VIEWER FUNCTIONS
+
+/* function to get the standard chromosome boundaries for each chromosome
+* @param {Object} curVizObj -- vizObj for the current view
+*/
+function _getChromBounds(curVizObj) {
+    var chrom_bounds = {};
+    chrom_bounds["1"] = {"start":1, "end":249300000};
+    chrom_bounds["2"] = {"start":1, "end":243300000};
+    chrom_bounds["3"] = {"start":1, "end":198300000};
+    chrom_bounds["4"] = {"start":1, "end":191400000};
+    chrom_bounds["5"] = {"start":1, "end":181200000};
+    chrom_bounds["6"] = {"start":1, "end":171300000};
+    chrom_bounds["7"] = {"start":1, "end":159300000};
+    chrom_bounds["8"] = {"start":1, "end":146400000};
+    chrom_bounds["9"] = {"start":1, "end":141300000};
+    chrom_bounds["10"] = {"start":1, "end":135600000};
+    chrom_bounds["11"] = {"start":1, "end":135300000};
+    chrom_bounds["12"] = {"start":1, "end":134100000};
+    chrom_bounds["13"] = {"start":1, "end":115200000};
+    chrom_bounds["14"] = {"start":1, "end":107400000};
+    chrom_bounds["15"] = {"start":1, "end":102600000};
+    chrom_bounds["16"] = {"start":1, "end":90600000};
+    chrom_bounds["17"] = {"start":1, "end":81300000};
+    chrom_bounds["18"] = {"start":1, "end":78300000};
+    chrom_bounds["19"] = {"start":1, "end":59400000};
+    chrom_bounds["20"] = {"start":1, "end":63300000};
+    chrom_bounds["21"] = {"start":1, "end":48300000};
+    chrom_bounds["22"] = {"start":1, "end":51600000};
+    chrom_bounds["X"] = {"start":1, "end":155400000};
+    chrom_bounds["Y"] = {"start":1, "end":59400000};
+
+    curVizObj.data.chrom_bounds = chrom_bounds;
+}
+
+// GENERAL FUNCTIONS
+
+/**
+ * Returns a random number between min (inclusive) and max (exclusive)
+ * From: http://stackoverflow.com/questions/1527803/generating-random-numbers-in-javascript-in-a-specific-range
+ */
+function _getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+/* function to get the intersection of two arrays
+* @param {Array} array1 -- first array
+* @param {Array} array2 -- second array
+*/
+function _getIntersection(array1, array2) {
+
+    if (array1 == undefined || array2 == undefined) {
+        return [];
+    }
+
+    return array1.filter(function(n) {
+        return array2.indexOf(n) != -1
+    });
 }
 
 /* function to sort array of objects by key

@@ -71,7 +71,7 @@ spacesweep <- function(clonal_prev,
 
   # MUTATIONS DATA
 
-  if (is.data.frame(clone_colours)) {
+  if (is.data.frame(mutations)) {
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutations)) ||
         !("coord" %in% colnames(mutations)) ||
@@ -82,12 +82,21 @@ spacesweep <- function(clonal_prev,
     }
 
     # ensure data is of the correct type
-    mutations$chrom <- as.character(mutations$chrom)
+    mutations$chrom <- toupper(as.character(mutations$chrom)) # upper case X & Y
     mutations$coord <- as.numeric(as.character(mutations$coord))
     mutations$clone_id <- as.character(mutations$clone_id)
     mutations$gene_name <- as.character(mutations$gene_name)
+
+    # check X & Y chromosomes are labelled "X" and "Y", not "23", "24"
+    num_23 <- mutations[which(mutations$chrom == "23"),]
+    print("HI")
+    print(head(num_23))
+    if (nrow(num_23) > 0) {
+      stop(paste("Chromosome numbered \"23\" was detected in mutations data frame - X and Y chromosomes ",
+        "must be labelled \"X\" and \"Y\".", sep=""))
+    }
   }
-  
+
   # TREE EDGES DATA
 
   # ensure column names are correct
