@@ -13,10 +13,15 @@ function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
     var target_id = targetRX.exec(link_id)[1];
 
     // highlight the current link in the legend
-    d3.select("#" + view_id).select(".legendTreeLink." + link_id).attr("stroke-opacity", 1);
+    d3.select("#" + view_id)
+        .select(".legendTreeLink." + link_id)
+        .attr("stroke-opacity", 1);
 
     // highlight the current target node in the legend
-    d3.select("#" + view_id).select(".legendTreeNode.clone_" + target_id).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id)
+        .select(".legendTreeNode.clone_" + target_id)
+        .attr("fill-opacity", 1)
+        .attr("stroke-opacity", 1);
 
     // highlight those sites showing the moused-over genotype
     var sites = curVizObj.data.genotype_sites[target_id];
@@ -25,7 +30,9 @@ function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
     // highlight the general anatomic marks for those sites showing the moused-over genotype
     sites.forEach(function(site) {
         var stem = _.findWhere(curVizObj.data.sites, {id: site}).stem.siteStem;
-        d3.select("#" + view_id).select(".generalMark.stem_" + stem).attr("fill", "#CBCBCB");
+        d3.select("#" + view_id)
+            .select(".generalMark.stem_" + stem)
+            .attr("fill", curVizObj.generalConfig.anatomicLineColour);
     })
 
     // get the targets of this target
@@ -85,6 +92,7 @@ function _shadeMainView(curVizObj, view_id) {
 * @param {String} view_id -- the id for the current view
 */
 function _resetView(curVizObj, view_id) {
+    var dim = curVizObj.generalConfig;
 
     // reset anatomic marks
     d3.select("#" + view_id).selectAll(".gtypeMark").attr("fill-opacity", 0);
@@ -675,7 +683,7 @@ function _getColourPalette() {
             ["#91553A", "#9c664d", "#a77761", "#b28875", "#bd9989", "#c8aa9d", "#d3bbb0", "#deccc4", 
             "#e9ddd8", "#f4eeec"].reverse(),
         "Greys":
-            ["#CBCBCB", "#d0d0d0", "#d5d5d5", "#dadada", "#e0e0e0", "#e5e5e5", "#eaeaea", "#f0f0f0", 
+            [dim.anatomicLineColour, "#d0d0d0", "#d5d5d5", "#dadada", "#e0e0e0", "#e5e5e5", "#eaeaea", "#f0f0f0", 
             "#f5f5f5", "#fafafa"]
     }
 
@@ -1368,7 +1376,7 @@ function _plotSite(curVizObj, site, view_id, drag) {
             .attr("y2", function(d) { 
                 return curVizObj.data.siteStems[site_data.stem.siteStem]["cropped_coords"].y;
             })
-            .attr("stroke", "#CBCBCB")
+            .attr("stroke", dim.anatomicLineColour)
             .attr("stroke-width", "2px");  
     }
 

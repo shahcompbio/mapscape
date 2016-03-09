@@ -14,6 +14,7 @@ HTMLWidgets.widget({
             pureColour: '#D3D2D2',
             monophyleticColour: '767676',
             polyphyleticColour: '000000',
+            anatomicLineColour: '#CBCBCB',
             legendWidth: 130,
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
