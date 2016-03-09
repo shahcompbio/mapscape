@@ -455,12 +455,11 @@ HTMLWidgets.widget({
 
         // PLOT MIXTURE CLASSIFICATION
 
-        // var mixture_classes = _.uniq(_.pluck(curVizObj.data.sites, "phyly")); 
         var mixture_classes = {};
         curVizObj.data.sites.forEach(function(site) {
             mixture_classes[site.phyly] = mixture_classes[site.phyly] || [];
             mixture_classes[site.phyly].push({"site_id": site.id, 
-                                                "site_stem": site.stem.siteStem});
+                                                "site_stem": (site.stem)? site.stem.siteStem : null});
         })
 
         // plot mixture classification title
