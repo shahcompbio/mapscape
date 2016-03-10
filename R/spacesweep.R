@@ -36,6 +36,17 @@ spacesweep <- function(clonal_prev,
                       width = 960, 
                       height = 960) {
 
+
+  # ENSURE MINIMUM DIMENSIONS SATISFIED
+  min_height = 800
+  min_width = 930
+  if (height < min_height) {
+    stop(paste("Height must be greater than or equal to ", min_height, "px.", sep=""))
+  }
+  if (width < min_width) {
+    stop(paste("Width must be greater than or equal to ", min_width, "px.", sep=""))
+  }
+
   # CHECK REQUIRED INPUTS ARE PRESENT 
 
   if (missing(clonal_prev)) {
