@@ -616,8 +616,38 @@ function _getLinearTreeSegments(curNode, chains, base) {
     return chains;
 }
 
+/* function to get sites affected by each link (link identified here by its target clone id)
+* @param {Object} curVizObj -- vizObj for the current view
+*/
+function _getSitesAffectedByLink(curVizObj) {
+    var affected_sites = {};
+
+    // for each clone
+    curVizObj.data.treeNodes.forEach(function(clone) {
+        var cur_affected_sites = [];
+
+        // the clone and its descendants
+        var gtypeAndDescendants = curVizObj.data.treeDescendantsArr[clone];
+        gtypeAndDescendants.push(clone);
+
+        // for each of its descendants (and itself)
+        gtypeAndDescendants.forEach(function(desc) {
+
+            // append the sites affected by that descendant
+            cur_affected_sites = cur_affected_sites.concat(curVizObj.data.genotype_sites[desc]);
+        });
+
+        affected_sites[clone] = _.uniq(cur_affected_sites);
+    })
+
+    curVizObj.data.link_affected_sites = affected_sites;
+}
+
 // COLOUR FUNCTIONS
 
+/*
+* @param {Object} curVizObj -- vizObj for the current view
+*/
 function _getColours(curVizObj) {
     var colour_assignment = {}, // standard colour assignment
         cur_colours = curVizObj.userConfig.clone_cols;
@@ -1682,11 +1712,38 @@ function _getMutatedGenes(curVizObj) {
     // convert object into array
     var genes_arr = [];
     Object.keys(genes).sort().forEach(function(gene_key) {
+
+        // link ids where mutation(s) in this gene occurred
+        var link_ids = genes[gene_key].clones.map(function(clone) {
+            return "legendTreeLink_" + curVizObj.data.direct_ancestors[clone] + "_" + clone;
+        });
+
+        // sites affected by this mutation
+        var affected_sites = [];
+        genes[gene_key].clones.forEach(function(clone) {
+            affected_sites = affected_sites.concat(curVizObj.data.link_affected_sites[clone]);
+        });
+        affected_sites = _.uniq(affected_sites);
+
+        // site stems for affected sites
+        var site_stems = [];
+        affected_sites.forEach(function(site) {
+            var cur_site = _.findWhere(curVizObj.data.sites, {id: site});
+            if (cur_site.stem) {
+                site_stems.push(cur_site.stem.siteStem);
+            }
+        })
+        site_stems = _.uniq(site_stems);
+
+        // add this gene to the array
         genes_arr.push({
             "name": gene_key,
             "clones": genes[gene_key].clones,
-            "locations": genes[gene_key].locations
-        })
+            "locations": genes[gene_key].locations,
+            "link_ids": link_ids,
+            "affected_sites": affected_sites,
+            "site_stems": site_stems
+        });
     });
 
     curVizObj.data.genes = genes_arr;

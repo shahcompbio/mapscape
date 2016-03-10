@@ -90,9 +90,6 @@ HTMLWidgets.widget({
 
         // GET CONTENT
 
-        // get mutated genes
-        _getMutatedGenes(curVizObj);
-
         // get anatomic locations on image
         _getSiteLocationsOnImage(curVizObj);
 
@@ -128,6 +125,12 @@ HTMLWidgets.widget({
 
         // get sites showing each genotype
         _getGenotypeSites(curVizObj);
+
+        // get sites affected by each link (identified here by its target clone)
+        _getSitesAffectedByLink(curVizObj);
+
+        // get mutated genes
+        _getMutatedGenes(curVizObj);
 
         console.log("curVizObj");
         console.log(curVizObj);
@@ -589,13 +592,35 @@ HTMLWidgets.widget({
                             .style("font-family", "sans-serif")
                             .style("color", dim.neutralGrey)
                             .html(function(d) { return d.name; })
-                            .on("mouseover", function() {
+                            .on("mouseover", function(d) {
                                 // highlight gene in table
                                 d3.select(this).attr("bgcolor", "#FFFDC3");
+
+                                // highlight legend tree links where this gene was mutated
+                                d.link_ids.forEach(function(link_id) {
+                                    d3.select("#" + view_id).select("." + link_id).attr("stroke", "red");
+                                })
+
+                                // shade view
+                                _shadeMainView(curVizObj, view_id);
+
+                                // highlight sites
+                                _highlightSites(d.affected_sites, view_id);
+
+                                // highlight general anatomic marks
+                                d.site_stems.forEach(function(stem) {
+                                    d3.select("#" + view_id).select(".generalMark.stem_"+stem)
+                                        .attr("fill", "#CBCBCB");
+                                });
                             })
                             .on("mouseout", function() {
                                 // unhighlight gene in table
                                 d3.select(this).attr("bgcolor", "white");
+
+                                // unhighlight legend tree links
+                                d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke", dim.neutralGrey);
+
+                                _resetView(curVizObj, view_id);
                             })
                             .style("cursor", "default");
         }
