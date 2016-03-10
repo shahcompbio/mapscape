@@ -31,7 +31,7 @@ spacesweep <- function(clonal_prev,
                       mutations = "NA",
                       gender,
                       site_ids = "NA",
-                      show_root = TRUE,
+                      show_root = FALSE,
                       n_cells = 100,
                       width = 960, 
                       height = 960) {

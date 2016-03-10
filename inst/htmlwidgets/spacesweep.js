@@ -367,8 +367,20 @@ HTMLWidgets.widget({
             })
             .attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })              
-            .attr("fill", function(d) { return cols[d.id]; })
-            .attr("stroke", function(d) { return cols[d.id]; })
+            .attr("fill", function(d) { 
+                // if user does not want to show the root
+                if (!curVizObj.userConfig.show_root && d.id == "Root") {
+                    return "none";
+                }
+                return cols[d.id]; 
+            })
+            .attr("stroke", function(d) { 
+                // if user does not want to show the root
+                if (!curVizObj.userConfig.show_root && d.id == "Root") {
+                    return "none";
+                }
+                return cols[d.id]; 
+            })
             .attr("r", dim.legendNode_r)
             .on("mouseover", function(d) {
 

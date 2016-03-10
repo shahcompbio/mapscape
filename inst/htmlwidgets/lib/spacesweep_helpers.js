@@ -400,23 +400,8 @@ function _getTreeInfo(curVizObj) {
         var child = _findNodeByName(nodesByName, curVizObj.data.treeEdges[i].target);
         parent["children"].push(child);
     }
-
-    // if we want to show the root
-    var root_tree = _findNodeByName(nodesByName, rootName);
-    if (userConfig.show_root) {
-       curVizObj.data.treeStructure = root_tree;
-    }
-
-    // we do not want to show the root
-    else {
-        if (root_tree.children.length > 1) {
-            console.error("The root ('Root') in the tree has more than one child - " 
-                + "either the tree must be changed, or the root must be included (R parameter show_root == TRUE).")
-        }
-        rootName = root_tree.children[0].id;
-        var new_root_tree = _findNodeByName(nodesByName, rootName);
-        curVizObj.data.treeStructure = new_root_tree;
-    }    
+    var root_tree = _findNodeByName(nodesByName, rootName); 
+    curVizObj.data.treeStructure = root_tree; 
 
     // get descendants for each node
     curVizObj.data.treeDescendantsArr = {};
