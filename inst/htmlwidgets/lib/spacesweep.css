@@ -43,3 +43,7 @@ ul {
 .geneTableDIV {
     overflow: scroll;
 }
+
+td, tr {
+    font-family: sans-serif;
+}

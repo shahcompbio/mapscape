@@ -363,15 +363,30 @@ HTMLWidgets.widget({
                     _resetView(curVizObj, view_id);
                 }
             })
-            .on("click", function() {
-                dim.selectOn = !dim.selectOn;
+            .on("click", function(d) {
+                dim.selectOn = true;
 
                 _resetView(curVizObj, view_id);
 
-                if (dim.selectOn) {
-                    // highlight this link
-                    d3.select(this).attr("stroke", "red");
-                }
+                // target clone of this link
+                var cur_target = d.target.id;
+
+                // shade other links
+                d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke-opacity", 0.15);
+
+                // highlight the link
+                d3.select(this).attr("stroke", "red").attr("stroke-opacity", 1);
+
+                // filter gene table to show only those genes that are mutated in this link
+                var filtered_data = d3.select("#" + view_id).selectAll("tr").data().filter(function(d) { 
+                                                return (d.clones.indexOf(cur_target) != -1); 
+                                            });
+                d3.select("#" + view_id)
+                    .selectAll('tr')
+                    .data(filtered_data)
+                    .style("color", dim.neutralGrey)
+                    .html(function(d) { return d.name; })
+                    .exit().remove();
 
                 d3.event.stopPropagation();
             });
@@ -633,7 +648,6 @@ HTMLWidgets.widget({
 
             // create a cell in each row for each column
             var cells = rows.append("td")
-                            .style("font-family", "sans-serif")
                             .style("color", dim.neutralGrey)
                             .html(function(d) { return d.name; })
                             .on("mouseover", function(d) {
