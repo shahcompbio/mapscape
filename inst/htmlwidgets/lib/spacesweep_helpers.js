@@ -99,9 +99,10 @@ function _resetView(curVizObj, view_id) {
     d3.select("#" + view_id).selectAll(".generalMark").attr("fill", "white").attr("fill-opacity", 1)
         .attr("stroke-opacity", 1);
 
-    // reset legend tree nodes
+    // reset legend tree nodes & links
     d3.select("#" + view_id).selectAll(".legendTreeNode").attr("fill-opacity", 1).attr("stroke-opacity", 1);
-    d3.select("#" + view_id).selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".legendTreeLink").attr("fill-opacity", 1).attr("stroke-opacity", 1)
+        .attr("stroke", dim.neutralGrey);
 
     // reset all elements of main view
     d3.select("#" + view_id).selectAll(".voronoiCell").attr("fill-opacity", 1).attr("stroke-opacity", 1);
@@ -1558,14 +1559,16 @@ function _plotSite(curVizObj, site, view_id, drag) {
         })
         .on('mouseover', function(d) {
             d.site = site;
-            if (!dim.dragOn) {
+            if (!dim.selectOn && !dim.dragOn) {
                 // show tooltip
                 nodeTip.show(d);
             }
         })
         .on('mouseout', function(d) {
-            // hide tooltip
-            nodeTip.hide(d);
+            if (!dim.selectOn) {
+                // hide tooltip
+                nodeTip.hide(d);
+            }
         });
 
     // PLOT SITE TITLES
@@ -1608,15 +1611,19 @@ function _plotSite(curVizObj, site, view_id, drag) {
             return d.site; 
         })
         .on("mouseover", function(d) { 
-            // if title is too long, make mouseover to see full name
-            if (d.site.length > 6) {
-                return siteTitleTip.show(d);
+            if (!dim.selectOn) {
+                // if title is too long, make mouseover to see full name
+                if (d.site.length > 6) {
+                    return siteTitleTip.show(d);
+                }
             }
         })
         .on("mouseout", function(d) {
-            // if title is too long, make mouseout to hide full name
-            if (d.site.length > 6) {
-                return siteTitleTip.hide(d);
+            if (!dim.selectOn) {
+                // if title is too long, make mouseout to hide full name
+                if (d.site.length > 6) {
+                    return siteTitleTip.hide(d);
+                }
             }
         })
         .call(drag);

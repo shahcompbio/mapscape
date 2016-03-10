@@ -21,6 +21,7 @@ HTMLWidgets.widget({
             max_r: 8, // maximum radius for tree nodes
             siteMark_r: 4, // site mark radius
             dragOn: false, // whether or not drag is on
+            selectOn: false, // whether or not link selection is on
             startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
             legendSpacing: 15, // spacing between legend items
             shadeAlpha: 0.15, // alpha value for shading
@@ -150,7 +151,6 @@ HTMLWidgets.widget({
 
         var drag = d3.behavior.drag()
             .on("dragstart", function(d) {
-                console.log(d);
                 dim.dragOn = true; 
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
@@ -158,7 +158,6 @@ HTMLWidgets.widget({
                 curVizObj.view.startAngle = _find_angle_of_line_segment(
                     {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
-
             })
             .on("drag", function(d,i) {
 
@@ -209,14 +208,22 @@ HTMLWidgets.widget({
             .attr("x", 0)
             .attr("y", 0)
             .attr("width", dim.viewDiameter + "px")
-            .attr("height", dim.viewDiameter + "px");
+            .attr("height", dim.viewDiameter + "px")
+            .on("click", function() {
+                dim.selectOn = false;
+                _resetView(curVizObj, view_id);
+            });
 
         var legendSVG = legendDIV.append("svg:svg")
             .attr("class", "legendSVG")
             .attr("x", dim.viewDiameter)
             .attr("y", 0)
             .attr("width", dim.legendWidth)
-            .attr("height", dim.legendHeight);
+            .attr("height", dim.legendHeight)
+            .on("click", function() {
+                dim.selectOn = false;
+                _resetView(curVizObj, view_id);
+            });
 
         // PLOT ANATOMY IMAGE IN MAIN VIEW
 
@@ -334,24 +341,39 @@ HTMLWidgets.widget({
                 return _shortElbow(d);
             })
             .on("mouseover", function(d) {
+                if (!dim.selectOn && !dim.dragOn) {
+                    // shade other legend tree nodes & links
+                    d3.select("#" + view_id)
+                        .selectAll(".legendTreeNode")
+                        .attr("fill-opacity", dim.shadeAlpha)
+                        .attr("stroke-opacity", dim.shadeAlpha);
+                    d3.select("#" + view_id)
+                        .selectAll(".legendTreeLink")
+                        .attr("stroke-opacity", dim.shadeAlpha);
 
-                // shade other legend tree nodes & links
-                d3.select("#" + view_id)
-                    .selectAll(".legendTreeNode")
-                    .attr("fill-opacity", dim.shadeAlpha)
-                    .attr("stroke-opacity", dim.shadeAlpha);
-                d3.select("#" + view_id)
-                    .selectAll(".legendTreeLink")
-                    .attr("stroke-opacity", dim.shadeAlpha);
+                    // shade view
+                    _shadeMainView(curVizObj, view_id);
 
-                // shade view
-                _shadeMainView(curVizObj, view_id);
-
-                // highlight all elements downstream of link
-                _downstreamEffects(curVizObj, d.link_id, link_ids, view_id);
+                    // highlight all elements downstream of link
+                    _downstreamEffects(curVizObj, d.link_id, link_ids, view_id);
+                }
             })
             .on("mouseout", function() {
+                if (!dim.selectOn && !dim.dragOn) {
+                    _resetView(curVizObj, view_id);
+                }
+            })
+            .on("click", function() {
+                dim.selectOn = !dim.selectOn;
+
                 _resetView(curVizObj, view_id);
+
+                if (dim.selectOn) {
+                    // highlight this link
+                    d3.select(this).attr("stroke", "red");
+                }
+
+                d3.event.stopPropagation();
             });
         
         // create nodes
@@ -383,27 +405,30 @@ HTMLWidgets.widget({
             })
             .attr("r", dim.legendNode_r)
             .on("mouseover", function(d) {
+                if (!dim.selectOn && !dim.dragOn) {
+                    // shade legend tree nodes & links
+                    d3.select("#" + view_id)
+                        .selectAll(".legendTreeNode")
+                        .attr("fill-opacity", dim.shadeAlpha)
+                        .attr("stroke-opacity", dim.shadeAlpha);
+                    d3.select("#" + view_id)
+                        .selectAll(".legendTreeLink")
+                        .attr("stroke-opacity", dim.shadeAlpha);
 
-                // shade legend tree nodes & links
-                d3.select("#" + view_id)
-                    .selectAll(".legendTreeNode")
-                    .attr("fill-opacity", dim.shadeAlpha)
-                    .attr("stroke-opacity", dim.shadeAlpha);
-                d3.select("#" + view_id)
-                    .selectAll(".legendTreeLink")
-                    .attr("stroke-opacity", dim.shadeAlpha);
+                    // shade view
+                    _shadeMainView(curVizObj, view_id);
 
-                // shade view
-                _shadeMainView(curVizObj, view_id);
+                    // highlight genotype in legend tree, & sites expressing this genotype
+                    _legendGtypeHighlight(curVizObj, d.id, view_id);
 
-                // highlight genotype in legend tree, & sites expressing this genotype
-                _legendGtypeHighlight(curVizObj, d.id, view_id);
-
-                // highlight those sites showing the moused-over genotype
-                _highlightSites(curVizObj.data.genotype_sites[d.id], view_id);
+                    // highlight those sites showing the moused-over genotype
+                    _highlightSites(curVizObj.data.genotype_sites[d.id], view_id);
+                }
             })
             .on("mouseout", function(d) {
-                _resetView(curVizObj, view_id);
+                if (!dim.selectOn && !dim.dragOn) {
+                    _resetView(curVizObj, view_id);
+                }
             });
 
         // PLOT ANATOMY IN LEGEND
@@ -458,19 +483,22 @@ HTMLWidgets.widget({
             .attr("stroke-width", "1.5pxx")
             .attr("stroke", "#CBCBCB")
             .on("mouseover", function(d) {
-                // highlight this stem location
-                d3.select(this)
-                    .attr("fill", "#CBCBCB");
+                if (!dim.selectOn) {
+                    // highlight this stem location
+                    d3.select(this)
+                        .attr("fill", "#CBCBCB");
 
-                // shade view
-                _shadeMainView(curVizObj, view_id);
+                    // shade view
+                    _shadeMainView(curVizObj, view_id);
 
-                // highlight all sites with this stem
-                _highlightSites(curVizObj.data.siteStems[d].site_ids, view_id);
-
+                    // highlight all sites with this stem
+                    _highlightSites(curVizObj.data.siteStems[d].site_ids, view_id);
+                }
             })
             .on("mouseout", function(d) {
-                _resetView(curVizObj, view_id);
+                if (!dim.selectOn) {
+                    _resetView(curVizObj, view_id);
+                }
             });
 
         // PLOT MIXTURE CLASSIFICATION
@@ -526,33 +554,37 @@ HTMLWidgets.widget({
                 .text(function() { return " - " + phyly; })
                 .style("cursor", "default")
                 .on("mouseover", function() {
-                    var viewSVG = d3.select("#" + view_id);
-                    var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
+                    if (!dim.selectOn && !dim.dragOn) {
+                        var viewSVG = d3.select("#" + view_id);
+                        var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
 
-                    // shade view
-                    _shadeMainView(curVizObj, view_id);
+                        // shade view
+                        _shadeMainView(curVizObj, view_id);
 
-                    // highlight sites
-                    _highlightSites(participating_sites, view_id);
+                        // highlight sites
+                        _highlightSites(participating_sites, view_id);
 
-                    // highlight general anatomic marks
-                    var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
-                    stems.forEach(function(stem) {
-                        d3.select("#" + view_id).select(".generalMark.stem_"+stem)
-                            .attr("fill", "#CBCBCB");
-                    });
+                        // highlight general anatomic marks
+                        var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
+                        stems.forEach(function(stem) {
+                            d3.select("#" + view_id).select(".generalMark.stem_"+stem)
+                                .attr("fill", "#CBCBCB");
+                        });
 
-                    // highlight only those links that participate in the mixture classification
-                    viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
-                    participating_sites.forEach(function(participating_site) {
-                        viewSVG.selectAll(".treeLink.site_" + participating_site)
-                            .attr("stroke-opacity", dim.shadeAlpha);
-                        viewSVG.selectAll(".mixtureClassTreeLink.site_"+participating_site)
-                            .attr("stroke-opacity", 1);                        
-                    });
+                        // highlight only those links that participate in the mixture classification
+                        viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
+                        participating_sites.forEach(function(participating_site) {
+                            viewSVG.selectAll(".treeLink.site_" + participating_site)
+                                .attr("stroke-opacity", dim.shadeAlpha);
+                            viewSVG.selectAll(".mixtureClassTreeLink.site_"+participating_site)
+                                .attr("stroke-opacity", 1);                        
+                        });
+                    }
                 })
                 .on("mouseout", function(d) {
-                    _resetView(curVizObj, view_id);
+                    if (!dim.selectOn && !dim.dragOn) {
+                        _resetView(curVizObj, view_id);
+                    }
                 });
         });
 
@@ -605,34 +637,38 @@ HTMLWidgets.widget({
                             .style("color", dim.neutralGrey)
                             .html(function(d) { return d.name; })
                             .on("mouseover", function(d) {
-                                // highlight gene in table
-                                d3.select(this).attr("bgcolor", "#FFFDC3");
+                                if (!dim.selectOn && !dim.dragOn) {
+                                    // highlight gene in table
+                                    d3.select(this).attr("bgcolor", "#FFFDC3");
 
-                                // highlight legend tree links where this gene was mutated
-                                d.link_ids.forEach(function(link_id) {
-                                    d3.select("#" + view_id).select("." + link_id).attr("stroke", "red");
-                                })
+                                    // highlight legend tree links where this gene was mutated
+                                    d.link_ids.forEach(function(link_id) {
+                                        d3.select("#" + view_id).select("." + link_id).attr("stroke", "red");
+                                    })
 
-                                // shade view
-                                _shadeMainView(curVizObj, view_id);
+                                    // shade view
+                                    _shadeMainView(curVizObj, view_id);
 
-                                // highlight sites
-                                _highlightSites(d.affected_sites, view_id);
+                                    // highlight sites
+                                    _highlightSites(d.affected_sites, view_id);
 
-                                // highlight general anatomic marks
-                                d.site_stems.forEach(function(stem) {
-                                    d3.select("#" + view_id).select(".generalMark.stem_"+stem)
-                                        .attr("fill", "#CBCBCB");
-                                });
+                                    // highlight general anatomic marks
+                                    d.site_stems.forEach(function(stem) {
+                                        d3.select("#" + view_id).select(".generalMark.stem_"+stem)
+                                            .attr("fill", "#CBCBCB");
+                                    });
+                                }
                             })
                             .on("mouseout", function() {
-                                // unhighlight gene in table
-                                d3.select(this).attr("bgcolor", "white");
+                                if (!dim.selectOn && !dim.dragOn) {
+                                    // unhighlight gene in table
+                                    d3.select(this).attr("bgcolor", "white");
 
-                                // unhighlight legend tree links
-                                d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke", dim.neutralGrey);
+                                    // unhighlight legend tree links
+                                    d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke", dim.neutralGrey);
 
-                                _resetView(curVizObj, view_id);
+                                    _resetView(curVizObj, view_id);
+                                }
                             })
                             .style("cursor", "default");
         }
