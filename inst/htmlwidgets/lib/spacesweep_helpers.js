@@ -1178,7 +1178,7 @@ function _reorderSitesData(curVizObj, view_id) {
     })
 
     // get the site order
-    _sortByKey(sites, "angle");
+    sites.sort(d3.ascendingKey('angle'));
     var site_order = _.pluck(sites, "site_id");
 
     // rearrange curVizObj.data.sites array to reflect new ordering
@@ -1539,8 +1539,8 @@ function _plotSite(curVizObj, site, view_id, drag) {
         .append("g");
 
     nodeG.append("circle")     
-        .attr("cx", function(d) { return d.x})
-        .attr("cy", function(d) { return d.y})              
+        .attr("cx", ƒ('x'))
+        .attr("cy", ƒ('y'))              
         .classed("treeNode", true) 
         .classed("site_" + site, true)
         .attr("fill", function(d) {
@@ -1676,69 +1676,6 @@ function _initialSiteOrdering(curVizObj) {
         new_sites_array.push(_.findWhere(curVizObj.data.sites, {id: site.site_id}));
     })
     curVizObj.data.sites = new_sites_array;
-}
-
-// GENE FUNCTIONS
-
-/* function to get the mutated genes into a better format
-*/
-function _getMutatedGenes(curVizObj) {
-    var muts = curVizObj.userConfig.mutations, // mutations from user data
-        genes = {}; // object of genes (gene name is the property), and a list of clones where gene 
-                    // was mutated on the prior branch
-
-    // reformat mutation data
-    muts.forEach(function(mut) {
-        genes[mut.gene_name] = genes[mut.gene_name] || {};
-        genes[mut.gene_name].clones = genes[mut.gene_name].clones || [];
-        genes[mut.gene_name].clones.push(mut.clone_id);
-        genes[mut.gene_name].locations = genes[mut.gene_name].locations || [];
-        genes[mut.gene_name].locations.push(mut.chrom + ":" + mut.coord);
-    });
-
-    // make sure we have a unique set of clones for each gene
-    Object.keys(genes).forEach(function(gene_key) {
-        genes[gene_key].clones = _.uniq(genes[gene_key].clones);
-    });
-
-    // convert object into array
-    var genes_arr = [];
-    Object.keys(genes).sort().forEach(function(gene_key) {
-
-        // link ids where mutation(s) in this gene occurred
-        var link_ids = genes[gene_key].clones.map(function(clone) {
-            return "legendTreeLink_" + curVizObj.data.direct_ancestors[clone] + "_" + clone;
-        });
-
-        // sites affected by this mutation
-        var affected_sites = [];
-        genes[gene_key].clones.forEach(function(clone) {
-            affected_sites = affected_sites.concat(curVizObj.data.link_affected_sites[clone]);
-        });
-        affected_sites = _.uniq(affected_sites);
-
-        // site stems for affected sites
-        var site_stems = [];
-        affected_sites.forEach(function(site) {
-            var cur_site = _.findWhere(curVizObj.data.sites, {id: site});
-            if (cur_site.stem) {
-                site_stems.push(cur_site.stem.siteStem);
-            }
-        })
-        site_stems = _.uniq(site_stems);
-
-        // add this gene to the array
-        genes_arr.push({
-            "name": gene_key,
-            "clones": genes[gene_key].clones,
-            "locations": genes[gene_key].locations,
-            "link_ids": link_ids,
-            "affected_sites": affected_sites,
-            "site_stems": site_stems
-        });
-    });
-
-    curVizObj.data.genes = genes_arr;
 }
 
 // GENERAL FUNCTIONS

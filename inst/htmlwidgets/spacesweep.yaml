@@ -29,3 +29,16 @@ dependencies:
    version: 0.6.3
    src: "htmlwidgets/lib"
    script: d3.tip.js
+ - name: d3-jetpack
+   version: 0.0.0
+   src: "htmlwidgets/lib"
+   script: d3-jetpack.js
+ - name: dataTables
+   version: 1.10.11
+   src: "htmlwidgets/lib"
+   script: jquery.dataTables.min.js
+ - name: makeMutationTable
+   version: 0.0.0
+   src: "htmlwidgets/lib"
+   script: makeMutationTable.js
+   stylesheet: jquery.dataTables.min.css

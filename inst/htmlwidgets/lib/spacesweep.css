@@ -44,6 +44,16 @@ ul {
     overflow: scroll;
 }
 
-td, tr {
+td, tr, th {
     font-family: sans-serif;
+    color: '#616161';
+}
+
+.dataTables_info {
+    font-family: sans-serif;    
+    color: '#616161';
+}
+label {
+    font-family: sans-serif;
+    color: "#616161";
 }

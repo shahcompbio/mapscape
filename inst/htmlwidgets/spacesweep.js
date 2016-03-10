@@ -54,6 +54,7 @@ HTMLWidgets.widget({
         // vizObj for the current view
         var view_id = el.id;
         var curVizObj = vizObj[view_id]; 
+        curVizObj.view_id = view_id;
         var dim = curVizObj.generalConfig;
 
         // get params from R
@@ -61,10 +62,14 @@ HTMLWidgets.widget({
 
         // SET CONFIGURATIONS FOR THIS VIEW
 
+        // mutation table layout
+        dim.mutationTableHeight = 300;
+
         // main view layout
-        dim.viewDiameter = ((dim.containerWidth - dim.legendWidth) < dim.containerHeight) ? 
-            (dim.containerWidth - dim.legendWidth) :
-            dim.containerHeight; 
+        dim.viewDiameter = ((dim.containerWidth-dim.legendWidth) < (dim.containerHeight-dim.mutationTableHeight)) ? 
+            (dim.containerWidth-dim.legendWidth) :
+            (dim.containerHeight-dim.mutationTableHeight); 
+        dim.mutationTableWidth = dim.viewDiameter + dim.legendWidth;
         dim.viewCentre = { x: dim.viewDiameter/2, y: dim.viewDiameter/2 };
         dim.outerRadius = dim.viewDiameter/2; 
         dim.innerRadius = dim.viewDiameter/6; // radius for centre circle (where anatomy will go)
@@ -129,9 +134,6 @@ HTMLWidgets.widget({
 
         // get sites affected by each link (identified here by its target clone)
         _getSitesAffectedByLink(curVizObj);
-
-        // get mutated genes
-        _getMutatedGenes(curVizObj);
 
         console.log("curVizObj");
         console.log(curVizObj);
@@ -199,6 +201,14 @@ HTMLWidgets.widget({
             .style("position", "relative")
             .style("width", dim.legendWidth + "px")
             .style("height", dim.legendHeight + "px")
+            .style("float", "left");
+
+        var mutationTableDIV = d3.select(el)
+            .append("div")
+            .attr("class", "mutationTableDIV")
+            .style("position", "relative")
+            .style("width", dim.mutationTableWidth + "px")
+            .style("height", dim.mutationTableHeight + "px")
             .style("float", "left");
 
         // SVGS
@@ -391,8 +401,8 @@ HTMLWidgets.widget({
             .attr("class", function(d) {
                 return "legendTreeNode clone_" + d.id;
             })
-            .attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; })              
+            .attr("cx", ƒ('x'))
+            .attr("cy", ƒ('y'))              
             .attr("fill", function(d) { 
                 // if user does not want to show the root
                 if (!curVizObj.userConfig.show_root && d.id == "Root") {
@@ -539,7 +549,6 @@ HTMLWidgets.widget({
         var mixtureClassLegendTitle_width = 
             d3.select("#" + view_id).select(".ClassificationLegendTitle").node().getBBox().width;
         var spacing_below_title = 5;
-        var legend_lowest_y = dim.legend_mixture_top + dim.legendTitleHeight; // lowest y-value for legend thus far
         Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
             legendSVG.append("text")
                 .attr("class", "mixtureClass")
@@ -547,8 +556,6 @@ HTMLWidgets.widget({
                 .attr("y", function() {
                     var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title 
                             + phyly_idx*(dim.mixtureClassFontSize + 2);
-                    // note the lowest y-value of the legend
-                    legend_lowest_y = y + dim.mixtureClassFontSize + dim.legendSpacing;
                     return y;
                 })
                 .attr("dy", "+0.71em")
@@ -592,13 +599,14 @@ HTMLWidgets.widget({
                 });
         });
 
-        // GENE TABLE
-
+        // MUTATION TABLE
 
         // if mutations are specified by the user
         if (curVizObj.userConfig.mutations != "NA") {
 
-
+            // make the table
+            _makeMutationTable(curVizObj, mutationTableDIV, curVizObj.userConfig.mutations, "Gene Name", 
+                dim.mutationTableHeight);
         }
 
         // FOR EACH SITE
