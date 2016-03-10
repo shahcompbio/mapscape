@@ -377,17 +377,6 @@ HTMLWidgets.widget({
                 // highlight the link
                 d3.select(this).attr("stroke", "red").attr("stroke-opacity", 1);
 
-                // filter gene table to show only those genes that are mutated in this link
-                var filtered_data = d3.select("#" + view_id).selectAll("tr").data().filter(function(d) { 
-                                                return (d.clones.indexOf(cur_target) != -1); 
-                                            });
-                d3.select("#" + view_id)
-                    .selectAll('tr')
-                    .data(filtered_data)
-                    .style("color", dim.neutralGrey)
-                    .html(function(d) { return d.name; })
-                    .exit().remove();
-
                 d3.event.stopPropagation();
             });
         
@@ -609,82 +598,7 @@ HTMLWidgets.widget({
         // if mutations are specified by the user
         if (curVizObj.userConfig.mutations != "NA") {
 
-            // gene table title
-            legendSVG
-                .append("text")
-                .attr("class", "geneTableLegendTitle")
-                .attr("x", dim.legendWidth/2) 
-                .attr("y", legend_lowest_y)
-                .attr("dy", "+0.71em")
-                .attr("fill", dim.legendTitleColour)
-                .attr("text-anchor", "middle")
-                .attr("font-family", "sans-serif")
-                .attr("font-size", dim.legendTitleHeight)
-                .text("Gene Table");
-            legend_lowest_y += dim.legendTitleHeight;
 
-            // set legend height to lowest y-value of legend
-            legendSVG.attr("height", legend_lowest_y);
-            legendDIV.style("height", legend_lowest_y + "px");
-
-            // create DIV for table
-            var geneTableDIV = d3.select(el)
-                .append("div")
-                .attr("class", "geneTableDIV")
-                .style("position", "relative")
-                .style("width", dim.legendWidth + "px")
-                .style("height", (dim.legendHeight - legend_lowest_y) + "px")
-                .style("float", "left");
-
-            var table = geneTableDIV.append("table"),
-                thead = table.append("thead"),
-                tbody = table.append("tbody");
-
-            // create a row for each object in the data
-            var rows = tbody.selectAll("tr")
-                            .data(curVizObj.data.genes)
-                            .enter()
-                            .append("tr");
-
-            // create a cell in each row for each column
-            var cells = rows.append("td")
-                            .style("color", dim.neutralGrey)
-                            .html(function(d) { return d.name; })
-                            .on("mouseover", function(d) {
-                                if (!dim.selectOn && !dim.dragOn) {
-                                    // highlight gene in table
-                                    d3.select(this).attr("bgcolor", "#FFFDC3");
-
-                                    // highlight legend tree links where this gene was mutated
-                                    d.link_ids.forEach(function(link_id) {
-                                        d3.select("#" + view_id).select("." + link_id).attr("stroke", "red");
-                                    })
-
-                                    // shade view
-                                    _shadeMainView(curVizObj, view_id);
-
-                                    // highlight sites
-                                    _highlightSites(d.affected_sites, view_id);
-
-                                    // highlight general anatomic marks
-                                    d.site_stems.forEach(function(stem) {
-                                        d3.select("#" + view_id).select(".generalMark.stem_"+stem)
-                                            .attr("fill", "#CBCBCB");
-                                    });
-                                }
-                            })
-                            .on("mouseout", function() {
-                                if (!dim.selectOn && !dim.dragOn) {
-                                    // unhighlight gene in table
-                                    d3.select(this).attr("bgcolor", "white");
-
-                                    // unhighlight legend tree links
-                                    d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke", dim.neutralGrey);
-
-                                    _resetView(curVizObj, view_id);
-                                }
-                            })
-                            .style("cursor", "default");
         }
 
         // FOR EACH SITE
