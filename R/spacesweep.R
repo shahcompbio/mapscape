@@ -104,9 +104,6 @@ spacesweep <- function(clonal_prev,
       stop(paste("Chromosome numbered \"23\" was detected in mutations data frame - X and Y chromosomes ",
         "must be labelled \"X\" and \"Y\".", sep=""))
     }
-
-    # remove any excess columns
-    mutations <- mutations[,c("chrom","coord","gene_name","clone_id")]
   }
 
   # TREE EDGES DATA

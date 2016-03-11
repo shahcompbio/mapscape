@@ -22,6 +22,7 @@ HTMLWidgets.widget({
             siteMark_r: 4, // site mark radius
             dragOn: false, // whether or not drag is on
             selectOn: false, // whether or not link selection is on
+            mutSelectOn: false, // whether or not the mutation selection is on
             startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
             legendSpacing: 15, // spacing between legend items
             shadeAlpha: 0.15, // alpha value for shading
@@ -135,6 +136,9 @@ HTMLWidgets.widget({
         // get sites affected by each link (identified here by its target clone)
         _getSitesAffectedByLink(curVizObj);
 
+        // get mutation data in better format
+        _reformatMutations(curVizObj);
+
         console.log("curVizObj");
         console.log(curVizObj);
 
@@ -220,8 +224,7 @@ HTMLWidgets.widget({
             .attr("width", dim.viewDiameter + "px")
             .attr("height", dim.viewDiameter + "px")
             .on("click", function() {
-                dim.selectOn = false;
-                _resetView(curVizObj, view_id);
+                _backgroundClick(curVizObj);
             });
 
         var legendSVG = legendDIV.append("svg:svg")
@@ -231,8 +234,7 @@ HTMLWidgets.widget({
             .attr("width", dim.legendWidth)
             .attr("height", dim.legendHeight)
             .on("click", function() {
-                dim.selectOn = false;
-                _resetView(curVizObj, view_id);
+                _backgroundClick(curVizObj);
             });
 
         // PLOT ANATOMY IMAGE IN MAIN VIEW
@@ -351,7 +353,7 @@ HTMLWidgets.widget({
                 return _shortElbow(d);
             })
             .on("mouseover", function(d) {
-                if (!dim.selectOn && !dim.dragOn) {
+                if (_checkForSelections(curVizObj)) {
                     // shade other legend tree nodes & links
                     d3.select("#" + view_id)
                         .selectAll(".legendTreeNode")
@@ -369,7 +371,7 @@ HTMLWidgets.widget({
                 }
             })
             .on("mouseout", function() {
-                if (!dim.selectOn && !dim.dragOn) {
+                if (_checkForSelections(curVizObj)) {
                     _resetView(curVizObj, view_id);
                 }
             })
@@ -419,7 +421,7 @@ HTMLWidgets.widget({
             })
             .attr("r", dim.legendNode_r)
             .on("mouseover", function(d) {
-                if (!dim.selectOn && !dim.dragOn) {
+                if (_checkForSelections(curVizObj)) {
                     // shade legend tree nodes & links
                     d3.select("#" + view_id)
                         .selectAll(".legendTreeNode")
@@ -440,7 +442,7 @@ HTMLWidgets.widget({
                 }
             })
             .on("mouseout", function(d) {
-                if (!dim.selectOn && !dim.dragOn) {
+                if (_checkForSelections(curVizObj)) {
                     _resetView(curVizObj, view_id);
                 }
             });
@@ -497,7 +499,7 @@ HTMLWidgets.widget({
             .attr("stroke-width", "1.5pxx")
             .attr("stroke", "#CBCBCB")
             .on("mouseover", function(d) {
-                if (!dim.selectOn) {
+                if (_checkForSelections(curVizObj)) {
                     // highlight this stem location
                     d3.select(this)
                         .attr("fill", "#CBCBCB");
@@ -510,7 +512,7 @@ HTMLWidgets.widget({
                 }
             })
             .on("mouseout", function(d) {
-                if (!dim.selectOn) {
+                if (_checkForSelections(curVizObj)) {
                     _resetView(curVizObj, view_id);
                 }
             });
@@ -565,7 +567,7 @@ HTMLWidgets.widget({
                 .text(function() { return " - " + phyly; })
                 .style("cursor", "default")
                 .on("mouseover", function() {
-                    if (!dim.selectOn && !dim.dragOn) {
+                    if (_checkForSelections(curVizObj)) {
                         var viewSVG = d3.select("#" + view_id);
                         var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
 
@@ -593,7 +595,7 @@ HTMLWidgets.widget({
                     }
                 })
                 .on("mouseout", function(d) {
-                    if (!dim.selectOn && !dim.dragOn) {
+                    if (_checkForSelections(curVizObj)) {
                         _resetView(curVizObj, view_id);
                     }
                 });
@@ -605,7 +607,7 @@ HTMLWidgets.widget({
         if (curVizObj.userConfig.mutations != "NA") {
 
             // make the table
-            _makeMutationTable(curVizObj, mutationTableDIV, curVizObj.userConfig.mutations, "Gene Name", 
+            _makeMutationTable(curVizObj, mutationTableDIV, curVizObj.data.mutations, "Gene Name", 
                 dim.mutationTableHeight);
         }
 

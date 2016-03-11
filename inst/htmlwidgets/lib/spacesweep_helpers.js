@@ -1,5 +1,33 @@
 // D3 EFFECTS FUNCTIONS
 
+/* function to check for any selections / drags
+* @param {Object} curVizObj -- vizObj for the current view
+*/
+function _checkForSelections(curVizObj) {
+    var dim = curVizObj.generalConfig;
+
+    if (!dim.selectOn && !dim.dragOn && !dim.mutSelectOn) {
+        return true;
+    }
+    return false;
+}
+
+/* background click function (turns off selections, resets view)
+* @param {Object} curVizObj -- vizObj for the current view
+*/
+function _backgroundClick(curVizObj) {
+    var dim = curVizObj.generalConfig;
+    
+    dim.selectOn = false;
+    dim.dragOn = false;
+    dim.mutSelectOn = false;
+
+    // mark all mutations as unselected
+    d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr").classed('selected', false);
+
+    _resetView(curVizObj, curVizObj.view_id);
+}
+
 /* recursive function to perform downstream effects upon tree link highlighting
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} link_id -- id for the link that's currently highlighted
@@ -1559,7 +1587,7 @@ function _plotSite(curVizObj, site, view_id, drag) {
         })
         .on('mouseover', function(d) {
             d.site = site;
-            if (!dim.selectOn && !dim.dragOn) {
+            if (!dim.selectOn && !dim.dragOn && !dim.mutationSelectOn) {
                 // show tooltip
                 nodeTip.show(d);
             }
@@ -1677,6 +1705,49 @@ function _initialSiteOrdering(curVizObj) {
     })
     curVizObj.data.sites = new_sites_array;
 }
+
+// MUTATION FUNCTIONS
+
+/* function to get the mutations into a better format
+*/
+function _reformatMutations(curVizObj) {
+    var original_muts = curVizObj.userConfig.mutations, // muts from user data
+        muts_arr = [];
+
+    // convert object into array
+    original_muts.forEach(function(mut) {
+
+        // link id where mutation occurred
+        var link_id = "legendTreeLink_" + curVizObj.data.direct_ancestors[mut.clone_id] + "_" +  mut.clone_id;
+
+        // sites affected by this mutation
+        var affected_sites = curVizObj.data.link_affected_sites[mut.clone_id];
+
+        // site stems for affected sites
+        var site_stems = [];
+        affected_sites.forEach(function(site) {
+            var cur_site = _.findWhere(curVizObj.data.sites, {id: site});
+            if (cur_site.stem) {
+                site_stems.push(cur_site.stem.siteStem);
+            }
+        })
+        site_stems = _.uniq(site_stems);
+
+        // add this gene to the array
+        muts_arr.push({
+            "chrom": mut.chrom,
+            "coord": mut.coord,
+            "gene_name": mut.gene_name,
+            "clone_id": mut.clone_id,
+            "link_id": link_id,
+            "affected_sites": affected_sites,
+            "site_stems": site_stems
+        });
+    });
+
+    curVizObj.data.mutations = muts_arr;
+}
+
 
 // GENERAL FUNCTIONS
 
