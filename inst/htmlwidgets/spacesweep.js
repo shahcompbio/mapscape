@@ -168,7 +168,7 @@ HTMLWidgets.widget({
             .on("drag", function(d,i) {
 
                 // operations on drag
-                _dragFunction(curVizObj, d.site, d, view_id);
+                _dragFunction(curVizObj, d.site, d);
             })
             .on("dragend", function(d) {
                 dim.dragOn = false; 
@@ -180,13 +180,13 @@ HTMLWidgets.widget({
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
 
                 // order sites
-                _reorderSitesData(curVizObj, view_id);
+                _reorderSitesData(curVizObj);
 
                 // get site positioning coordinates etc
                 _getSitePositioning(curVizObj);   
 
                 // reposition sites on the screen
-                _snapSites(curVizObj, view_id);
+                _snapSites(curVizObj);
             });
 
         // DIVS
@@ -364,21 +364,21 @@ HTMLWidgets.widget({
                         .attr("stroke-opacity", dim.shadeAlpha);
 
                     // shade view
-                    _shadeMainView(curVizObj, view_id);
+                    _shadeMainView(curVizObj);
 
                     // highlight all elements downstream of link
-                    _downstreamEffects(curVizObj, d.link_id, link_ids, view_id);
+                    _downstreamEffects(curVizObj, d.link_id, link_ids);
                 }
             })
             .on("mouseout", function() {
                 if (_checkForSelections(curVizObj)) {
-                    _resetView(curVizObj, view_id);
+                    _resetView(curVizObj);
                 }
             })
             .on("click", function(d) {
                 dim.selectOn = true;
 
-                _resetView(curVizObj, view_id);
+                _resetView(curVizObj);
 
                 // target clone of this link
                 var cur_target = d.target.id;
@@ -432,18 +432,18 @@ HTMLWidgets.widget({
                         .attr("stroke-opacity", dim.shadeAlpha);
 
                     // shade view
-                    _shadeMainView(curVizObj, view_id);
+                    _shadeMainView(curVizObj);
 
                     // highlight genotype in legend tree, & sites expressing this genotype
-                    _legendGtypeHighlight(curVizObj, d.id, view_id);
+                    _legendGtypeHighlight(curVizObj, d.id);
 
                     // highlight those sites showing the moused-over genotype
-                    _highlightSites(curVizObj.data.genotype_sites[d.id], view_id);
+                    _highlightSites(curVizObj.data.genotype_sites[d.id]);
                 }
             })
             .on("mouseout", function(d) {
                 if (_checkForSelections(curVizObj)) {
-                    _resetView(curVizObj, view_id);
+                    _resetView(curVizObj);
                 }
             });
 
@@ -505,7 +505,7 @@ HTMLWidgets.widget({
                         .attr("fill", "#CBCBCB");
 
                     // shade view
-                    _shadeMainView(curVizObj, view_id);
+                    _shadeMainView(curVizObj);
 
                     // highlight all sites with this stem
                     _highlightSites(curVizObj.data.siteStems[d].site_ids, view_id);
@@ -513,7 +513,7 @@ HTMLWidgets.widget({
             })
             .on("mouseout", function(d) {
                 if (_checkForSelections(curVizObj)) {
-                    _resetView(curVizObj, view_id);
+                    _resetView(curVizObj);
                 }
             });
 
@@ -572,7 +572,7 @@ HTMLWidgets.widget({
                         var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
 
                         // shade view
-                        _shadeMainView(curVizObj, view_id);
+                        _shadeMainView(curVizObj);
 
                         // highlight sites
                         _highlightSites(participating_sites, view_id);
@@ -596,7 +596,7 @@ HTMLWidgets.widget({
                 })
                 .on("mouseout", function(d) {
                     if (_checkForSelections(curVizObj)) {
-                        _resetView(curVizObj, view_id);
+                        _resetView(curVizObj);
                     }
                 });
         });
@@ -616,7 +616,7 @@ HTMLWidgets.widget({
         curVizObj.data.site_ids.forEach(function(site, site_idx) {
 
             // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
-            _plotSite(curVizObj, site, view_id, drag);            
+            _plotSite(curVizObj, site, drag);            
         });
     },
 

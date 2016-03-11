@@ -17,7 +17,7 @@ function _checkForSelections(curVizObj) {
 */
 function _backgroundClick(curVizObj) {
     var dim = curVizObj.generalConfig;
-    
+
     dim.selectOn = false;
     dim.dragOn = false;
     dim.mutSelectOn = false;
@@ -32,9 +32,9 @@ function _backgroundClick(curVizObj) {
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} link_id -- id for the link that's currently highlighted
 * @param {Array} link_ids -- ids for all links in tree
-* @param {String} view_id -- the id for the current view
 */
-function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
+function _downstreamEffects(curVizObj, link_id, link_ids) {
+    var view_id = curVizObj.view_id;
 
     // get target id & single cell id
     var targetRX = new RegExp("legendTreeLink_.+_(.+)");  
@@ -81,9 +81,10 @@ function _downstreamEffects(curVizObj, link_id, link_ids, view_id) {
 /* function for highlighting genotype on anatomic image
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} cur_gtype -- genotype on hover
-* @param {String} view_id -- the id for the current view
 */
-function _legendGtypeHighlight(curVizObj, cur_gtype, view_id) {
+function _legendGtypeHighlight(curVizObj, cur_gtype) {
+    var view_id = curVizObj.view_id;
+
     // hide anatomic general marks
     d3.select("#" + view_id).selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
 
@@ -96,10 +97,10 @@ function _legendGtypeHighlight(curVizObj, cur_gtype, view_id) {
 
 /* function to shade all elements of the main view
 * @param {Object} curVizObj -- vizObj for the current view
-* @param {String} view_id -- the id for the current view
 */
-function _shadeMainView(curVizObj, view_id) {
-    var dim = curVizObj.generalConfig;
+function _shadeMainView(curVizObj) {
+    var view_id = curVizObj.view_id,
+        dim = curVizObj.generalConfig;
 
     d3.select("#" + view_id).selectAll(".voronoiCell")
         .attr("fill-opacity", dim.shadeAlpha)
@@ -117,10 +118,10 @@ function _shadeMainView(curVizObj, view_id) {
 
 /* function for view reset
 * @param {Object} curVizObj -- vizObj for the current view
-* @param {String} view_id -- the id for the current view
 */
-function _resetView(curVizObj, view_id) {
-    var dim = curVizObj.generalConfig;
+function _resetView(curVizObj) {
+    var view_id = curVizObj.view_id,
+        dim = curVizObj.generalConfig;
 
     // reset anatomic marks
     d3.select("#" + view_id).selectAll(".gtypeMark").attr("fill-opacity", 0);
@@ -159,10 +160,10 @@ function _highlightSites(site_ids, view_id) {
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 * @param {String} cur_site -- current site being dragged
 * @param {Object} d -- data object for current site svg group
-* @param {String} view_id -- the id for the current view
 */
-function _dragFunction(curVizObj, cur_site, d, view_id) {
-    var dim = curVizObj.generalConfig;
+function _dragFunction(curVizObj, cur_site, d) {
+    var view_id = curVizObj.view_id,
+        dim = curVizObj.generalConfig;
 
     // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
     var angle = _find_angle_of_line_segment(
@@ -1169,9 +1170,9 @@ function _find_angle_of_line_segment(A,B) {
 /* function to get order of the sites, then reorder the curVizObj.data.sites 
 * array accordingly.
 * @param {Object} curVizObj -- vizObj for the current view
-* @param {String} view_id -- the id for the current view
 */
-function _reorderSitesData(curVizObj, view_id) {
+function _reorderSitesData(curVizObj) {
+    var view_id = curVizObj.view_id;
     var sites = [];
 
     curVizObj.data.site_ids.forEach(function(site_id) {
@@ -1244,10 +1245,10 @@ function _reorderSitesData(curVizObj, view_id) {
 
 /* function to visually reposition sites to their "snapped" location
 * @param {Object} curVizObj -- vizObj for the current view
-* @param {String} view_id -- the id for the current view
 */ 
-function _snapSites(curVizObj, view_id) {
-    var dim = curVizObj.generalConfig;
+function _snapSites(curVizObj) {
+    var view_id = curVizObj.view_id,
+        dim = curVizObj.generalConfig;
 
     // for each site
     curVizObj.data.site_ids.forEach(function(site, site_idx) {
@@ -1335,11 +1336,11 @@ function _snapSites(curVizObj, view_id) {
 /* function to plot all the elements for this site (oncoMix, tree, title, anatomic lines, anatomic marks)
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} site -- current anatomic site
-* @param {String} view_id -- the id for the current view
 * @param {Object} drag -- drag object
 */
-function _plotSite(curVizObj, site, view_id, drag) {
-    var dim = curVizObj.generalConfig,
+function _plotSite(curVizObj, site, drag) {
+    var view_id = curVizObj.view_id,
+        dim = curVizObj.generalConfig,
         site_data = _.findWhere(curVizObj.data.sites, {id: site}), // data for the current site
         cur_siteG = d3.select("#" + view_id).select(".siteG.site_" + site.replace(/ /g,"_")), // svg group for this site
         cols = curVizObj.view.colour_assignment;
