@@ -85,9 +85,6 @@ function _downstreamEffects(curVizObj, link_id, link_ids) {
 function _legendGtypeHighlight(curVizObj, cur_gtype) {
     var view_id = curVizObj.view_id;
 
-    // hide anatomic general marks
-    d3.select("#" + view_id).selectAll(".generalMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
-
     // highlight genotype on legend tree
     d3.select("#" + view_id).selectAll(".legendTreeNode.clone_" + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
 
