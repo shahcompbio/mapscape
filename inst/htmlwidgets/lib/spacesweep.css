@@ -10,6 +10,11 @@ ul {
 	font-weight: bold;
 }
 
+.legendTitle {
+    color: #616161;
+    text-anchor: middle;
+    font-family: sans-serif;
+}
 
 .d3-tip {
     line-height: 1;

@@ -60,7 +60,7 @@ function _downstreamEffects(curVizObj, link_id, link_ids) {
         var stem = _.findWhere(curVizObj.data.sites, {id: site}).stem.siteStem;
         d3.select("#" + view_id)
             .select(".generalMark.stem_" + stem)
-            .attr("fill", curVizObj.generalConfig.anatomicLineColour);
+            .attr("fill", curVizObj.generalConfig.generalMarkHighlightColour);
     })
 
     // get the targets of this target
@@ -1630,7 +1630,7 @@ function _plotSite(curVizObj, site, drag) {
         .attr("text-anchor", "middle")
         .attr("font-family", "sans-serif")
         .attr("font-size", dim.viewDiameter/40)
-        .attr("fill", '#9E9A9A')
+        .attr("fill", "#616161")
         .style("cursor", "pointer")
         .text(function(d) { 
             // if title is too long, append "..." to the first few letters

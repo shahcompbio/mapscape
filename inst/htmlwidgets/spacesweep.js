@@ -15,6 +15,7 @@ HTMLWidgets.widget({
             monophyleticColour: '767676',
             polyphyleticColour: '000000',
             anatomicLineColour: '#CBCBCB',
+            generalMarkHighlightColour: "#616161",
             legendWidth: 130,
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
@@ -27,7 +28,7 @@ HTMLWidgets.widget({
             legendSpacing: 15, // spacing between legend items
             shadeAlpha: 0.15, // alpha value for shading
             neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
-            legendTitleColour: '#616161', // colour used for legend titles
+            legendTitleColour: "#616161", // colour used for legend titles
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -307,9 +308,6 @@ HTMLWidgets.widget({
             .attr("class", "legendTitle")
             .attr("x", dim.legendWidth/2) 
             .attr("y", 22)
-            .attr("fill", dim.legendTitleColour)
-            .attr("text-anchor", "middle")
-            .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
             .text("Phylogeny");
 
@@ -454,9 +452,6 @@ HTMLWidgets.widget({
             .attr("class", "legendTitle")
             .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
-            .attr("fill", dim.legendTitleColour)
-            .attr("text-anchor", "middle")
-            .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
             .text("Anatomy");
 
@@ -502,7 +497,7 @@ HTMLWidgets.widget({
                 if (_checkForSelections(curVizObj)) {
                     // highlight this stem location
                     d3.select(this)
-                        .attr("fill", "#CBCBCB");
+                        .attr("fill", dim.generalMarkHighlightColour);
 
                     // shade view
                     _shadeMainView(curVizObj);
@@ -528,23 +523,17 @@ HTMLWidgets.widget({
 
         // plot mixture classification title
         legendSVG.append("text")
-            .attr("class", "MixtureLegendTitle")
+            .attr("class", "MixtureLegendTitle legendTitle")
             .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_mixture_top)
             .attr("dy", "+0.71em")
-            .attr("fill", dim.legendTitleColour)
-            .attr("text-anchor", "middle")
-            .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
             .text("Mixture");
         legendSVG.append("text")
-            .attr("class", "ClassificationLegendTitle")
+            .attr("class", "ClassificationLegendTitle legendTitle")
             .attr("x", dim.legendWidth/2) 
             .attr("y", dim.legend_mixture_top + dim.legendTitleHeight)
             .attr("dy", "+0.71em")
-            .attr("fill", dim.legendTitleColour)
-            .attr("text-anchor", "middle")
-            .attr("font-family", "sans-serif")
             .attr("font-size", dim.legendTitleHeight)
             .text("Classification");
 
@@ -561,7 +550,7 @@ HTMLWidgets.widget({
                     return y;
                 })
                 .attr("dy", "+0.71em")
-                .attr("fill", dim.neutralGrey)
+                .attr("fill", "#616161")
                 .attr("font-family", "sans-serif")
                 .attr("font-size", dim.mixtureClassFontSize)
                 .text(function() { return " - " + phyly; })
@@ -581,7 +570,7 @@ HTMLWidgets.widget({
                         var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
                         stems.forEach(function(stem) {
                             d3.select("#" + view_id).select(".generalMark.stem_"+stem)
-                                .attr("fill", "#CBCBCB");
+                                .attr("fill", dim.generalMarkHighlightColour);
                         });
 
                         // highlight only those links that participate in the mixture classification

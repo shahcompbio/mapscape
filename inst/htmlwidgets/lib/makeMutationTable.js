@@ -71,7 +71,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 	                // highlight general anatomic marks
 	                cur_data.site_stems.forEach(function(stem) {
 	                    d3.select("#" + curVizObj.view_id).select(".generalMark.stem_"+stem)
-	                        .attr("fill", "#CBCBCB");
+	                        .attr("fill", dim.generalMarkHighlightColour);
 	                });
 	            }        		
         	}
