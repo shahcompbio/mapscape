@@ -51,14 +51,16 @@ ul {
 
 td, tr, th {
     font-family: sans-serif;
-    color: '#616161';
 }
 
 .dataTables_info {
     font-family: sans-serif;    
-    color: '#616161';
+    color: '#9E9A9A';
 }
 label {
     font-family: sans-serif;
-    color: "#616161";
+}
+
+.mutationTableDIV .dataTable thead th {
+    font-weight: normal;
 }

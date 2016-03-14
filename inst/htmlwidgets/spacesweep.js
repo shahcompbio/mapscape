@@ -28,7 +28,7 @@ HTMLWidgets.widget({
             legendSpacing: 15, // spacing between legend items
             shadeAlpha: 0.15, // alpha value for shading
             neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
-            legendTitleColour: "#616161", // colour used for legend titles
+            legendTitleColour: "#000000", // colour used for legend titles
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -550,7 +550,7 @@ HTMLWidgets.widget({
                     return y;
                 })
                 .attr("dy", "+0.71em")
-                .attr("fill", "#616161")
+                .attr("fill", dim.neutralGrey)
                 .attr("font-family", "sans-serif")
                 .attr("font-size", dim.mixtureClassFontSize)
                 .text(function() { return " - " + phyly; })
