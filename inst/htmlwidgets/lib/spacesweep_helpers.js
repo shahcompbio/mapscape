@@ -1746,6 +1746,7 @@ function _reformatMutations(curVizObj) {
             "chrom": mut.chrom,
             "coord": mut.coord,
             "gene_name": mut.gene_name,
+            "empty": "", // add an empty string for an empty column (clone column) that will contain an SVG
             "clone_id": mut.clone_id,
             "link_id": link_id,
             "affected_sites": affected_sites,

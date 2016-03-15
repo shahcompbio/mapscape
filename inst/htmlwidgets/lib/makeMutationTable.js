@@ -10,6 +10,9 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 	var dim = curVizObj.generalConfig;
 	var table;
 
+	// make deferred object for mutation table setup
+	curVizObj.mutTableDef = new $.Deferred();
+
     // create table skeleton
   	mutationTableDIV.append("table")
   		.attr("class", "display compact")
@@ -26,62 +29,90 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 			        	"title": "Coordinate" },
 			        { "data": "gene_name",
 			        	"title": "Gene Name" },
-			        { "data": "clone_id",
-			        	"title": "Clone ID" }
+			        { "data": "empty", 
+			        	"title": "Clone" }
 			    ],
 		    "scrollY":        table_height - 90, // - 90 for search bar, etc.
 	        "scrollCollapse": true,
 	        "paging":         false,
-	        "info": 		  false
+	        "info": 		  false,
+       		"aaSorting": [] // disable initial sort
 	    });
+
+	    curVizObj.mutTableDef.resolve("Finished creating table setup.")
 	});	
 
+	// when mutation table is set up
+	curVizObj.mutTableDef.done(function() {
 
-	// d3 effects
-	$("#" + curVizObj.view_id + "_mutationTable")
-        .on('click', 'tr', function () { 
-        	dim.mutSelectOn = !dim.mutSelectOn;
+		// d3 effects
+		$("#" + curVizObj.view_id + "_mutationTable")
+	        .on('click', 'tr', function () { 
+	        	dim.mutSelectOn = !dim.mutSelectOn;
 
-        	// MUTATION SELECTED
+	        	// MUTATION SELECTED
 
-        	if (dim.mutSelectOn) {
+	        	if (dim.mutSelectOn) {
 
-	        	// data for the row on mouseover
-	        	var cur_data = table.rows(this).data()[0];
-	        	if (!dim.selectOn && !dim.dragOn) {
-	        		// mark as selected
-        			$(this).addClass('selected');
+		        	// data for the row on mouseover
+		        	var cur_data = table.rows(this).data()[0];
+		        	if (!dim.selectOn && !dim.dragOn) {
+		        		// mark as selected
+	        			$(this).addClass('selected');
 
-	        		// shade all legend tree links
-	        		d3.select("#" + curVizObj.view_id)
-	        			.selectAll(".legendTreeLink")
-	        			.attr("stroke-opacity", dim.shadeAlpha);
+		        		// shade all legend tree links
+		        		d3.select("#" + curVizObj.view_id)
+		        			.selectAll(".legendTreeLink")
+		        			.attr("stroke-opacity", dim.shadeAlpha);
 
-	                // highlight legend tree link where this mutation occurred
-	                d3.select("#" + curVizObj.view_id)
-	                	.select("." + cur_data.link_id)
-	                	.attr("stroke", "red")
-	                	.attr("stroke-opacity", 1);
+		                // highlight legend tree link where this mutation occurred
+		                d3.select("#" + curVizObj.view_id)
+		                	.select("." + cur_data.link_id)
+		                	.attr("stroke", "red")
+		                	.attr("stroke-opacity", 1);
 
-	                // shade view
-	                _shadeMainView(curVizObj, curVizObj.view_id);
+		                // shade view
+		                _shadeMainView(curVizObj, curVizObj.view_id);
 
-	                // highlight sites
-	                _highlightSites(cur_data.affected_sites, curVizObj.view_id);
+		                // highlight sites
+		                _highlightSites(cur_data.affected_sites, curVizObj.view_id);
 
-	                // highlight general anatomic marks
-	                cur_data.site_stems.forEach(function(stem) {
-	                    d3.select("#" + curVizObj.view_id).select(".generalMark.stem_"+stem)
-	                        .attr("fill", dim.generalMarkHighlightColour);
+		                // highlight general anatomic marks
+		                cur_data.site_stems.forEach(function(stem) {
+		                    d3.select("#" + curVizObj.view_id).select(".generalMark.stem_"+stem)
+		                        .attr("fill", dim.generalMarkHighlightColour);
+		                });
+		            }        		
+	        	}
+
+	        	// MUTATION DE-SELECTED (click anywhere in table)
+
+	        	else {
+	        		_backgroundClick(curVizObj)
+	        	}
+
+	        });
+
+
+		// add clone SVGs
+		var rows = d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr");
+		var svgColumn = rows.selectAll("td:nth-child(4)")
+			.append("div")
+			.style("height","100%")
+	        .style("width","100%"); 
+	    var i = 0;
+	    var svgCircle = svgColumn
+	                .append("svg")
+	                .attr("width", 10)
+	                .attr("height", 10)
+	                .attr("class","svgCell")
+	                .append("circle")
+	                .attr("cx", 5)
+	                .attr("cy", 5)
+	                .attr("r", 4)
+	                .attr("fill", function(d) {
+	                	console.log("i " + i);
+	                	return curVizObj.view.colour_assignment[data[i++].clone_id];
 	                });
-	            }        		
-        	}
-
-        	// MUTATION DE-SELECTED (click anywhere in table)
-
-        	else {
-        		_backgroundClick(curVizObj)
-        	}
-
-        });
+    })
 }

@@ -151,6 +151,7 @@ spacesweep <- function(clonal_prev,
     prevs_split_small <- lapply(prevs_split, function(prevs) {
       return(prevs[,c("site_id", "prev")])
     })
+
   }
 
   # TREE EDGES DATA
