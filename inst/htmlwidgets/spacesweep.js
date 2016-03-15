@@ -208,7 +208,7 @@ HTMLWidgets.widget({
             .style("height", dim.legendHeight + "px")
             .style("float", "left");
 
-        var mutationTableDIV = d3.select(el)
+        curVizObj.view.mutationTableDIV = d3.select(el)
             .append("div")
             .attr("class", "mutationTableDIV")
             .style("position", "relative")
@@ -386,6 +386,18 @@ HTMLWidgets.widget({
 
                 // highlight the link
                 d3.select(this).attr("stroke", "red").attr("stroke-opacity", 1);
+
+                // delete existing data table
+                d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();
+
+                // get filtered data
+                var filtered_muts = _.filter(curVizObj.data.mutations, function(mut) { 
+                                                                    return mut.clone_id == cur_target; 
+                                                                });
+
+                // plot filtered data table
+                _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, filtered_muts, "Gene Name", 
+                    dim.mutationTableHeight);
 
                 d3.event.stopPropagation();
             });
@@ -596,7 +608,7 @@ HTMLWidgets.widget({
         if (curVizObj.userConfig.mutations != "NA") {
 
             // make the table
-            _makeMutationTable(curVizObj, mutationTableDIV, curVizObj.data.mutations, "Gene Name", 
+            _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, curVizObj.data.mutations, "Gene Name", 
                 dim.mutationTableHeight);
         }
 

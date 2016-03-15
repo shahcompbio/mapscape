@@ -18,6 +18,16 @@ function _checkForSelections(curVizObj) {
 function _backgroundClick(curVizObj) {
     var dim = curVizObj.generalConfig;
 
+    // if there was just a link selection, refresh the mutations table
+    if (dim.selectOn) {
+        // delete existing data table
+        d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();
+
+        // make new full table
+        _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, curVizObj.data.mutations, "Gene Name", 
+            dim.mutationTableHeight);
+    }
+
     dim.selectOn = false;
     dim.dragOn = false;
     dim.mutSelectOn = false;

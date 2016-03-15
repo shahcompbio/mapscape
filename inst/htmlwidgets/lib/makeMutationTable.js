@@ -36,6 +36,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 	    });
 	});	
 
+
 	// d3 effects
 	$("#" + curVizObj.view_id + "_mutationTable")
         .on('click', 'tr', function () { 
