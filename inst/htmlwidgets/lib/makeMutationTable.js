@@ -111,7 +111,6 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 	                .attr("cy", 5)
 	                .attr("r", 4)
 	                .attr("fill", function(d) {
-	                	console.log("i " + i);
 	                	return curVizObj.view.colour_assignment[data[i++].clone_id];
 	                });
     })

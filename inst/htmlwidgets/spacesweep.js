@@ -391,9 +391,11 @@ HTMLWidgets.widget({
                 d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();
 
                 // get filtered data
+                var gtypeAndAncestors = curVizObj.data.treeAncestorsArr[cur_target];
+                gtypeAndAncestors.push(cur_target);
                 var filtered_muts = _.filter(curVizObj.data.mutations, function(mut) { 
-                                                                    return mut.clone_id == cur_target; 
-                                                                });
+                                                        return gtypeAndAncestors.indexOf(mut.clone_id) != -1; 
+                                                    });
 
                 // plot filtered data table
                 _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, filtered_muts, "Gene Name", 
