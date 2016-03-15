@@ -38,17 +38,20 @@ function _backgroundClick(curVizObj) {
     _resetView(curVizObj, curVizObj.view_id);
 }
 
-/* recursive function to perform downstream effects upon tree link highlighting
+/* recursive function to perform downstream or upstream effects on legend tree link
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} link_id -- id for the link that's currently highlighted
 * @param {Array} link_ids -- ids for all links in tree
+* @param {String} stream_direction -- "downstream" or "upstream"
 */
-function _downstreamEffects(curVizObj, link_id, link_ids) {
-    var view_id = curVizObj.view_id;
+function _propagatedEffects(curVizObj, link_id, link_ids, stream_direction) {
+    var view_id = curVizObj.view_id,
+        generalTargetRX = new RegExp("legendTreeLink_.+_(.+)"), // regex to get target
+        generalSourceRX = new RegExp("legendTreeLink_(.+)_.+"); // regex to get source
 
-    // get target id & single cell id
-    var targetRX = new RegExp("legendTreeLink_.+_(.+)");  
-    var target_id = targetRX.exec(link_id)[1];
+    // get target & source id of this link
+    var target_id = generalTargetRX.exec(link_id)[1];
+    var source_id = generalSourceRX.exec(link_id)[1];
 
     // highlight the current link in the legend
     d3.select("#" + view_id)
@@ -61,7 +64,7 @@ function _downstreamEffects(curVizObj, link_id, link_ids) {
         .attr("fill-opacity", 1)
         .attr("stroke-opacity", 1);
 
-    // highlight those sites showing the moused-over genotype
+    // highlight those sites showing the target clone
     var sites = curVizObj.data.genotype_sites[target_id];
     _highlightSites(sites, view_id);
 
@@ -73,18 +76,20 @@ function _downstreamEffects(curVizObj, link_id, link_ids) {
             .attr("fill", curVizObj.generalConfig.generalMarkHighlightColour);
     })
 
-    // get the targets of this target
-    var sourceRX = new RegExp("legendTreeLink_" + target_id + "_(.+)");
+    // get the targets of this target, or sources of source
+    var nextNodeRX = (stream_direction == "downstream") ? 
+        new RegExp("legendTreeLink_" + target_id + "_(.+)") :
+        new RegExp("legendTreeLink_(.+)_" + source_id);
     var targetLinks_of_targetNode = [];
     link_ids.map(function(id) {
-        if (id.match(sourceRX)) {
+        if (id.match(nextNodeRX)) {
             targetLinks_of_targetNode.push(id);
         }
     });
 
     // for each of the target's targets, highlight their downstream links
     targetLinks_of_targetNode.map(function(target_link_id) {
-        _downstreamEffects(curVizObj, target_link_id, link_ids, view_id);
+        _propagatedEffects(curVizObj, target_link_id, link_ids, stream_direction);
     });
 };
 
@@ -121,6 +126,22 @@ function _shadeMainView(curVizObj) {
         .attr("fill-opacity", dim.shadeAlpha);
     d3.select("#" + view_id).selectAll(".anatomicPointer")
         .attr("stroke-opacity", 0.25);
+}
+
+/* function to shade all elements of the legend
+* @param {Object} curVizObj -- vizObj for the current view
+*/
+function _shadeLegend(curVizObj) {
+    var view_id = curVizObj.view_id,
+        dim = curVizObj.generalConfig;
+
+    d3.select("#" + view_id)
+        .selectAll(".legendTreeNode")
+        .attr("fill-opacity", dim.shadeAlpha)
+        .attr("stroke-opacity", dim.shadeAlpha);
+    d3.select("#" + view_id)
+        .selectAll(".legendTreeLink")
+        .attr("stroke-opacity", dim.shadeAlpha);
 }
 
 /* function for view reset

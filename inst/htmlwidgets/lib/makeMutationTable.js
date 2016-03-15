@@ -57,31 +57,16 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 		        	// data for the row on mouseover
 		        	var cur_data = table.rows(this).data()[0];
 		        	if (!dim.selectOn && !dim.dragOn) {
+
+		        		// shade main view & legend tree nodes & links
+	                    _shadeMainView(curVizObj);
+                    	_shadeLegend(curVizObj);
+
+	                    // highlight all elements downstream of link
+	                    _propagatedEffects(curVizObj, cur_data.link_id, curVizObj.link_ids, "downstream");
+
 		        		// mark as selected
 	        			$(this).addClass('selected');
-
-		        		// shade all legend tree links
-		        		d3.select("#" + curVizObj.view_id)
-		        			.selectAll(".legendTreeLink")
-		        			.attr("stroke-opacity", dim.shadeAlpha);
-
-		                // highlight legend tree link where this mutation occurred
-		                d3.select("#" + curVizObj.view_id)
-		                	.select("." + cur_data.link_id)
-		                	.attr("stroke", "red")
-		                	.attr("stroke-opacity", 1);
-
-		                // shade view
-		                _shadeMainView(curVizObj, curVizObj.view_id);
-
-		                // highlight sites
-		                _highlightSites(cur_data.affected_sites, curVizObj.view_id);
-
-		                // highlight general anatomic marks
-		                cur_data.site_stems.forEach(function(stem) {
-		                    d3.select("#" + curVizObj.view_id).select(".generalMark.stem_"+stem)
-		                        .attr("fill", dim.generalMarkHighlightColour);
-		                });
 		            }        		
 	        	}
 

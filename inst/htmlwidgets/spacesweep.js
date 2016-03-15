@@ -330,7 +330,7 @@ HTMLWidgets.widget({
         });
 
         // create links
-        var link_ids = [];
+        curVizObj.link_ids = [];
         legendSVG.append("g")
             .attr("class","gtypeTreeLinkG")
             .selectAll(".legendTreeLink")                  
@@ -338,34 +338,25 @@ HTMLWidgets.widget({
             .enter().append("path")                   
             .attr("class", function(d) { 
                 d.link_id = "legendTreeLink_" + d.source.id + "_" + d.target.id;
-                link_ids.push(d.link_id);
+                curVizObj.link_ids.push(d.link_id);
                 return "legendTreeLink " + d.link_id;
             })
             .attr('stroke', dim.neutralGrey)
             .attr('fill', 'none')
             .attr('stroke-width', '2px')               
             .attr("d", function(d) {
-                if (curVizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
-                    return _elbow(d);
-                }
-                return _shortElbow(d);
+                return _elbow(d);
             })
             .on("mouseover", function(d) {
                 if (_checkForSelections(curVizObj)) {
-                    // shade other legend tree nodes & links
-                    d3.select("#" + view_id)
-                        .selectAll(".legendTreeNode")
-                        .attr("fill-opacity", dim.shadeAlpha)
-                        .attr("stroke-opacity", dim.shadeAlpha);
-                    d3.select("#" + view_id)
-                        .selectAll(".legendTreeLink")
-                        .attr("stroke-opacity", dim.shadeAlpha);
+                    // shade legend tree nodes & links
+                    _shadeLegend(curVizObj);
 
                     // shade view
                     _shadeMainView(curVizObj);
 
                     // highlight all elements downstream of link
-                    _downstreamEffects(curVizObj, d.link_id, link_ids);
+                    _propagatedEffects(curVizObj, d.link_id, curVizObj.link_ids, "downstream");
                 }
             })
             .on("mouseout", function() {
@@ -376,16 +367,15 @@ HTMLWidgets.widget({
             .on("click", function(d) {
                 dim.selectOn = true;
 
-                _resetView(curVizObj);
+                // shade main view & legend tree nodes & links
+                _shadeMainView(curVizObj);
+                _shadeLegend(curVizObj);
+
+                // highlight all elements upstream of link
+                _propagatedEffects(curVizObj, d.link_id, curVizObj.link_ids, "upstream");
 
                 // target clone of this link
                 var cur_target = d.target.id;
-
-                // shade other links
-                d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke-opacity", 0.15);
-
-                // highlight the link
-                d3.select(this).attr("stroke", "red").attr("stroke-opacity", 1);
 
                 // delete existing data table
                 d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();
