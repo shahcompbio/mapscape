@@ -337,7 +337,7 @@ HTMLWidgets.widget({
             .data(links)                   
             .enter().append("path")                   
             .attr("class", function(d) { 
-                d.link_id = "legendTreeLink_" + d.source.id + "_" + d.target.id;
+                d.link_id = "treeLink_" + d.source.id + "_" + d.target.id;
                 curVizObj.link_ids.push(d.link_id);
                 return "legendTreeLink " + d.link_id;
             })
@@ -440,7 +440,7 @@ HTMLWidgets.widget({
                     _legendGtypeHighlight(curVizObj, d.id);
 
                     // highlight those sites showing the moused-over genotype
-                    _highlightSites(curVizObj.data.genotype_sites[d.id]);
+                    _highlightSites(curVizObj.data.genotype_sites[d.id], curVizObj);
                 }
             })
             .on("mouseout", function(d) {
@@ -507,7 +507,7 @@ HTMLWidgets.widget({
                     _shadeMainView(curVizObj);
 
                     // highlight all sites with this stem
-                    _highlightSites(curVizObj.data.siteStems[d].site_ids, view_id);
+                    _highlightSites(curVizObj.data.siteStems[d].site_ids, curVizObj);
                 }
             })
             .on("mouseout", function(d) {
@@ -568,7 +568,7 @@ HTMLWidgets.widget({
                         _shadeMainView(curVizObj);
 
                         // highlight sites
-                        _highlightSites(participating_sites, view_id);
+                        _highlightSites(participating_sites, curVizObj);
 
                         // highlight general anatomic marks
                         var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));

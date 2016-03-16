@@ -45,41 +45,102 @@ function _backgroundClick(curVizObj) {
 * @param {String} stream_direction -- "downstream" or "upstream"
 */
 function _propagatedEffects(curVizObj, link_id, link_ids, stream_direction) {
+    var view_id = curVizObj.view_id;
+
+    // clear propagation info in vizObj
+    curVizObj.view.propagation = {};
+
+    // get propagation info
+    _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction);
+
+    // unique sites and stems
+    curVizObj.view.propagation.sites = _.uniq(curVizObj.view.propagation.sites);
+    curVizObj.view.propagation.stems = _.uniq(curVizObj.view.propagation.stems);
+
+    // highlight links 
+    curVizObj.view.propagation.link_ids.forEach(function(link) {
+        // in the legend
+        d3.select("#" + view_id)
+            .select(".legendTreeLink." + link)
+            .attr("stroke-opacity", 1);
+
+        // at each site
+        curVizObj.view.propagation.sites.forEach(function(site) {
+            d3.select("#" + view_id)
+                .select(".treeLink." + link + ".site_" + site)
+                .attr("stroke-opacity", 1);
+        })
+    });
+
+    // highlight nodes 
+    curVizObj.view.propagation.node_ids.forEach(function(node) {
+        // in the legend
+        d3.select("#" + view_id)
+            .select(".legendTreeNode.clone_" + node)
+            .attr("fill-opacity", 1)
+            .attr("stroke-opacity", 1);
+
+        // at each site
+        curVizObj.view.propagation.sites.forEach(function(site) {
+            d3.select("#" + view_id)
+                .select(".treeNode.clone_" + node + ".site_" + site)
+                .attr("fill-opacity", 1)
+                .attr("stroke-opacity", 1);
+        })
+    });
+
+    // highlight oncoMix cells at each site
+    curVizObj.view.propagation.node_ids.forEach(function(node) {
+        curVizObj.view.propagation.sites.forEach(function(site) {
+            d3.select("#" + view_id)
+                .selectAll(".voronoiCell.clone_" + node + ".site_" + site)
+                .attr("fill-opacity", 1)
+                .attr("stroke-opacity", 1);
+        })
+    });
+
+    // highlight general anatomic marks for each site
+    curVizObj.view.propagation.stems.forEach(function(stem) {
+        d3.select("#" + view_id)
+            .select(".generalMark.stem_" + stem)
+            .attr("fill", curVizObj.generalConfig.generalMarkHighlightColour);        
+    });
+
+    // highlight site title & link to anatomy
+    curVizObj.view.propagation.sites.forEach(function(site) {
+        d3.select("#" + view_id).selectAll(".siteTitle.site_" + site).attr("fill-opacity", 1);
+        d3.select("#" + view_id).selectAll(".anatomicPointer.site_" + site).attr("stroke-opacity", 1);
+    });
+};
+
+/* function to get the links, nodes, sites and site stems participating in the current propagation
+* @param {Object} curVizObj -- vizObj for the current view
+* @param {String} link_id -- id for the link that's currently highlighted
+* @param {Array} link_ids -- ids for all links in tree
+* @param {String} stream_direction -- "downstream" or "upstream"
+*/
+function _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction) {
     var view_id = curVizObj.view_id,
-        generalTargetRX = new RegExp("legendTreeLink_.+_(.+)"), // regex to get target
-        generalSourceRX = new RegExp("legendTreeLink_(.+)_.+"); // regex to get source
+        generalTargetRX = new RegExp("treeLink_.+_(.+)"), // regex to get target
+        generalSourceRX = new RegExp("treeLink_(.+)_.+"); // regex to get source
 
     // get target & source id of this link
     var target_id = generalTargetRX.exec(link_id)[1];
     var source_id = generalSourceRX.exec(link_id)[1];
 
-    // highlight the current link in the legend
-    d3.select("#" + view_id)
-        .select(".legendTreeLink." + link_id)
-        .attr("stroke-opacity", 1);
-
-    // highlight the current target node in the legend
-    d3.select("#" + view_id)
-        .select(".legendTreeNode.clone_" + target_id)
-        .attr("fill-opacity", 1)
-        .attr("stroke-opacity", 1);
-
-    // highlight those sites showing the target clone
+    // get sites showing the target clone
     var sites = curVizObj.data.genotype_sites[target_id];
-    _highlightSites(sites, view_id);
 
     // highlight the general anatomic marks for those sites showing the moused-over genotype
+    var stems = [];
     sites.forEach(function(site) {
-        var stem = _.findWhere(curVizObj.data.sites, {id: site}).stem.siteStem;
-        d3.select("#" + view_id)
-            .select(".generalMark.stem_" + stem)
-            .attr("fill", curVizObj.generalConfig.generalMarkHighlightColour);
+        stems.push(_.findWhere(curVizObj.data.sites, {id: site}).stem.siteStem);
     })
 
     // get the targets of this target, or sources of source
     var nextNodeRX = (stream_direction == "downstream") ? 
-        new RegExp("legendTreeLink_" + target_id + "_(.+)") :
-        new RegExp("legendTreeLink_(.+)_" + source_id);
+        new RegExp("treeLink_" + target_id + "_(.+)") :
+        new RegExp("treeLink_(.+)_" + source_id);
     var targetLinks_of_targetNode = [];
     link_ids.map(function(id) {
         if (id.match(nextNodeRX)) {
@@ -87,9 +148,20 @@ function _propagatedEffects(curVizObj, link_id, link_ids, stream_direction) {
         }
     });
 
+    // add information to curVizObj
+    curVizObj.view.propagation = curVizObj.view.propagation || {};
+    curVizObj.view.propagation.sites = curVizObj.view.propagation.sites || [];
+    curVizObj.view.propagation.sites = curVizObj.view.propagation.sites.concat(sites);
+    curVizObj.view.propagation.stems = curVizObj.view.propagation.stems || [];
+    curVizObj.view.propagation.stems = curVizObj.view.propagation.stems.concat(stems);
+    curVizObj.view.propagation.node_ids = curVizObj.view.propagation.node_ids || [];
+    curVizObj.view.propagation.node_ids.push(target_id);
+    curVizObj.view.propagation.link_ids = curVizObj.view.propagation.link_ids || [];
+    curVizObj.view.propagation.link_ids.push(link_id);
+
     // for each of the target's targets, highlight their downstream links
     targetLinks_of_targetNode.map(function(target_link_id) {
-        _propagatedEffects(curVizObj, target_link_id, link_ids, stream_direction);
+        _getPropatagedItems(curVizObj, target_link_id, link_ids, stream_direction);
     });
 };
 
@@ -101,10 +173,14 @@ function _legendGtypeHighlight(curVizObj, cur_gtype) {
     var view_id = curVizObj.view_id;
 
     // highlight genotype on legend tree
-    d3.select("#" + view_id).selectAll(".legendTreeNode.clone_" + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".legendTreeNode.clone_" + cur_gtype)
+        .attr("fill-opacity", 1)
+        .attr("stroke-opacity", 1);
 
     // highlight genotype on anatomic image
-    d3.select("#" + view_id).selectAll(".gtypeMark.clone_" + cur_gtype).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+    d3.select("#" + view_id).selectAll(".gtypeMark.clone_" + cur_gtype)
+        .attr("fill-opacity", 1)
+        .attr("stroke-opacity", 1);
 }
 
 /* function to shade all elements of the main view
@@ -172,12 +248,18 @@ function _resetView(curVizObj) {
 
 /* function to highlight certain sites in the view
 * @param {Array} site_ids -- site ids to highlight
-* @param {String} view_id -- the id for the current view
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
-function _highlightSites(site_ids, view_id) {
+function _highlightSites(site_ids, curVizObj) {
+    var view_id = curVizObj.view_id; 
+
     site_ids.forEach(function(site) {
-        d3.select("#" + view_id).selectAll(".voronoiCell.site_" + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
-        d3.select("#" + view_id).selectAll(".treeNode.site_" + site).attr("fill-opacity", 1).attr("stroke-opacity", 1);
+        d3.select("#" + view_id).selectAll(".voronoiCell.site_" + site)
+            .attr("fill-opacity", 1)
+            .attr("stroke-opacity", 1);
+        d3.select("#" + view_id).selectAll(".treeNode.site_" + site)
+            .attr("fill-opacity", 1)
+            .attr("stroke-opacity", 1);
         d3.select("#" + view_id).selectAll(".treeLink.site_" + site).attr("stroke-opacity", 1);
         d3.select("#" + view_id).selectAll(".siteTitle.site_" + site).attr("fill-opacity", 1);
         d3.select("#" + view_id).selectAll(".anatomicPointer.site_" + site).attr("stroke-opacity", 1)
@@ -618,13 +700,6 @@ function _elbow(d) {
         + "V" + d.target.y + "H" + d.target.x;
 }
 
-/* elbow function to draw phylogeny links 
-*/
-function _shortElbow(d) {
-    return "M" + (d.source.x + (d.target.x-d.source.x)/2) + "," + d.source.y
-        + "V" + d.target.y + "H" + d.target.x;
-}
-
 /*
 * function to, using the tree hierarchy, get the linear segments' starting key and length (including starting key)
 * @param {Object} curNode -- current key in the tree
@@ -1018,6 +1093,9 @@ function _addGtypeInfoToVertices(curVizObj, site, vertices) {
 
             // note colour for this vertex, based on appropriate genotype
             v.col = curVizObj.view.colour_assignment[cur_gtype];
+
+            // note the genotype for this vertex
+            v.gtype = cur_gtype;
 
             // we've seen another real cell
             n_real_cells++;
@@ -1483,8 +1561,9 @@ function _plotSite(curVizObj, site, drag) {
         .selectAll("path")
         .data(voronoi(site_data.voronoi.vertex_coords), _polygon)
         .enter().append("path")
-        .classed("voronoiCell", true)
-        .classed("site_" + site, true)
+        .attr("class", function(d, i) {
+            return "voronoiCell site_" + site + " clone_" + vertices[i].gtype;
+        })
         .attr("d", _polygon)
         .attr("fill", function(d, i) {
             return (vertices[i].real_cell) ? vertices[i].col : "none";
@@ -1537,16 +1616,15 @@ function _plotSite(curVizObj, site, drag) {
     linkG.selectAll(".treeLink")                  
         .data(links)                   
         .enter().append("path")                   
-        .classed("treeLink", true)
-        .classed("site_" + site, true)
+        .attr("class", function(d) {
+            d.link_id = "treeLink_" + d.source.id + "_" + d.target.id;
+            return "treeLink site_" + site + " " + d.link_id;
+        })
         .attr('stroke', '#9E9A9A')
         .attr('fill', 'none') 
         .attr('stroke-width', '2px')               
         .attr("d", function(d) {
-            if (curVizObj.data.direct_descendants[d.source.id][0] == d.target.id) {
-                return _elbow(d);
-            }
-            return _shortElbow(d);
+            return _elbow(d);
         });     
 
     // filter links to show only branches that connect genotypes expressed at this site
@@ -1598,8 +1676,9 @@ function _plotSite(curVizObj, site, drag) {
     nodeG.append("circle")     
         .attr("cx", ƒ('x'))
         .attr("cy", ƒ('y'))              
-        .classed("treeNode", true) 
-        .classed("site_" + site, true)
+        .attr("class", function(d) {
+            return "treeNode site_" + site + " clone_" + d.id;
+        })
         .attr("fill", function(d) {
             // clone present at this site or not
             return (curVizObj.data["site_genotypes"][site].indexOf(d.id) != -1) ? 
@@ -1747,7 +1826,7 @@ function _reformatMutations(curVizObj) {
     original_muts.forEach(function(mut) {
 
         // link id where mutation occurred
-        var link_id = "legendTreeLink_" + curVizObj.data.direct_ancestors[mut.clone_id] + "_" +  mut.clone_id;
+        var link_id = "treeLink_" + curVizObj.data.direct_ancestors[mut.clone_id] + "_" +  mut.clone_id;
 
         // sites affected by this mutation
         var affected_sites = curVizObj.data.link_affected_sites[mut.clone_id];
