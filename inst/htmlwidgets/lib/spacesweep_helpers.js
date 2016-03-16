@@ -168,6 +168,48 @@ function _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction) {
     });
 };
 
+/* function to plot clonal prevalence text at a particular site for a particular clone
+* @param {Object} curVizObj -- vizObj for the current view
+* @param {String} site -- site of interest
+* @param {String} gtype -- genotype of interest
+*/
+function _plotClonalPrevText(curVizObj, site, gtype) {
+    var dim = curVizObj.generalConfig;
+
+    // plot clonal prevalence text
+    d3.select("#" + curVizObj.view_id).select(".viewSVG").append("text")
+        .attr("class", "clonalPrev")
+        .attr("x", function() {
+
+            // anatomic line object
+            var line = d3.select("#" + curVizObj.view_id).select(".anatomicPointer.site_"+site);
+
+            // coordinates of point a certain distance after anatomic line
+            var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
+
+            // anatomic pointer coordinates
+            return coords.x;
+        })
+        .attr("y", function() {
+
+            // anatomic line object
+            var line = d3.select("#" + curVizObj.view_id).select(".anatomicPointer.site_"+site);
+
+            // coordinates of point a certain distance after anatomic line
+            var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
+
+            // anatomic pointer coordinates
+            return coords.y;
+        })
+        .attr("text-anchor", "middle")
+        .attr("dy", "+0.35em")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10) 
+        .text(function() { 
+            return (Math.round(curVizObj.data.cp_data[site][gtype].cp * 100)/100).toFixed(2);
+        });
+}
+
 /* function for highlighting genotype on anatomic image
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} cur_gtype -- genotype on hover
@@ -1683,42 +1725,11 @@ function _plotSite(curVizObj, site, drag) {
             d.site = site;
             if (!dim.selectOn && !dim.dragOn && !dim.mutationSelectOn) {
                 // plot clonal prevalence text
-                var viewSVG = d3.select("#" + view_id).select(".viewSVG");
-                var clonalPrevText = viewSVG.append("text")
-                    .attr("class", "clonalPrev")
-                    .attr("x", function() {
-
-                        // anatomic line object
-                        var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site);
-
-                        // coordinates of point a certain distance after anatomic line
-                        var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
-
-                        // anatomic pointer coordinates
-                        return coords.x;
-                    })
-                    .attr("y", function() {
-
-                        // anatomic line object
-                        var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site);
-
-                        // coordinates of point a certain distance after anatomic line
-                        var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
-
-                        // anatomic pointer coordinates
-                        return coords.y;
-                    })
-                    .attr("text-anchor", "middle")
-                    .attr("dy", "+0.35em")
-                    .attr("font-family", "sans-serif")
-                    .attr("font-size", 10) 
-                    .text(function() { 
-                        return Math.round(curVizObj.data.cp_data[d.site][d.id].cp * 100)/100;
-                    });
+                _plotClonalPrevText(curVizObj, d.site, d.id);
             }
         })
         .on('mouseout', function(d) {
-            if (!dim.selectOn) {
+            if (!dim.selectOn && !dim.dragOn && !dim.mutationSelectOn) {
                 // remove clonal prevalence text
                 d3.select("#" + view_id).select(".clonalPrev").remove();
             }

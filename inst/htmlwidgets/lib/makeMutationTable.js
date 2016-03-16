@@ -119,7 +119,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
                             	.attr("font-family", "sans-serif")
                             	.attr("font-size", 10) 
                             	.text(function(d) { 
-                            		return Math.round(d.prev*100)/100; 
+                            		return (Math.round(d.prev*100)/100).toFixed(2); 
                             	});
                             
                         }

@@ -424,27 +424,59 @@ HTMLWidgets.widget({
             .attr("r", dim.legendNode_r)
             .on("mouseover", function(d) {
                 if (_checkForSelections(curVizObj)) {
-                    // shade legend tree nodes & links
-                    d3.select("#" + view_id)
-                        .selectAll(".legendTreeNode")
-                        .attr("fill-opacity", dim.shadeAlpha)
-                        .attr("stroke-opacity", dim.shadeAlpha);
-                    d3.select("#" + view_id)
-                        .selectAll(".legendTreeLink")
-                        .attr("stroke-opacity", dim.shadeAlpha);
 
                     // shade view
                     _shadeMainView(curVizObj);
 
-                    // highlight genotype in legend tree, & sites expressing this genotype
-                    _legendGtypeHighlight(curVizObj, d.id);
+                    // shade legend
+                    _shadeLegend(curVizObj);
 
-                    // highlight those sites showing the moused-over genotype
-                    _highlightSites(curVizObj.data.genotype_sites[d.id], curVizObj);
+                    // highlight node in the legend
+                    d3.select("#" + view_id)
+                        .select(".legendTreeNode.clone_" + d.id)
+                        .attr("fill-opacity", 1)
+                        .attr("stroke-opacity", 1);
+
+                    // highlight node at each site
+                    curVizObj.data.genotype_sites[d.id].forEach(function(site) {
+                        d3.select("#" + view_id)
+                            .select(".treeNode.clone_" + d.id + ".site_" + site)
+                            .attr("fill-opacity", 1)
+                            .attr("stroke-opacity", 1);
+                    })
+
+                    // highlight genotype on anatomic image
+                    d3.select("#" + view_id)
+                        .selectAll(".gtypeMark.clone_" + d.id)
+                        .attr("fill-opacity", 1)
+                        .attr("stroke-opacity", 1);
+
+                    // highlight oncoMix cells at each site
+                    curVizObj.data.genotype_sites[d.id].forEach(function(site) {
+                        d3.select("#" + view_id)
+                            .selectAll(".voronoiCell.clone_" + d.id + ".site_" + site)
+                            .attr("fill-opacity", 1)
+                            .attr("stroke-opacity", 1);
+                    })
+
+                    // highlight site title & link to anatomy
+                    curVizObj.data.genotype_sites[d.id].forEach(function(site) {
+                        d3.select("#" + view_id).selectAll(".siteTitle.site_" + site).attr("fill-opacity", 1);
+                        d3.select("#" + view_id).selectAll(".anatomicPointer.site_" + site).attr("stroke-opacity", 1);
+                    });
+
+                    // plot clonal prevalence text for this clone at each site
+                    curVizObj.data.genotype_sites[d.id].forEach(function(site) {
+                        _plotClonalPrevText(curVizObj, site, d.id);
+                    });
                 }
             })
             .on("mouseout", function(d) {
                 if (_checkForSelections(curVizObj)) {
+                    // remove clonal prevalence text
+                    d3.select("#" + view_id).selectAll(".clonalPrev").remove();
+
+                    // reset view
                     _resetView(curVizObj);
                 }
             });
