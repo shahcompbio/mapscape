@@ -1,7 +1,6 @@
 Package: spacesweep
 Title: spacesweep
-t
-Version: 0.0.2.908
+Version: 0.0.2.9084
 Authors@R: person("Maia", "Smith", email = "maiaannesmith@gmail.com", role = c("aut", "cre"))
 Description: Generates patient clonal SpaceSweeps.
 Depends:
