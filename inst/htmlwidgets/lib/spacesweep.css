@@ -71,3 +71,20 @@ table {
 td {
     word-wrap: break-word
 }
+
+/* Loading */
+#loading {
+    width: 120px;
+    height: 24px;
+    position: fixed;
+    top: 0px;
+    left: 5px;
+    z-index: 10000;
+    color: #FFF;
+    font-size: 14px;
+    font-family: sans-serif;
+    background: #59BDC2;
+    border-radius: 0 0 12px 12px;
+    text-align: center;
+    padding: 6px 6px; 
+}

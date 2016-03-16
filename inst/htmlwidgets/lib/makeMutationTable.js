@@ -134,7 +134,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 	        	// MUTATION DE-SELECTED (click anywhere in table)
 
 	        	else {
-	        		_backgroundClick(curVizObj)
+	        		_backgroundClickAndLoading(curVizObj);
 	        	}
 
 	        });

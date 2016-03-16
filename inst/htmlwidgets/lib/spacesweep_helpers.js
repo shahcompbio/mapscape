@@ -1,5 +1,16 @@
 // D3 EFFECTS FUNCTIONS
 
+
+
+function _plotLoader(curVizObj) {
+    d3.select("#" + curVizObj.view_id).select(".viewSVG").append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 100)
+        .attr("height", 100)
+        .attr("fill", "blue");
+}
+
 /* function to check for any selections / drags
 * @param {Object} curVizObj -- vizObj for the current view
 */
@@ -10,6 +21,30 @@ function _checkForSelections(curVizObj) {
         return true;
     }
     return false;
+}
+
+/* background click activate, with loading icon before and after
+* @param {Object} curVizObj -- vizObj for the current view
+*/
+function _backgroundClickAndLoading(curVizObj) {
+    // if the process that has just been cancelled takes a long time
+    if (curVizObj.generalConfig.longLoadTime) {
+        // show loading icon
+        $('#loading').show();
+    }
+
+    // create deferred object
+    curVizObj.bgClickDeferred = new $.Deferred();
+
+    // reset view
+    setTimeout(function() { // timeout so loading icon shows first
+        _backgroundClick(curVizObj);
+    }, 50);
+
+    // turn off loading icon
+    $.when(curVizObj.bgClickDeferred.promise()).then(function() {
+        $('#loading').hide();
+    })
 }
 
 /* background click function (turns off selections, resets view)
@@ -39,6 +74,10 @@ function _backgroundClick(curVizObj) {
     d3.select("#" + curVizObj.view_id).select(".mutationPrevalences").remove();
 
     _resetView(curVizObj, curVizObj.view_id);
+
+    // background click reset complete
+    curVizObj.bgClickDeferred.resolve("view reset");
+    curVizObj.generalConfig.longLoadTime = false;
 }
 
 /* recursive function to perform downstream or upstream effects on legend tree link

@@ -29,6 +29,7 @@ HTMLWidgets.widget({
             shadeAlpha: 0.08, // alpha value for shading
             neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
             legendTitleColour: "#000000", // colour used for legend titles
+            longLoadTime: false, // whether or not the cancellation of the current process will take a long time
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -192,6 +193,12 @@ HTMLWidgets.widget({
 
         // DIVS
 
+        var loadingDIV = d3.select(el)
+            .append("div")
+            .attr("id", "loading")
+            .text("Loading...");
+        $('#loading').hide();
+
         var viewDIV = d3.select(el)
             .append("div")
             .attr("class", "viewDIV")
@@ -225,7 +232,7 @@ HTMLWidgets.widget({
             .attr("width", dim.viewDiameter + "px")
             .attr("height", dim.viewDiameter + "px")
             .on("click", function() {
-                _backgroundClick(curVizObj);
+                 _backgroundClickAndLoading(curVizObj);
             });
 
         var legendSVG = legendDIV.append("svg:svg")
@@ -235,7 +242,7 @@ HTMLWidgets.widget({
             .attr("width", dim.legendWidth)
             .attr("height", dim.legendHeight)
             .on("click", function() {
-                _backgroundClick(curVizObj);
+                _backgroundClickAndLoading(curVizObj);
             });
 
         // PLOT ANATOMY IMAGE IN MAIN VIEW
@@ -366,30 +373,49 @@ HTMLWidgets.widget({
             })
             .on("click", function(d) {
                 dim.selectOn = true;
+                dim.longLoadTime = true;
 
-                // shade main view & legend tree nodes & links
-                _shadeMainView(curVizObj);
-                _shadeLegend(curVizObj);
+                // show loading icon
+                $('#loading').show();
 
-                // highlight all elements upstream of link
-                _propagatedEffects(curVizObj, d.link_id, curVizObj.link_ids, "upstream");
+                // create deferred object
+                curVizObj.linkClickDeferred = new $.Deferred();
 
-                // target clone of this link
-                var cur_target = d.target.id;
+                setTimeout(function() { // timeout so loading icon shows first
+    
+                    // shade main view & legend tree nodes & links
+                    _shadeMainView(curVizObj);
+                    _shadeLegend(curVizObj);
 
-                // delete existing data table
-                d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();
+                    // highlight all elements upstream of link
+                    _propagatedEffects(curVizObj, d.link_id, curVizObj.link_ids, "upstream");
 
-                // get filtered data
-                var gtypeAndAncestors = curVizObj.data.treeAncestorsArr[cur_target];
-                gtypeAndAncestors.push(cur_target);
-                var filtered_muts = _.filter(curVizObj.data.mutations, function(mut) { 
-                                                        return gtypeAndAncestors.indexOf(mut.clone_id) != -1; 
-                                                    });
+                    // target clone of this link
+                    var cur_target = d.target.id;
 
-                // plot filtered data table
-                _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, filtered_muts, "Gene Name", 
-                    dim.mutationTableHeight);
+                    // delete existing data table
+                    d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();
+
+                    // get filtered data
+                    var gtypeAndAncestors = curVizObj.data.treeAncestorsArr[cur_target];
+                    gtypeAndAncestors.push(cur_target);
+                    var filtered_muts = _.filter(curVizObj.data.mutations, function(mut) { 
+                                                            return gtypeAndAncestors.indexOf(mut.clone_id) != -1; 
+                                                        });
+
+                    // plot filtered data table
+                    _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, filtered_muts, "Gene Name", 
+                        dim.mutationTableHeight);
+
+                    // resolve deferred object
+                    curVizObj.linkClickDeferred.resolve("new table plotted");
+                    
+                }, 50);
+
+                // turn off loading icon
+                $.when(curVizObj.linkClickDeferred.promise()).then(function() {
+                    $('#loading').hide();
+                })
 
                 d3.event.stopPropagation();
             });
