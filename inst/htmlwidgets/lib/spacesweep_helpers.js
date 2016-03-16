@@ -1386,7 +1386,7 @@ function _reorderSitesData(curVizObj) {
     })
 
     // get the site order
-    sites.sort(d3.ascendingKey('angle'));
+    _sortByKey(sites, "angle");
     var site_order = _.pluck(sites, "site_id");
 
     // rearrange curVizObj.data.sites array to reflect new ordering
