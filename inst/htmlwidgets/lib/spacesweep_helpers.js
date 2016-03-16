@@ -35,6 +35,9 @@ function _backgroundClick(curVizObj) {
     // mark all mutations as unselected
     d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr").classed('selected', false);
 
+    // remove all mutation prevalences information from view
+    d3.select("#" + curVizObj.view_id).select(".mutationPrevalences").remove();
+
     _resetView(curVizObj, curVizObj.view_id);
 }
 
@@ -1929,4 +1932,48 @@ function _getIntersectionManyArrays(arrays) {
     });
 
     return result;
+}
+
+/* given the start point, slope, distance and circle-half of a line segment, this function finds the endpoint
+* @param {Object} start -- x- and y- coordinates for starting point of the new line segment
+* @param {Number} slope -- slope of the new line segment
+* @param {Number} dist -- distance of the new line segment
+* @param {Boolean} leftHalf -- whether or not the endpoint is in the left half
+*/
+function _findEndpoint(start, slope, dist, leftHalf) {
+    var cosTheta = 1/Math.sqrt(1 + Math.pow(slope,2));
+    var sineTheta = slope/Math.sqrt(1 + Math.pow(slope,2));
+    var dx = dist*cosTheta;
+    var dy = dist*sineTheta;
+    var x = (leftHalf) ? start.x + dx : start.x - dx;
+    var y = (leftHalf) ? start.y + dy : start.y - dy;
+    return {x: x, y: y};
+}
+
+/* find the coordinates of a point a certain distance another point, getting the
+* slope of the distance from a d3 line object
+* @param {Object} d3_line_object -- d3 line object
+* @param {Number} dist -- desired distance from starting point on line
+* @param {String} start_point -- which end of the line object to start from (either "1" or "2")
+* @return coordinates for the point a certain distance from a starting point
+*/
+function _fromLineGetPoint(d3_line_object, dist, start_point) {
+    
+    // slope of anatomic line
+    var x1 = parseFloat(d3_line_object.attr("x1"));
+    var y1 = parseFloat(d3_line_object.attr("y1"));
+    var x2 = parseFloat(d3_line_object.attr("x2"));
+    var y2 = parseFloat(d3_line_object.attr("y2"));
+    var slope = (y1-y2)/(x1-x2);
+
+    var add = true;
+    if ((x1-x2) < 0) { // left half of the circle
+        add = false;
+    }
+
+    // calculate position a certain distance from the starting point
+    var start = (start_point == "1") ? {x: x1, y: y1} : {x: x2, y: y2};
+    var coords = _findEndpoint(start, slope, dist, add);
+
+    return coords;
 }
