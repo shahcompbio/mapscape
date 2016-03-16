@@ -1870,7 +1870,7 @@ function _reformatMutations(curVizObj) {
         site_stems = _.uniq(site_stems);
 
         // add this gene to the array
-        muts_arr.push({
+        var cur_mut = {
             "chrom": mut.chrom,
             "coord": mut.coord,
             "gene_name": mut.gene_name,
@@ -1879,7 +1879,14 @@ function _reformatMutations(curVizObj) {
             "link_id": link_id,
             "affected_sites": affected_sites,
             "site_stems": site_stems
-        });
+        }
+        if (mut.hasOwnProperty("effect")) {
+            cur_mut["effect"] = mut.effect;
+        }
+        if (mut.hasOwnProperty("impact")) {
+            cur_mut["impact"] = mut.impact;
+        }
+        muts_arr.push(cur_mut);
     });
 
     curVizObj.data.mutations = muts_arr;

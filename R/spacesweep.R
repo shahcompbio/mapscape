@@ -20,7 +20,10 @@
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "site_id" - anatomic site id
-#'                       (4) {Number} "prev" - prevalence of the mutation.
+#'                       (4) {Number} "prev" - prevalence of the mutation
+#'                       (5) {String} (Optional) "effect" - effect of the mutation 
+#'                                                          (e.g. non-synonymous, upstream, etc.)
+#'                       (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
 #' @param gender Gender of the patient (M/F). 
 #' @param clone_colours (Optional) Data frame with clone ids and their corresponding colours 
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
