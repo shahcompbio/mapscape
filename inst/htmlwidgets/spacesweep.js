@@ -77,10 +77,10 @@ HTMLWidgets.widget({
         dim.innerRadius = dim.viewDiameter/6; // radius for centre circle (where anatomy will go)
         dim.circBorderWidth = 3; // width for circular border width
         
-        // - 3, - 10 for extra space
-        dim.oncoMixWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 3; 
+        // - 8, - 10, - 3 for extra space
+        dim.oncoMixWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 8; 
         dim.treeWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 10; 
-        dim.radiusToOncoMix = dim.innerRadius + dim.oncoMixWidth/2; // radius to oncoMix centre
+        dim.radiusToOncoMix = dim.innerRadius + dim.oncoMixWidth/2 - 3; // radius to oncoMix centre
         dim.radiusToTree = dim.innerRadius + dim.oncoMixWidth + dim.treeWidth/2; // radius to tree centre
 
         // legend layout
@@ -145,9 +145,9 @@ HTMLWidgets.widget({
 
         // VIEW SETUP
 
-        // radii (- 11 = how much space to give between nodes)
+        // radii (- 11, - 8 = how much space to give between nodes)
         var tree_height = curVizObj.data.tree_height, // height of the tree (# nodes)
-            node_r = ((dim.treeWidth - 11*tree_height)/tree_height)/2, // site tree
+            node_r = ((dim.treeWidth - 8*tree_height)/tree_height)/2, // site tree
             legendNode_r = ((dim.legendTreeWidth - 11*tree_height)/tree_height)/2; // legend tree
 
         // make sure radii do not surpass the maximum

@@ -98,7 +98,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
                             		var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site_id);
 
                             		// coordinates of point a certain distance after anatomic line
-                            		var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2, "1");
+                            		var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
 
                             		// anatomic pointer coordinates
                             		return coords.x;
@@ -109,7 +109,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
                             		var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site_id);
 
                             		// coordinates of point a certain distance after anatomic line
-                            		var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2, "1");
+                            		var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
 
                             		// anatomic pointer coordinates
                             		return coords.y;
@@ -120,7 +120,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
                             	.attr("font-size", 10) 
                             	.text(function(d) { 
                             		return Math.round(d.prev*100)/100; 
-                            	})
+                            	});
                             
                         }
 		            }        		

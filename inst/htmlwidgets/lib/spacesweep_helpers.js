@@ -1456,23 +1456,6 @@ function _plotSite(curVizObj, site, drag) {
 
     // TOOLTIP FUNCTIONS
 
-    // tip for tree node cellular prevalences
-    var nodeTip = d3.tip()
-        .attr('class', 'd3-tip')
-        .offset([-10, 0])
-        .html(function(d) {
-            var cp;
-            if (curVizObj.data["site_genotypes"][d.site].indexOf(d.id) != -1) {
-                cp = (Math.round(curVizObj.data.cp_data[d.site][d.id].cp * 100)/100).toFixed(2);
-            }
-            else {
-                cp = "";                    
-            }
-            return "<span style='color:white; font-family: sans-serif; font-weight:normal'>" + 
-                "Prevalence: " + cp + "</span>";
-        });
-    d3.select("#" + view_id).select(".viewSVG").call(nodeTip);
-
     // tip for site titles, if they're too long to display
     var siteTitleTip = d3.tip()
         .attr('class', 'd3-tip')
@@ -1699,14 +1682,45 @@ function _plotSite(curVizObj, site, drag) {
         .on('mouseover', function(d) {
             d.site = site;
             if (!dim.selectOn && !dim.dragOn && !dim.mutationSelectOn) {
-                // show tooltip
-                nodeTip.show(d);
+                // plot clonal prevalence text
+                var viewSVG = d3.select("#" + view_id).select(".viewSVG");
+                var clonalPrevText = viewSVG.append("text")
+                    .attr("class", "clonalPrev")
+                    .attr("x", function() {
+
+                        // anatomic line object
+                        var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site);
+
+                        // coordinates of point a certain distance after anatomic line
+                        var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
+
+                        // anatomic pointer coordinates
+                        return coords.x;
+                    })
+                    .attr("y", function() {
+
+                        // anatomic line object
+                        var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site);
+
+                        // coordinates of point a certain distance after anatomic line
+                        var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
+
+                        // anatomic pointer coordinates
+                        return coords.y;
+                    })
+                    .attr("text-anchor", "middle")
+                    .attr("dy", "+0.35em")
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", 10) 
+                    .text(function() { 
+                        return Math.round(curVizObj.data.cp_data[d.site][d.id].cp * 100)/100;
+                    });
             }
         })
         .on('mouseout', function(d) {
             if (!dim.selectOn) {
-                // hide tooltip
-                nodeTip.hide(d);
+                // remove clonal prevalence text
+                d3.select("#" + view_id).select(".clonalPrev").remove();
             }
         });
 
