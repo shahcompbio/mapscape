@@ -24,7 +24,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 			        { "data": "chrom", "title": "Chromosome" },
 			        { "data": "coord", "title": "Coordinate" },
 			        { "data": "gene_name", "title": "Gene Name" },
-			        { "data": "empty", "title": "Clone" }
+			        { "data": "empty", "title": "Clone", "bSortable": false }
 			    ];
 	if (data[0].hasOwnProperty("effect")) {
 		columns.push({ "data": "effect", "title": "Effect" });
