@@ -26,7 +26,7 @@ HTMLWidgets.widget({
             mutSelectOn: false, // whether or not the mutation selection is on
             startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
             legendSpacing: 15, // spacing between legend items
-            shadeAlpha: 0.15, // alpha value for shading
+            shadeAlpha: 0.08, // alpha value for shading
             neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
             legendTitleColour: "#000000", // colour used for legend titles
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",

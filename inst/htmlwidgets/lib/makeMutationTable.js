@@ -40,7 +40,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
        		"aaSorting": [] // disable initial sort
 	    });
 
-	    curVizObj.mutTableDef.resolve("Finished creating table setup.")
+	    curVizObj.mutTableDef.resolve("Finished creating table setup.");
 	});	
 
 	// when mutation table is set up
