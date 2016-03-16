@@ -1,16 +1,5 @@
 // D3 EFFECTS FUNCTIONS
 
-
-
-function _plotLoader(curVizObj) {
-    d3.select("#" + curVizObj.view_id).select(".viewSVG").append("rect")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", 100)
-        .attr("height", 100)
-        .attr("fill", "blue");
-}
-
 /* function to check for any selections / drags
 * @param {Object} curVizObj -- vizObj for the current view
 */
@@ -1741,8 +1730,8 @@ function _plotSite(curVizObj, site, drag) {
         .append("g");
 
     nodeG.append("circle")     
-        .attr("cx", ƒ('x'))
-        .attr("cy", ƒ('y'))              
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; })             
         .attr("class", function(d) {
             return "treeNode site_" + site + " clone_" + d.id;
         })

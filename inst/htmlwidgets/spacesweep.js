@@ -409,7 +409,7 @@ HTMLWidgets.widget({
 
                     // resolve deferred object
                     curVizObj.linkClickDeferred.resolve("new table plotted");
-                    
+
                 }, 50);
 
                 // turn off loading icon
@@ -431,8 +431,8 @@ HTMLWidgets.widget({
             .attr("class", function(d) {
                 return "legendTreeNode clone_" + d.id;
             })
-            .attr("cx", ƒ('x'))
-            .attr("cy", ƒ('y'))              
+            .attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; })           
             .attr("fill", function(d) { 
                 // if user does not want to show the root
                 if (!curVizObj.userConfig.show_root && d.id == "Root") {
