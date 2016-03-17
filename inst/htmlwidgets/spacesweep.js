@@ -387,6 +387,11 @@ HTMLWidgets.widget({
                     _shadeMainView(curVizObj);
                     _shadeLegend(curVizObj);
 
+                    // highlight this link
+                    d3.select("#" + curVizObj.view_id)
+                        .select(".legendTreeLink." + d.link_id)
+                        .attr("stroke", "red");
+
                     // highlight all elements downstream of link
                     _propagatedEffects(curVizObj, d.link_id, curVizObj.link_ids, "downstream");
 
