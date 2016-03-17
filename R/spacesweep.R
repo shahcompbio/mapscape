@@ -4,19 +4,20 @@
 #'
 #' @import htmlwidgets
 #'
-#' @param clonal_prev Clonal prevalence data frame.
+#' @param clonal_prev {Data Frame} Clonal prevalence.
 #'   Format: columns are (1) {String} "site_id" - id for the anatomic site
 #'                       (2) {String} "clone_id" - clone id
 #'                       (3) {Number} "clonal_prev" - clonal prevalence.
-#' @param tree_edges Tree edges data frame. The root of the tree (id: "Root") must be specified as a source.
-#'   Format: columns are (1) {String} "source" - source node id
-#'                       (2) {String} "target" - target node id.
-#' @param mutations (Optional) Data frame of mutations occurring before the appearance of each clone.
+#' @param tree_edges {Data Frame} Tree edges. 
+#'   Format: columns are (1) {String} "source" - source clone id
+#'                       (2) {String} "target" - target clone id.
+#' @param tree_root {String} The clone id for the root of the tree.
+#' @param mutations {Data Frame} (Optional) Mutations occurring at each clone.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "clone_id" - clone id
 #'                       (4) {String} "gene_name" - name of the affected gene (can be "" if none affected).
-#' @param mutation_prevalences (Optional) Data frame of mutation prevalences for each anatomic site in a patient.
+#' @param mutation_prevalences {Data Frame} (Optional) Mutation prevalences for each anatomic site in a patient.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "site_id" - anatomic site id
@@ -24,23 +25,22 @@
 #'                       (5) {String} (Optional) "effect" - effect of the mutation 
 #'                                                          (e.g. non-synonymous, upstream, etc.)
 #'                       (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
-#' @param gender Gender of the patient (M/F). 
-#' @param clone_colours (Optional) Data frame with clone ids and their corresponding colours 
+#' @param gender {String} Gender of the patient (M/F). 
+#' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours 
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
 #' @param site_ids {Vector} (Optional) Ids of the sites in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
-#' @param show_root (Optional) Whether or not to plot the root (for tree).
-#' @param n_cells (Optional) The number of cells to plot (for voronoi tessellation).
+#' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
 #' @export
 spacesweep <- function(clonal_prev, 
                       tree_edges,
+                      tree_root,
                       clone_colours = "NA",
                       mutations = "NA",
                       mutation_prevalences = "NA",
                       gender,
                       site_ids = "NA",
-                      show_root = FALSE,
                       n_cells = 100,
                       width = 960, 
                       height = 960) {
@@ -64,6 +64,9 @@ spacesweep <- function(clonal_prev,
   if (missing(tree_edges)) {
     stop("Tree edge data frame must be provided.")
   }
+  if (missing(tree_root)) {
+    stop("Tree root clone id must be provided.")
+  }
   if (missing(gender)) {
     stop("The gender of the patient must be provided.")
   }
@@ -75,6 +78,8 @@ spacesweep <- function(clonal_prev,
   }
 
   # CLONAL PREVALENCE DATA
+
+  print("[Progress] Processing clonal prevalence data...")
 
   # ensure column names are correct
   if (!("site_id" %in% colnames(clonal_prev)) ||
@@ -92,6 +97,8 @@ spacesweep <- function(clonal_prev,
   # MUTATIONS DATA
 
   if (is.data.frame(mutations)) {
+    print("[Progress] Processing mutations data...")
+
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutations)) ||
         !("coord" %in% colnames(mutations)) ||
@@ -124,6 +131,14 @@ spacesweep <- function(clonal_prev,
   # MUTATION PREVALENCES DATA
 
   if (is.data.frame(mutation_prevalences)) {
+    print("[Progress] Processing mutation prevalences data...")
+
+    # if mutations data is not present, but mutation prevalences data is, throw error
+    if (!is.data.frame(mutations)) {
+      stop(paste("'mutation_prevalences' data frame must be accompanied by 'mutations' data frame - ", 
+        "only 'mutation_prevalences' data frame has been provided.", sep=""))
+    }
+
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutation_prevalences)) ||
         !("coord" %in% colnames(mutation_prevalences)) ||
@@ -154,10 +169,14 @@ spacesweep <- function(clonal_prev,
     prevs_split_small <- lapply(prevs_split, function(prevs) {
       return(prevs[,c("site_id", "prev")])
     })
-
+  }
+  else {
+    prevs_split_small <- "NA"
   }
 
   # TREE EDGES DATA
+
+  print("[Progress] Processing tree edges data...")
 
   # ensure column names are correct
   if (!("source" %in% colnames(tree_edges)) ||
@@ -192,11 +211,6 @@ spacesweep <- function(clonal_prev,
     stop("The number of cells (n_cells parameter) must be numeric.")  
   }
 
-  # SHOW ROOT
-  if (!is.logical(show_root)) {
-    stop("The parameter show_root must be a boolean.")  
-  }
-
   # SITE IDS
   site_ids <- as.character(site_ids)
 
@@ -205,13 +219,13 @@ spacesweep <- function(clonal_prev,
   x = list(
     clonal_prev = jsonlite::toJSON(clonal_prev),
     tree_edges = jsonlite::toJSON(tree_edges),
+    tree_root = tree_root,
     clone_cols = jsonlite::toJSON(clone_colours),
     mutations = jsonlite::toJSON(mutations),
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
     gender = gender,
     site_ids = site_ids,
-    n_cells = n_cells,
-    show_root = show_root
+    n_cells = n_cells
   )
 
   # create widget

@@ -4,31 +4,33 @@
 \alias{spacesweep}
 \title{SpaceSweep}
 \usage{
-spacesweep(clonal_prev, tree_edges, clone_colours = "NA", mutations = "NA",
-  mutation_prevalences = "NA", gender, site_ids = "NA", show_root = FALSE,
+spacesweep(clonal_prev, tree_edges, tree_root, clone_colours = "NA",
+  mutations = "NA", mutation_prevalences = "NA", gender, site_ids = "NA",
   n_cells = 100, width = 960, height = 960)
 }
 \arguments{
-\item{clonal_prev}{Clonal prevalence data frame.
+\item{clonal_prev}{{Data Frame} Clonal prevalence.
 Format: columns are (1) {String} "site_id" - id for the anatomic site
                     (2) {String} "clone_id" - clone id
                     (3) {Number} "clonal_prev" - clonal prevalence.}
 
-\item{tree_edges}{Tree edges data frame. The root of the tree (id: "Root") must be specified as a source.
-Format: columns are (1) {String} "source" - source node id
-                    (2) {String} "target" - target node id.}
+\item{tree_edges}{{Data Frame} Tree edges. 
+Format: columns are (1) {String} "source" - source clone id
+                    (2) {String} "target" - target clone id.}
 
-\item{clone_colours}{(Optional) Data frame with clone ids and their corresponding colours 
+\item{tree_root}{{String} The clone id for the root of the tree.}
+
+\item{clone_colours}{{Data Frame} (Optional) Clone ids and their corresponding colours 
 Format: columns are (1) {String} "clone_id" - the clone ids
                     (2) {String} "colour" - the corresponding Hex colour for each clone id.}
 
-\item{mutations}{(Optional) Data frame of mutations occurring before the appearance of each clone.
+\item{mutations}{{Data Frame} (Optional) Mutations occurring at each clone.
 Format: columns are (1) {String} "chrom" - chromosome number
                     (2) {Number} "coord" - coordinate of mutation on chromosome
                     (3) {String} "clone_id" - clone id
                     (4) {String} "gene_name" - name of the affected gene (can be "" if none affected).}
 
-\item{mutation_prevalences}{(Optional) Data frame of mutation prevalences for each anatomic site in a patient.
+\item{mutation_prevalences}{{Data Frame} (Optional) Mutation prevalences for each anatomic site in a patient.
 Format: columns are (1) {String} "chrom" - chromosome number
                     (2) {Number} "coord" - coordinate of mutation on chromosome
                     (3) {String} "site_id" - anatomic site id
@@ -37,14 +39,12 @@ Format: columns are (1) {String} "chrom" - chromosome number
                                                        (e.g. non-synonymous, upstream, etc.)
                     (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).}
 
-\item{gender}{Gender of the patient (M/F).}
+\item{gender}{{String} Gender of the patient (M/F).}
 
 \item{site_ids}{{Vector} (Optional) Ids of the sites in the order your wish to display them 
 (clockwise from positive x-axis).}
 
-\item{show_root}{(Optional) Whether or not to plot the root (for tree).}
-
-\item{n_cells}{(Optional) The number of cells to plot (for voronoi tessellation).}
+\item{n_cells}{{Number} (Optional) The number of cells to plot (for voronoi tessellation).}
 }
 \description{
 Generates patient clonal SpaceSweeps.

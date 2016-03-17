@@ -643,11 +643,13 @@ function _getCroppedCoordinate(crop_info, prop, top_l, plot_width) {
 */
 function _getTreeInfo(curVizObj) {
     var userConfig = curVizObj.userConfig,
-        rootName = 'Root',
-        cur_edges = userConfig.tree_edges;
+        rootName = userConfig.tree_root,
+        cur_edges = userConfig.tree_edges,
+        phantomRoot = curVizObj.generalConfig.phantomRoot; // root so we have a lead-in link to the real root
 
     // get tree nodes
     curVizObj.data.treeNodes = _.uniq(_.pluck(cur_edges, "source").concat(_.pluck(cur_edges, "target")));
+    curVizObj.data.treeNodes.push(phantomRoot);
 
     // get tree edges
     curVizObj.data.treeEdges = [];
@@ -657,6 +659,10 @@ function _getTreeInfo(curVizObj) {
             "target": cur_edges[i].target
         })
     }
+    curVizObj.data.treeEdges.push({
+        "source": phantomRoot,
+        "target": rootName
+    })
 
     // get tree structure
     var nodesByName = [];
@@ -665,7 +671,7 @@ function _getTreeInfo(curVizObj) {
         var child = _findNodeByName(nodesByName, curVizObj.data.treeEdges[i].target);
         parent["children"].push(child);
     }
-    var root_tree = _findNodeByName(nodesByName, rootName); 
+    var root_tree = _findNodeByName(nodesByName, phantomRoot); 
     curVizObj.data.treeStructure = root_tree; 
 
     // get descendants for each node
@@ -909,7 +915,6 @@ function _getColours(curVizObj) {
             }
             colour_assignment[col.clone_id] = col_value;
         });
-        colour_assignment['Root'] = curVizObj.generalConfig.rootColour;
     }
 
     // clone colours not specified
@@ -977,15 +982,10 @@ function _getColourPalette() {
 function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, curTheme, originalPalette) {
 
     // colour node
-    if (curNode.id == "Root") {
-        colour_assignment[curNode.id] = curVizObj.generalConfig.rootColour; // dark grey
-    }
-    else {
-        colour_assignment[curNode.id] = palette[curTheme].shift();
-    }
+    colour_assignment[curNode.id] = palette[curTheme].shift();
 
     // if the current key has zero or >1 child to search through
-    if (curNode.children.length != 1 && curNode.id != "Root") { 
+    if (curNode.children.length != 1 && curNode.id) { 
 
         // remove its colour theme from the colour themes available
         delete palette[curTheme];

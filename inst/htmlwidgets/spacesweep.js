@@ -32,6 +32,7 @@ HTMLWidgets.widget({
             longLoadTime: false, // whether or not the cancellation of the current process will take a long time
             nClickedNodes: 0, // number of clicked nodes
             curCloneIDs: [], // array of clone ids currently in the mutation table
+            phantomRoot: "phantomRoot",
             anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
@@ -141,17 +142,19 @@ HTMLWidgets.widget({
         _getSitesAffectedByLink(curVizObj);
 
         // get mutation data in better format
-        _reformatMutations(curVizObj);
+        if (curVizObj.userConfig.mutations[0] != "NA") {
+            _reformatMutations(curVizObj);
+        }
 
         console.log("curVizObj");
         console.log(curVizObj);
 
         // VIEW SETUP
 
-        // radii (- 11, - 8 = how much space to give between nodes)
+        // radii (- 8, - 6 = how much space to give between nodes)
         var tree_height = curVizObj.data.tree_height, // height of the tree (# nodes)
-            node_r = ((dim.treeWidth - 8*tree_height)/tree_height)/2, // site tree
-            legendNode_r = ((dim.legendTreeWidth - 11*tree_height)/tree_height)/2; // legend tree
+            node_r = ((dim.treeWidth - 6*tree_height)/tree_height)/2, // site tree
+            legendNode_r = ((dim.legendTreeWidth - 8*tree_height)/tree_height)/2; // legend tree
 
         // make sure radii do not surpass the maximum
         dim.node_r = (node_r > dim.max_r) ? dim.max_r : node_r;
@@ -388,15 +391,13 @@ HTMLWidgets.widget({
             .attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })           
             .attr("fill", function(d) { 
-                // if user does not want to show the root
-                if (!curVizObj.userConfig.show_root && d.id == "Root") {
+                if (d.id == dim.phantomRoot) {
                     return "none";
                 }
                 return cols[d.id]; 
             })
             .attr("stroke", function(d) { 
-                // if user does not want to show the root
-                if (!curVizObj.userConfig.show_root && d.id == "Root") {
+                if (d.id == dim.phantomRoot) {
                     return "none";
                 }
                 return cols[d.id]; 
@@ -440,69 +441,72 @@ HTMLWidgets.widget({
                 }
             })
             .on("click", function(d) {
-                dim.selectOn = true;
-                dim.longLoadTime = true;
-                dim.nClickedNodes++; // increment the number of clicked nodes
+                // if there are mutations
+                if (curVizObj.userConfig.mutations[0] != "NA") {
+                    dim.selectOn = true;
+                    dim.longLoadTime = true;
+                    dim.nClickedNodes++; // increment the number of clicked nodes
 
-                // remove any clonal prevalence plotting from the node mouseover
-                d3.select("#" + curVizObj.view_id).selectAll(".clonalPrev").remove();
-                // remove any mutation prevalence plotting from the node mouseover
-                d3.select("#" + curVizObj.view_id).selectAll(".mutationPrevalences").remove();
-                // reset any general anatomic marks
-                d3.select("#" + curVizObj.view_id).selectAll(".generalMark").attr("fill", "white");
+                    // remove any clonal prevalence plotting from the node mouseover
+                    d3.select("#" + curVizObj.view_id).selectAll(".clonalPrev").remove();
+                    // remove any mutation prevalence plotting from the node mouseover
+                    d3.select("#" + curVizObj.view_id).selectAll(".mutationPrevalences").remove();
+                    // reset any general anatomic marks
+                    d3.select("#" + curVizObj.view_id).selectAll(".generalMark").attr("fill", "white");
 
-                // show loading icon
-                $('#loading').show();
+                    // show loading icon
+                    $('#loading').show();
 
-                // create deferred object
-                curVizObj.nodeClickDeferred = new $.Deferred();
+                    // create deferred object
+                    curVizObj.nodeClickDeferred = new $.Deferred();
 
-                setTimeout(function() { // timeout so loading icon shows first
+                    setTimeout(function() { // timeout so loading icon shows first
 
-                    // get data for this clone
-                    var filtered_muts = 
-                        _.filter(curVizObj.data.mutations, function(mut) { return mut.clone_id == d.id; });
+                        // get data for this clone
+                        var filtered_muts = 
+                            _.filter(curVizObj.data.mutations, function(mut) { return mut.clone_id == d.id; });
 
-                    // if it's the first clicked node
-                    if (dim.nClickedNodes == 1) {
-                        // delete existing data table
-                        d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();   
+                        // if it's the first clicked node
+                        if (dim.nClickedNodes == 1) {
+                            // delete existing data table
+                            d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();   
 
-                        // plot filtered data table
-                        _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, filtered_muts,
-                            dim.mutationTableHeight); 
+                            // plot filtered data table
+                            _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, filtered_muts,
+                                dim.mutationTableHeight); 
 
-                        // shade view & legend
-                        _shadeMainView(curVizObj);
-                        _shadeLegend(curVizObj);  
-                    }
-                    // otherwise
-                    else {
-                        // add to existing data table
-                        var table = $("#" + curVizObj.view_id + "_mutationTable").DataTable();
-                        table.rows.add(filtered_muts).draw(false);
+                            // shade view & legend
+                            _shadeMainView(curVizObj);
+                            _shadeLegend(curVizObj);  
+                        }
+                        // otherwise
+                        else {
+                            // add to existing data table
+                            var table = $("#" + curVizObj.view_id + "_mutationTable").DataTable();
+                            table.rows.add(filtered_muts).draw(false);
 
-                        // add this clone id to the list of clone ids in the mutation table
-                        dim.curCloneIDs = dim.curCloneIDs.concat(_.pluck(filtered_muts, "clone_id"));
+                            // add this clone id to the list of clone ids in the mutation table
+                            dim.curCloneIDs = dim.curCloneIDs.concat(_.pluck(filtered_muts, "clone_id"));
 
-                        // plot clone svg circles in mutation table
-                        _addCloneSVGsToTable(curVizObj, dim.curCloneIDs);
-                    }
+                            // plot clone svg circles in mutation table
+                            _addCloneSVGsToTable(curVizObj, dim.curCloneIDs);
+                        }
 
-                    // highlight this clone
-                    _legendCloneHighlight(curVizObj, d.id, false);
+                        // highlight this clone
+                        _legendCloneHighlight(curVizObj, d.id, false);
 
-                    // resolve deferred object
-                    curVizObj.nodeClickDeferred.resolve("new table plotted");
+                        // resolve deferred object
+                        curVizObj.nodeClickDeferred.resolve("new table plotted");
 
-                }, 50);
+                    }, 50);
 
-                // turn off loading icon
-                $.when(curVizObj.nodeClickDeferred.promise()).then(function() {
-                    $('#loading').hide();
-                })
+                    // turn off loading icon
+                    $.when(curVizObj.nodeClickDeferred.promise()).then(function() {
+                        $('#loading').hide();
+                    })
 
-                d3.event.stopPropagation();
+                    d3.event.stopPropagation();
+                }
             });
 
         // PLOT ANATOMY IN LEGEND
