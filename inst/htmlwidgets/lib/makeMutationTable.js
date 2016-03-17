@@ -6,7 +6,7 @@
 * @param {Array} data -- data to plot within table
 * @param {Number} table_height -- height of the table (in px)
 */
-function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_height) {
+function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 	var dim = curVizObj.generalConfig,
 		view_id = curVizObj.view_id,
 		table;
@@ -146,23 +146,36 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, sort_by, table_he
 
 
 		// add clone SVGs
-		var rows = d3.select("#" + view_id + "_mutationTable").selectAll("tr");
-		var svgColumn = rows.selectAll("td:nth-child(4)")
-			.append("div")
-			.style("height","100%")
-	        .style("width","100%"); 
-	    var i = 0;
-	    var svgCircle = svgColumn
-	                .append("svg")
-	                .attr("width", 10)
-	                .attr("height", 10)
-	                .attr("class","svgCell")
-	                .append("circle")
-	                .attr("cx", 5)
-	                .attr("cy", 5)
-	                .attr("r", 4)
-	                .attr("fill", function(d) {
-	                	return curVizObj.view.colour_assignment[data[i++].clone_id];
-	                });
+		dim.curCloneIDs = _.pluck(data, "clone_id");
+		_addCloneSVGsToTable(curVizObj, dim.curCloneIDs);
     })
+}
+
+/* function to add clone SVGs to the mutation table
+* @param {Object} curVizObj -- vizObj for the current view
+* @param {Array} clone_ids -- clone ids to plot within table
+*/
+function _addCloneSVGsToTable(curVizObj, clone_ids) {
+	// remove any previous clone SVGs
+	d3.select("#" + curVizObj.view_id).selectAll(".svgCloneCircle").remove();
+	
+	// add clone SVGs
+	var rows = d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr");
+	var svgColumn = rows.selectAll("td:nth-child(4)")
+		.append("div")
+		.style("height","100%")
+        .style("width","100%"); 
+    var i = 0;
+    var svgCircle = svgColumn
+                .append("svg")
+                .attr("width", 10)
+                .attr("height", 10)
+                .attr("class","svgCloneCircle")
+                .append("circle")
+                .attr("cx", 5)
+                .attr("cy", 5)
+                .attr("r", 4)
+                .attr("fill", function(d) {
+                	return curVizObj.view.colour_assignment[clone_ids[i++]];
+                });
 }

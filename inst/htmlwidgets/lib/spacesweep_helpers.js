@@ -1,5 +1,55 @@
 // D3 EFFECTS FUNCTIONS
 
+/* function to perform d3 effects when legend clone is highlighted
+* @param {Object} curVizObj -- vizObj for the current view
+* @param {String} clone_id -- id for the selected clone
+* @param {Boolean} showPrevalence -- whether or not to show prevalence information
+*/
+function _legendCloneHighlight(curVizObj, clone_id, showPrevalence) {
+    var view_id = curVizObj.view_id;
+
+    // highlight node in the legend
+    d3.select("#" + view_id)
+        .select(".legendTreeNode.clone_" + clone_id)
+        .attr("fill-opacity", 1)
+        .attr("stroke-opacity", 1);
+
+    // highlight node at each site
+    curVizObj.data.genotype_sites[clone_id].forEach(function(site) {
+        d3.select("#" + view_id)
+            .select(".treeNode.clone_" + clone_id + ".site_" + site)
+            .attr("fill-opacity", 1)
+            .attr("stroke-opacity", 1);
+    })
+
+    // highlight genotype on anatomic image
+    d3.select("#" + view_id)
+        .selectAll(".gtypeMark.clone_" + clone_id)
+        .attr("fill-opacity", 1)
+        .attr("stroke-opacity", 1);
+
+    // highlight oncoMix cells at each site
+    curVizObj.data.genotype_sites[clone_id].forEach(function(site) {
+        d3.select("#" + view_id)
+            .selectAll(".voronoiCell.clone_" + clone_id + ".site_" + site)
+            .attr("fill-opacity", 1)
+            .attr("stroke-opacity", 1);
+    })
+
+    // highlight site title & link to anatomy
+    curVizObj.data.genotype_sites[clone_id].forEach(function(site) {
+        d3.select("#" + view_id).selectAll(".siteTitle.site_" + site).attr("fill-opacity", 1);
+        d3.select("#" + view_id).selectAll(".anatomicPointer.site_" + site).attr("stroke-opacity", 1);
+    });
+
+    if (showPrevalence) {
+        // plot clonal prevalence text for this clone at each site
+        curVizObj.data.genotype_sites[clone_id].forEach(function(site) {
+            _plotClonalPrevText(curVizObj, site, clone_id);
+        });
+    }
+}
+
 /* function to check for any selections / drags
 * @param {Object} curVizObj -- vizObj for the current view
 */
@@ -48,13 +98,15 @@ function _backgroundClick(curVizObj) {
         d3.select("#" + curVizObj.view_id + "_mutationTable" + "_wrapper").remove();
 
         // make new full table
-        _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, curVizObj.data.mutations, "Gene Name", 
+        _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, curVizObj.data.mutations,
             dim.mutationTableHeight);
     }
 
     dim.selectOn = false;
     dim.dragOn = false;
     dim.mutSelectOn = false;
+    dim.nClickedNodes = 0;
+    dim.curCloneIDs = [];
 
     // mark all mutations as unselected
     d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr").classed('selected', false);
