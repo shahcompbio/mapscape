@@ -446,6 +446,10 @@ HTMLWidgets.widget({
 
                 // remove any clonal prevalence plotting from the node mouseover
                 d3.select("#" + curVizObj.view_id).selectAll(".clonalPrev").remove();
+                // remove any mutation prevalence plotting from the node mouseover
+                d3.select("#" + curVizObj.view_id).selectAll(".mutationPrevalences").remove();
+                // reset any general anatomic marks
+                d3.select("#" + curVizObj.view_id).selectAll(".generalMark").attr("fill", "white");
 
                 // show loading icon
                 $('#loading').show();

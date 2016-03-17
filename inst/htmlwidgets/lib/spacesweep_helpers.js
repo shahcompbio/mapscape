@@ -112,9 +112,9 @@ function _backgroundClick(curVizObj) {
     d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr").classed('selected', false);
 
     // remove all mutation prevalences information from view
-    d3.select("#" + curVizObj.view_id).select(".mutationPrevalences").remove();
+    d3.select("#" + curVizObj.view_id).selectAll(".mutationPrev").remove();
 
-    _resetView(curVizObj, curVizObj.view_id);
+    _resetView(curVizObj);
 
     // background click reset complete
     curVizObj.bgClickDeferred.resolve("view reset");

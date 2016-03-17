@@ -54,7 +54,18 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 		// d3 effects
 		$("#" + view_id + "_mutationTable")
 	        .on('click', 'tr', function () { 
-	        	dim.mutSelectOn = !dim.mutSelectOn;
+	        	
+
+	        	// if mutation is already selected, 
+	        	if ($(this).hasClass("selected")) {
+	        		// switch mutation selection to false
+	        		dim.mutSelectOn = false;
+	        	}
+	        	// otherwise, 
+	        	else {
+	        		// switch on mutation selection
+	        		dim.mutSelectOn = true;
+	        	}
 
 	        	// MUTATION SELECTED
 
@@ -63,6 +74,19 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 		        	// data for the row on mouseover
 		        	var cur_data = table.rows(this).data()[0];
 		        	if (!dim.selectOn && !dim.dragOn) {
+
+		        		// if a different row was previously selected
+		        		if (d3.select("#" + curVizObj.view_id).selectAll(".selected")[0].length == 1) {
+
+		        			// deselect that row
+			        		d3.select("#" + curVizObj.view_id).select(".selected").classed("selected", false);
+
+			        		// remove all mutation prevalences information from view
+    						d3.select("#" + curVizObj.view_id).selectAll(".mutationPrev").remove();
+
+    						// unhighlight (red) the previous link
+    						d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke", dim.neutralGrey);
+			        	}
 
 		        		// shade main view & legend tree nodes & links
 	                    _shadeMainView(curVizObj);
@@ -158,11 +182,12 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 function _addCloneSVGsToTable(curVizObj, clone_ids) {
 	// remove any previous clone SVGs
 	d3.select("#" + curVizObj.view_id).selectAll(".svgCloneCircle").remove();
-	
+
 	// add clone SVGs
 	var rows = d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr");
 	var svgColumn = rows.selectAll("td:nth-child(4)")
 		.append("div")
+		.attr("id", "svgCloneCircleDIV")
 		.style("height","100%")
         .style("width","100%"); 
     var i = 0;
