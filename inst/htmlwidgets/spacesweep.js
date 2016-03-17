@@ -387,8 +387,8 @@ HTMLWidgets.widget({
                     _shadeMainView(curVizObj);
                     _shadeLegend(curVizObj);
 
-                    // highlight all elements upstream of link
-                    _propagatedEffects(curVizObj, d.link_id, curVizObj.link_ids, "upstream");
+                    // highlight all elements downstream of link
+                    _propagatedEffects(curVizObj, d.link_id, curVizObj.link_ids, "downstream");
 
                     // target clone of this link
                     var cur_target = d.target.id;
