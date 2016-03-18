@@ -217,7 +217,11 @@ function _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction) {
     // highlight the general anatomic marks for those sites showing the moused-over genotype
     var stems = [];
     sites.forEach(function(site) {
-        stems.push(_.findWhere(curVizObj.data.sites, {id: site}).stem.siteStem);
+        var cur_site = _.findWhere(curVizObj.data.sites, {id: site});
+        // if this site has an anatomic mark
+        if (cur_site.stem) {
+            stems.push(cur_site.stem.siteStem);
+        }
     })
 
     // get the targets of this target, or sources of source
