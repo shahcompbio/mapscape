@@ -49,4 +49,26 @@ Format: columns are (1) {String} "chrom" - chromosome number
 \description{
 Generates patient clonal SpaceSweeps.
 }
+\details{
+Interactive components in main view:
+
+1. reorder sites by grabbing the site name and dragging it around the circle. \cr
+2. hover over anatomic site of interest to view patient data associated with that site. \cr
+3. hover over site tree nodes to view cellular prevalence.
+
+Interactive components in legend:
+
+1. hover over legend tree node to view sites expressing the genotype. \cr
+2. hover over legend tree branch to view sites expressing all descendant genotypes. \cr
+3. click on legend tree nodes to view (a) updated mutations table showing new mutations at that clone, and (b) sites expressing the new mutations at that clone. \cr
+4. hover over mixture classification to view corresponding sites, and the participating branches at each site.
+
+Interactive components in mutation table:
+
+1. search for any mutation, coordinate, gene, etc. \cr
+2. click on a row in the table, and the view will update to show the sites with that mutation, and the mutation prevalence at each site. \cr
+3. order the table by a column (all columns sortable except the Clone column).
+
+Note: Click on the view background to exit a selection.
+}
 
