@@ -211,11 +211,6 @@ spacesweep <- function(clonal_prev,
   tree_edges$source <- as.character(tree_edges$source)
   tree_edges$target <- as.character(tree_edges$target)
 
-  # catch if no root is in the tree
-  if (!("Root" %in% tree_edges$source)) {
-    stop("The root (id: \"Root\") must be specified as a source.")
-  }
-
   # NODE COLOURS
   if (is.data.frame(clone_colours)) {
 
