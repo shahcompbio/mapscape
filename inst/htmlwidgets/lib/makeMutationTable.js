@@ -11,6 +11,11 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 		view_id = curVizObj.view_id,
 		table;
 
+	// ensure there is data to plot (if not, return null)
+	if (data.length == 0) { 
+		return null;
+	}
+
 	// make deferred object for mutation table setup
 	curVizObj.mutTableDef = new $.Deferred();
 
