@@ -144,6 +144,20 @@ HTMLWidgets.widget({
         // get mutation data in better format
         if (curVizObj.userConfig.mutations[0] != "NA") {
             _reformatMutations(curVizObj);
+
+            // get column names (depending on the available data, which columns will be shown)
+            dim.mutationColumns = [
+                            { "data": "chrom", "title": "Chromosome" },
+                            { "data": "coord", "title": "Coordinate" },
+                            { "data": "gene_name", "title": "Gene Name" },
+                            { "data": "empty", "title": "Clone", "bSortable": false }
+                        ];
+            if (curVizObj.userConfig.mutations[0].hasOwnProperty("effect")) {
+                dim.mutationColumns.push({ "data": "effect", "title": "Effect" });
+            }
+            if (curVizObj.userConfig.mutations[0].hasOwnProperty("impact")) {
+                dim.mutationColumns.push({ "data": "impact", "title": "Impact" });
+            }
         }
 
         console.log("curVizObj");
@@ -425,7 +439,7 @@ HTMLWidgets.widget({
             })
             .on("mouseout", function(d) {
                 // if we're selecting nodes, but we haven't clicked this one yet
-                if ((dim.nClickedNodes > 0)&& (_.uniq(dim.curCloneIDs).indexOf(d.id) == -1)) {
+                if ((dim.nClickedNodes > 0) && (_.uniq(dim.curCloneIDs).indexOf(d.id) == -1)) {
                     // unhighlight this node in the legend
                     d3.select("#" + view_id)
                         .select(".legendTreeNode.clone_" + d.id)
@@ -443,6 +457,7 @@ HTMLWidgets.widget({
             .on("click", function(d) {
                 // if there are mutations
                 if (curVizObj.userConfig.mutations[0] != "NA") {
+
                     dim.selectOn = true;
                     dim.longLoadTime = true;
                     dim.nClickedNodes++; // increment the number of clicked nodes
@@ -465,6 +480,15 @@ HTMLWidgets.widget({
                         // get data for this clone
                         var filtered_muts = 
                             _.filter(curVizObj.data.mutations, function(mut) { return mut.clone_id == d.id; });
+
+                        // if there's no data for this clone, add a row of "None"
+                        if (filtered_muts.length == 0) { 
+                            filtered_muts = [{}];
+                            dim.mutationColumns.forEach(function(col) {
+                                filtered_muts[0][col.data] = (col.data == "empty") ? "" : "None";
+                            })
+                        }
+                        filtered_muts[0]["clone_id"] = d.id;
 
                         // if it's the first clicked node
                         if (dim.nClickedNodes == 1) {

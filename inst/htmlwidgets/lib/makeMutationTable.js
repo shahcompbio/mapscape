@@ -11,11 +11,6 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 		view_id = curVizObj.view_id,
 		table;
 
-	// ensure there is data to plot (if not, return null)
-	if (data.length == 0) { 
-		return null;
-	}
-
 	// make deferred object for mutation table setup
 	curVizObj.mutTableDef = new $.Deferred();
 
@@ -24,25 +19,11 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
   		.attr("class", "display compact")
     	.attr("id", function() { return view_id + "_mutationTable"; });
 
-    // depending on the available data, which columns will be shown
-    var columns = [
-			        { "data": "chrom", "title": "Chromosome" },
-			        { "data": "coord", "title": "Coordinate" },
-			        { "data": "gene_name", "title": "Gene Name" },
-			        { "data": "empty", "title": "Clone", "bSortable": false }
-			    ];
-	if (data[0].hasOwnProperty("effect")) {
-		columns.push({ "data": "effect", "title": "Effect" });
-	}
-	if (data[0].hasOwnProperty("impact")) {
-		columns.push({ "data": "impact", "title": "Impact" });
-	}
-
     // create data table
 	$(document).ready(function() {
 	    table = $("#" + view_id + "_mutationTable").DataTable({
 	      	"data": data,
-	      	"columns": columns,
+	      	"columns": dim.mutationColumns,
 		    "scrollY":        table_height - 90, // - 90 for search bar, etc.
 	        "scrollCollapse": true,
 	        "paging":         false,
