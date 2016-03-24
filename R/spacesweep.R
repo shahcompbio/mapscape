@@ -4,21 +4,21 @@
 #'
 #' Interactive components in main view:
 #'
-#' 1. reorder sites by grabbing the site name and dragging it around the circle. \cr
-#' 2. hover over anatomic site of interest to view patient data associated with that site. \cr
-#' 3. hover over site tree nodes to view cellular prevalence. 
+#' 1. reorder samples by grabbing the sample name and dragging it around the circle. \cr
+#' 2. hover over tumour sample of interest to view patient data associated with that sample. \cr
+#' 3. hover over sample tree nodes to view cellular prevalence. 
 #'
 #' Interactive components in legend:
 #'
-#' 1. hover over legend tree node to view sites expressing the genotype. \cr
-#' 2. hover over legend tree branch to view sites expressing all descendant genotypes. \cr
-#' 3. click on legend tree nodes to view (a) updated mutations table showing new mutations at that clone, and (b) sites expressing the new mutations at that clone. \cr
-#' 4. hover over mixture classification to view corresponding sites, and the participating branches at each site. 
+#' 1. hover over legend tree node to view tumour samples expressing the genotype. \cr
+#' 2. hover over legend tree branch to view tumour samples  expressing all descendant genotypes. \cr
+#' 3. click on legend tree nodes to view (a) updated mutations table showing new mutations at that clone, and (b) tumour samples expressing the new mutations at that clone. \cr
+#' 4. hover over mixture classification to view corresponding tumour sample, and the participating branches in each tumour sample. 
 #'
 #' Interactive components in mutation table:
 #'
 #' 1. search for any mutation, coordinate, gene, etc. \cr
-#' 2. click on a row in the table, and the view will update to show the sites with that mutation, and the mutation prevalence at each site. \cr
+#' 2. click on a row in the table, and the view will update to show the tumour samples with that mutation, and the mutation prevalence in each tumour sample. \cr
 #' 3. order the table by a column (all columns sortable except the Clone column). 
 #'
 #' Note: Click on the view background to exit a selection.
@@ -27,7 +27,7 @@
 #' @import htmlwidgets
 #'
 #' @param clonal_prev {Data Frame} Clonal prevalence.
-#'   Format: columns are (1) {String} "site_id" - id for the anatomic site
+#'   Format: columns are (1) {String} "sample_id" - id for the tumour sample
 #'                       (2) {String} "clone_id" - clone id
 #'                       (3) {Number} "clonal_prev" - clonal prevalence.
 #' @param tree_edges {Data Frame} Tree edges. 
@@ -39,19 +39,19 @@
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "clone_id" - clone id
 #'                       (4) {String} "gene_name" - name of the affected gene (can be "" if none affected).
-#' @param mutation_prevalences {Data Frame} (Optional) Mutation prevalences for each anatomic site in a patient.
+#' @param mutation_prevalences {Data Frame} (Optional) Mutation prevalences for each tumour sample in a patient.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
-#'                       (3) {String} "site_id" - anatomic site id
+#'                       (3) {String} "sample_id" - id for the tumour sample
 #'                       (4) {Number} "prev" - prevalence of the mutation
 #'                       (5) {String} (Optional) "effect" - effect of the mutation 
 #'                                                          (e.g. non-synonymous, upstream, etc.)
 #'                       (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
 #' @param gender {String} Gender of the patient (M/F). 
-#' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours 
+#' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
-#' @param site_ids {Vector} (Optional) Ids of the sites in the order your wish to display them 
+#' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
 #' @export
@@ -62,7 +62,7 @@ spacesweep <- function(clonal_prev,
                       mutations = "NA",
                       mutation_prevalences = "NA",
                       gender,
-                      site_ids = "NA",
+                      sample_ids = "NA",
                       n_cells = 100,
                       width = 960, 
                       height = 960) {
@@ -104,15 +104,15 @@ spacesweep <- function(clonal_prev,
   print("[Progress] Processing clonal prevalence data...")
 
   # ensure column names are correct
-  if (!("site_id" %in% colnames(clonal_prev)) ||
+  if (!("sample_id" %in% colnames(clonal_prev)) ||
       !("clone_id" %in% colnames(clonal_prev)) ||
       !("clonal_prev" %in% colnames(clonal_prev))) {
     stop(paste("Clonal prevalence data frame must have the following column names: ", 
-        "\"site_id\", \"clone_id\", \"clonal_prev\".", sep=""))
+        "\"sample_id\", \"clone_id\", \"clonal_prev\".", sep=""))
   }
 
   # ensure data is of the correct type
-  clonal_prev$site_id <- as.character(clonal_prev$site_id)
+  clonal_prev$sample_id <- as.character(clonal_prev$sample_id)
   clonal_prev$clone_id <- as.character(clonal_prev$clone_id)
   clonal_prev$clonal_prev <- as.numeric(as.character(clonal_prev$clonal_prev))
 
@@ -164,16 +164,16 @@ spacesweep <- function(clonal_prev,
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutation_prevalences)) ||
         !("coord" %in% colnames(mutation_prevalences)) ||
-        !("site_id" %in% colnames(mutation_prevalences)) ||
+        !("sample_id" %in% colnames(mutation_prevalences)) ||
         !("prev" %in% colnames(mutation_prevalences))) {
       stop(paste("Mutation prevalences data frame must have the following column names: ", 
-          "\"chrom\", \"coord\", \"site_id\", \"prev\".", sep=""))
+          "\"chrom\", \"coord\", \"sample_id\", \"prev\".", sep=""))
     }
 
     # ensure data is of the correct type
     mutation_prevalences$chrom <- toupper(as.character(mutation_prevalences$chrom)) # upper case X & Y
     mutation_prevalences$coord <- as.character(mutation_prevalences$coord)
-    mutation_prevalences$site_id <- as.character(mutation_prevalences$site_id)
+    mutation_prevalences$sample_id <- as.character(mutation_prevalences$sample_id)
     mutation_prevalences$prev <- as.numeric(as.character(mutation_prevalences$prev))
 
     # check X & Y chromosomes are labelled "X" and "Y", not "23", "24"
@@ -189,7 +189,7 @@ spacesweep <- function(clonal_prev,
 
     # reduce the size of the data frame in each list
     prevs_split_small <- lapply(prevs_split, function(prevs) {
-      return(prevs[,c("site_id", "prev")])
+      return(prevs[,c("sample_id", "prev")])
     })
   }
   else {
@@ -250,8 +250,8 @@ spacesweep <- function(clonal_prev,
     stop("The number of cells (n_cells parameter) must be numeric.")  
   }
 
-  # SITE IDS
-  site_ids <- as.character(site_ids)
+  # SAMPLE IDS
+  sample_ids <- as.character(sample_ids)
 
 
   # forward options using x
@@ -263,7 +263,7 @@ spacesweep <- function(clonal_prev,
     mutations = jsonlite::toJSON(mutations),
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
     gender = gender,
-    site_ids = site_ids,
+    sample_ids = sample_ids,
     n_cells = n_cells
   )
 

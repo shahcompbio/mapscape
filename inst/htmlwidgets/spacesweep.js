@@ -20,11 +20,11 @@ HTMLWidgets.widget({
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
             max_r: 8, // maximum radius for tree nodes
-            siteMark_r: 4, // site mark radius
+            sampleMark_r: 4, // sample mark radius
             dragOn: false, // whether or not drag is on
             selectOn: false, // whether or not link selection is on
             mutSelectOn: false, // whether or not the mutation selection is on
-            startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of site ordering
+            startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of sample ordering
             legendSpacing: 15, // spacing between legend items
             shadeAlpha: 0.08, // alpha value for shading
             neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
@@ -111,20 +111,20 @@ HTMLWidgets.widget({
         // get colour assignment
         _getColours(curVizObj);
 
-        // site ids
-        curVizObj.data.site_ids = (curVizObj.userConfig.site_ids == "NA") ? 
-            _.uniq(_.pluck(curVizObj.userConfig.clonal_prev, "site_id")):
-            curVizObj.userConfig.site_ids;
+        // sample ids
+        curVizObj.data.sample_ids = (curVizObj.userConfig.sample_ids == "NA") ? 
+            _.uniq(_.pluck(curVizObj.userConfig.clonal_prev, "sample_id")):
+            curVizObj.userConfig.sample_ids;
 
-        // assign anatomic locations to each site
+        // assign anatomic locations to each sample
         _assignAnatomicLocations(curVizObj);
 
-        // get image bounds for current site data 
+        // get image bounds for current sample data 
         _getImageBounds(curVizObj);
 
-        // if no site ordering is given by the user
-        if (curVizObj.userConfig.site_ids == "NA") {
-            // initial ordering of sites based on their anatomic location
+        // if no sample ordering is given by the user
+        if (curVizObj.userConfig.sample_ids == "NA") {
+            // initial ordering of samples based on their anatomic location
             _initialSiteOrdering(curVizObj);
         }
 
@@ -132,13 +132,13 @@ HTMLWidgets.widget({
         _getCPData(curVizObj);
         _thresholdCPData(curVizObj)
 
-        // get site positioning
-        _getSitePositioning(curVizObj); // position elements for each site
+        // get sample positioning
+        _getSitePositioning(curVizObj); // position elements for each sample
 
-        // get sites showing each genotype
+        // get samples showing each genotype
         _getGenotypeSites(curVizObj);
 
-        // get sites affected by each link (identified here by its target clone)
+        // get samples affected by each link (identified here by its target clone)
         _getSitesAffectedByLink(curVizObj);
 
         // get mutation data in better format
@@ -167,7 +167,7 @@ HTMLWidgets.widget({
 
         // radii (- 8, - 6 = how much space to give between nodes)
         var tree_height = curVizObj.data.tree_height, // height of the tree (# nodes)
-            node_r = ((dim.treeWidth - 6*tree_height)/tree_height)/2, // site tree
+            node_r = ((dim.treeWidth - 6*tree_height)/tree_height)/2, // sample tree
             legendNode_r = ((dim.legendTreeWidth - 8*tree_height)/tree_height)/2; // legend tree
 
         // make sure radii do not surpass the maximum
@@ -181,7 +181,7 @@ HTMLWidgets.widget({
                 dim.dragOn = true; 
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site); 
+                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample); 
                 curVizObj.view.startAngle = _find_angle_of_line_segment(
                     {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
@@ -189,24 +189,24 @@ HTMLWidgets.widget({
             .on("drag", function(d,i) {
 
                 // operations on drag
-                _dragFunction(curVizObj, d.site, d);
+                _dragFunction(curVizObj, d.sample, d);
             })
             .on("dragend", function(d) {
                 dim.dragOn = false; 
 
                 // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site); 
+                var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample); 
                 curVizObj.view.endAngle = _find_angle_of_line_segment(
                     {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                     {x: dim.viewCentre.x, y: dim.viewCentre.y});
 
-                // order sites
+                // order samples
                 _reorderSitesData(curVizObj);
 
-                // get site positioning coordinates etc
+                // get sample positioning coordinates etc
                 _getSitePositioning(curVizObj);   
 
-                // reposition sites on the screen
+                // reposition samples on the screen
                 _snapSites(curVizObj);
             });
 
@@ -310,12 +310,12 @@ HTMLWidgets.widget({
 
         // SITE SVG GROUPS
 
-        var siteGs = viewSVG.append("g")
-            .attr("class", "siteGs")
-            .selectAll(".siteG")
-            .data(curVizObj.data.sites)
+        var sampleGs = viewSVG.append("g")
+            .attr("class", "sampleGs")
+            .selectAll(".sampleG")
+            .data(curVizObj.data.samples)
             .enter().append("g")
-            .attr("class", function(d) { return "siteG site_" + d.id.replace(/ /g,"_")});
+            .attr("class", function(d) { return "sampleG sample_" + d.id.replace(/ /g,"_")});
 
         // PLOT CIRCLE BORDER
 
@@ -569,15 +569,15 @@ HTMLWidgets.widget({
         viewSVG.append("g")
             .attr("class", "anatomicMarksG")
             .selectAll(".generalMark")
-            .data(Object.keys(curVizObj.data.siteStems))
+            .data(Object.keys(curVizObj.data.sampleStems))
             .enter()
             .append("circle")
             .attr("class", function(d) {
                 return "stem_" + d + " generalMark";
             })
-            .attr("cx", function(d) { return curVizObj.data.siteStems[d]["cropped_coords"].x; })
-            .attr("cy", function(d) { return curVizObj.data.siteStems[d]["cropped_coords"].y; })
-            .attr("r", dim.siteMark_r)
+            .attr("cx", function(d) { return curVizObj.data.sampleStems[d]["cropped_coords"].x; })
+            .attr("cy", function(d) { return curVizObj.data.sampleStems[d]["cropped_coords"].y; })
+            .attr("r", dim.sampleMark_r)
             .attr("fill", "white")
             .attr("stroke-width", "1.5pxx")
             .attr("stroke", "#CBCBCB")
@@ -590,8 +590,8 @@ HTMLWidgets.widget({
                     // shade view
                     _shadeMainView(curVizObj);
 
-                    // highlight all sites with this stem
-                    _highlightSites(curVizObj.data.siteStems[d].site_ids, curVizObj);
+                    // highlight all samples with this stem
+                    _highlightSites(curVizObj.data.sampleStems[d].sample_ids, curVizObj);
                 }
             })
             .on("mouseout", function(d) {
@@ -603,10 +603,10 @@ HTMLWidgets.widget({
         // PLOT MIXTURE CLASSIFICATION
 
         var mixture_classes = {};
-        curVizObj.data.sites.forEach(function(site) {
-            mixture_classes[site.phyly] = mixture_classes[site.phyly] || [];
-            mixture_classes[site.phyly].push({"site_id": site.id, 
-                                                "site_stem": (site.stem)? site.stem.siteStem : null});
+        curVizObj.data.samples.forEach(function(sample) {
+            mixture_classes[sample.phyly] = mixture_classes[sample.phyly] || [];
+            mixture_classes[sample.phyly].push({"sample_id": sample.id, 
+                                                "sample_stem": (sample.stem)? sample.stem.sampleStem : null});
         })
 
         // plot mixture classification title
@@ -646,16 +646,16 @@ HTMLWidgets.widget({
                 .on("mouseover", function() {
                     if (_checkForSelections(curVizObj)) {
                         var viewSVG = d3.select("#" + view_id);
-                        var participating_sites = _.pluck(mixture_classes[phyly], "site_id");
+                        var participating_samples = _.pluck(mixture_classes[phyly], "sample_id");
 
                         // shade view
                         _shadeMainView(curVizObj);
 
-                        // highlight sites
-                        _highlightSites(participating_sites, curVizObj);
+                        // highlight samples
+                        _highlightSites(participating_samples, curVizObj);
 
                         // highlight general anatomic marks
-                        var stems = _.uniq(_.pluck(mixture_classes[phyly], "site_stem"));
+                        var stems = _.uniq(_.pluck(mixture_classes[phyly], "sample_stem"));
                         stems.forEach(function(stem) {
                             d3.select("#" + view_id).select(".generalMark.stem_"+stem)
                                 .attr("fill", dim.generalMarkHighlightColour);
@@ -663,10 +663,10 @@ HTMLWidgets.widget({
 
                         // highlight only those links that participate in the mixture classification
                         viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
-                        participating_sites.forEach(function(participating_site) {
-                            viewSVG.selectAll(".treeLink.site_" + participating_site)
+                        participating_samples.forEach(function(participating_sample) {
+                            viewSVG.selectAll(".treeLink.sample_" + participating_sample)
                                 .attr("stroke-opacity", dim.shadeAlpha);
-                            viewSVG.selectAll(".mixtureClassTreeLink.site_"+participating_site)
+                            viewSVG.selectAll(".mixtureClassTreeLink.sample_"+participating_sample)
                                 .attr("stroke-opacity", 1);                        
                         });
                     }
@@ -690,10 +690,10 @@ HTMLWidgets.widget({
 
         // FOR EACH SITE
 
-        curVizObj.data.site_ids.forEach(function(site, site_idx) {
+        curVizObj.data.sample_ids.forEach(function(sample, sample_idx) {
 
             // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
-            _plotSite(curVizObj, site, drag);            
+            _plotSite(curVizObj, sample, drag);            
         });
     },
 

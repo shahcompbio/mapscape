@@ -94,7 +94,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
                         	// genomic location of mutation
                             var location = cur_data.chrom + ":" + cur_data.coord; 
 
-                            // prevalences of this mutation at each site
+                            // prevalences of this mutation at each sample
                             var cur_prevs = curVizObj.userConfig.mutation_prevalences[location]; 
 
                             // threshold for mutation prevalence
@@ -115,7 +115,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
                             	.attr("x", function(d) {
 
                             		// anatomic line object
-                            		var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site_id);
+                            		var line = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample_id);
 
                             		// coordinates of point a certain distance after anatomic line
                             		var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
@@ -126,7 +126,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
                             	.attr("y", function(d) {
 
                             		// anatomic line object
-                            		var line = d3.select("#" + view_id).select(".anatomicPointer.site_"+d.site_id);
+                            		var line = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample_id);
 
                             		// coordinates of point a certain distance after anatomic line
                             		var coords = _fromLineGetPoint(line, dim.oncoMixWidth/2 - 2, "1");
