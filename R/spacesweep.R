@@ -34,6 +34,11 @@
 #'   Format: columns are (1) {String} "source" - source clone id
 #'                       (2) {String} "target" - target clone id.
 #' @param tree_root {String} The clone id for the root of the tree.
+#' @param sample_locations {Data Frame} Anatomic locations for each tumour sample.
+#'   Format: columns are (1) {String} "sample_id" - id for the tumour sample
+#'                       (2) {String} "location_name" - name of anatomic location for this tumour sample
+#'                       (3) {Number} (Optional) "x" - x-coordinate for anatomic location on anatomic image
+#'                       (4) {Number} (Optional) "y" - y-coordinate for anatomic location on anatomic image
 #' @param mutations {Data Frame} (Optional) Mutations occurring at each clone.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
@@ -58,6 +63,7 @@
 spacesweep <- function(clonal_prev, 
                       tree_edges,
                       tree_root,
+                      sample_locations,
                       clone_colours = "NA",
                       mutations = "NA",
                       mutation_prevalences = "NA",
@@ -81,16 +87,19 @@ spacesweep <- function(clonal_prev,
   # CHECK REQUIRED INPUTS ARE PRESENT 
 
   if (missing(clonal_prev)) {
-    stop("Clonal prevalence data frame must be provided.")
+    stop("Clonal prevalence data frame must be provided (parameter \"clonal_prev\").")
   }
   if (missing(tree_edges)) {
-    stop("Tree edge data frame must be provided.")
+    stop("Tree edge data frame must be provided (parameter \"tree_edges\").")
   }
   if (missing(tree_root)) {
-    stop("Tree root clone id must be provided.")
+    stop("Tree root clone id must be provided (parameter \"tree_root\").")
   }
   if (missing(gender)) {
-    stop("The gender of the patient must be provided.")
+    stop("The gender of the patient must be provided (parameter \"gender\").")
+  }
+  if (missing(sample_locations)) {
+    stop("The locations of the tumour samples must be provided (parameter \"sample_locations\").")
   }
 
   # GENDER
@@ -115,6 +124,35 @@ spacesweep <- function(clonal_prev,
   clonal_prev$sample_id <- as.character(clonal_prev$sample_id)
   clonal_prev$clone_id <- as.character(clonal_prev$clone_id)
   clonal_prev$clonal_prev <- as.numeric(as.character(clonal_prev$clonal_prev))
+
+  # SAMPLE LOCATIONS DATA
+
+  print("[Progress] Processing sample locations data...")
+
+  # ensure column names are correct
+  if (!("sample_id" %in% colnames(sample_locations)) ||
+      !("location_name" %in% colnames(sample_locations))) {
+    stop(paste("Sample locations data frame must have the following column names: ", 
+        "\"sample_id\", \"location_name\".", sep=""))
+  }
+
+  # ensure data is of the correct type
+  sample_locations$sample_id <- as.character(sample_locations$sample_id)
+  sample_locations$location_name <- as.character(sample_locations$location_name)
+
+  # check if location coordinates are provided
+  if (("x" %in% colnames(sample_locations)) && ("y" %in% colnames(sample_locations))) {
+    location_coordinates_provided <- TRUE
+    print("[Progress] Custom sample location coordinates provided...")
+
+    # ensure coordinates are numeric
+    sample_locations$x <- as.numeric(as.character(sample_locations$x))
+    sample_locations$y <- as.numeric(as.character(sample_locations$y))
+  }
+  else {
+    location_coordinates_provided <- FALSE
+    print("[Progress] No custom sample location coordinates provided; defaults will be used where possible...")
+  }
 
   # MUTATIONS DATA
 
