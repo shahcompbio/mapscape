@@ -136,9 +136,9 @@ function _propagatedEffects(curVizObj, link_id, link_ids, stream_direction) {
     // get propagation info
     _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction);
 
-    // unique samples and stems
+    // unique samples and locations
     curVizObj.view.propagation.samples = _.uniq(curVizObj.view.propagation.samples);
-    curVizObj.view.propagation.stems = _.uniq(curVizObj.view.propagation.stems);
+    curVizObj.view.propagation.locations = _.uniq(curVizObj.view.propagation.locations);
 
     // highlight links 
     curVizObj.view.propagation.link_ids.forEach(function(link) {
@@ -183,9 +183,9 @@ function _propagatedEffects(curVizObj, link_id, link_ids, stream_direction) {
     });
 
     // highlight general anatomic marks for each sample
-    curVizObj.view.propagation.stems.forEach(function(stem) {
+    curVizObj.view.propagation.locations.forEach(function(location) {
         d3.select("#" + view_id)
-            .select(".generalMark.stem_" + stem)
+            .select(".generalMark.location_" + location)
             .attr("fill", curVizObj.generalConfig.generalMarkHighlightColour);        
     });
 
@@ -196,7 +196,7 @@ function _propagatedEffects(curVizObj, link_id, link_ids, stream_direction) {
     });
 };
 
-/* function to get the links, nodes, samples and sample stems participating in the current propagation
+/* function to get the links, nodes, samples and sample locations participating in the current propagation
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {String} link_id -- id for the link that's currently highlighted
 * @param {Array} link_ids -- ids for all links in tree
@@ -215,12 +215,12 @@ function _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction) {
     var samples = curVizObj.data.genotype_samples[target_id];
 
     // highlight the general anatomic marks for those samples showing the moused-over genotype
-    var stems = [];
+    var locations = [];
     samples.forEach(function(sample) {
         var cur_sample = _.findWhere(curVizObj.data.samples, {id: sample});
         // if this sample has an anatomic mark
-        if (cur_sample.stem) {
-            stems.push(cur_sample.stem.sampleStem);
+        if (cur_sample.location) {
+            locations.push(cur_sample.location.location_id);
         }
     })
 
@@ -239,8 +239,8 @@ function _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction) {
     curVizObj.view.propagation = curVizObj.view.propagation || {};
     curVizObj.view.propagation.samples = curVizObj.view.propagation.samples || [];
     curVizObj.view.propagation.samples = curVizObj.view.propagation.samples.concat(samples);
-    curVizObj.view.propagation.stems = curVizObj.view.propagation.stems || [];
-    curVizObj.view.propagation.stems = curVizObj.view.propagation.stems.concat(stems);
+    curVizObj.view.propagation.locations = curVizObj.view.propagation.locations || [];
+    curVizObj.view.propagation.locations = curVizObj.view.propagation.locations.concat(locations);
     curVizObj.view.propagation.node_ids = curVizObj.view.propagation.node_ids || [];
     curVizObj.view.propagation.node_ids.push(target_id);
     curVizObj.view.propagation.link_ids = curVizObj.view.propagation.link_ids || [];
@@ -450,48 +450,48 @@ function _getSiteLocationsOnImage(curVizObj) {
     // female anatomy
     if (curVizObj.userConfig.gender == "F") {
         curVizObj.view.sampleLocationsOnImage = [
-            {sampleStem: "Om", x: 0.503, y: 0.40},
-            {sampleStem: "RFT", x: 0.482, y: 0.435},
-            {sampleStem: "LFT", x: 0.524, y: 0.435},
-            {sampleStem: "ROv", x: 0.483, y: 0.450},
-            {sampleStem: "LOv", x: 0.523, y: 0.450},
-            {sampleStem: "Cds", x: 0.503, y: 0.470},
-            {sampleStem: "Cln", x: 0.503, y: 0.478},
-            {sampleStem: "Adnx", x: 0.503, y: 0.474},
-            {sampleStem: "RPv", x: 0.469, y: 0.454},
-            {sampleStem: "LPv", x: 0.537, y: 0.454},
-            {sampleStem: "Brn", x: 0.503, y: 0.05},
-            {sampleStem: "Bwl", x: 0.503, y: 0.415},
-            {sampleStem: "SBwl", x: 0.503, y: 0.42},
-            {sampleStem: "Ap", x: 0.483, y: 0.475},
-            {sampleStem: "RUt", x: 0.493, y: 0.482},
-            {sampleStem: "LUt", x: 0.513, y: 0.482}
+            {location_id: "Om", x: 0.503, y: 0.40},
+            {location_id: "RFT", x: 0.482, y: 0.435},
+            {location_id: "LFT", x: 0.524, y: 0.435},
+            {location_id: "ROv", x: 0.483, y: 0.450},
+            {location_id: "LOv", x: 0.523, y: 0.450},
+            {location_id: "Cds", x: 0.503, y: 0.470},
+            {location_id: "Cln", x: 0.503, y: 0.478},
+            {location_id: "Adnx", x: 0.503, y: 0.474},
+            {location_id: "RPv", x: 0.469, y: 0.454},
+            {location_id: "LPv", x: 0.537, y: 0.454},
+            {location_id: "Brn", x: 0.503, y: 0.05},
+            {location_id: "Bwl", x: 0.503, y: 0.415},
+            {location_id: "SBwl", x: 0.503, y: 0.42},
+            {location_id: "Ap", x: 0.483, y: 0.475},
+            {location_id: "RUt", x: 0.493, y: 0.482},
+            {location_id: "LUt", x: 0.513, y: 0.482}
         ]        
     }
     // male anatomy
     else {
         curVizObj.view.sampleLocationsOnImage = [
-            {sampleStem: "Om", x: 0.503, y: 0.40},
-            {sampleStem: "Cln", x: 0.503, y: 0.478},
-            {sampleStem: "RPv", x: 0.459, y: 0.454},
-            {sampleStem: "LPv", x: 0.547, y: 0.454},
-            {sampleStem: "Brn", x: 0.503, y: 0.05},
-            {sampleStem: "Bwl", x: 0.503, y: 0.415},
-            {sampleStem: "SBwl", x: 0.503, y: 0.42},
-            {sampleStem: "Ap", x: 0.483, y: 0.475},
+            {location_id: "Om", x: 0.503, y: 0.40},
+            {location_id: "Cln", x: 0.503, y: 0.478},
+            {location_id: "RPv", x: 0.459, y: 0.454},
+            {location_id: "LPv", x: 0.547, y: 0.454},
+            {location_id: "Brn", x: 0.503, y: 0.05},
+            {location_id: "Bwl", x: 0.503, y: 0.415},
+            {location_id: "SBwl", x: 0.503, y: 0.42},
+            {location_id: "Ap", x: 0.483, y: 0.475},
         ]
     }
 }
 
-/* function to assign sample stems (e.g. "Om") to sample ids (e.g. "Om1"), and vice versa
-* Note: "stem" = anatomic sample stem (e.g. "Om")
+/* function to assign sample locations (e.g. "Om") to sample ids (e.g. "Om1"), and vice versa
+* Note: "location" = sample anatomic location (e.g. "Om")
 *       "id" = sample id (e.g. "Om1")
 * @param {Object} curVizObj -- vizObj for the current view 
 */
 function _assignAnatomicLocations(curVizObj) {
 
-    // keep track of stems in this dataset, and their corresponding sample ids
-    curVizObj.data.sampleStems = {};
+    // keep track of locations in this dataset, and their corresponding sample ids
+    curVizObj.data.anatomic_locations = {};
 
     curVizObj.data.samples = [];
 
@@ -499,24 +499,24 @@ function _assignAnatomicLocations(curVizObj) {
     curVizObj.data.sample_ids.forEach(function(sample_id) {
         var sample_data = {id: sample_id};
 
-        // for each potential stem
+        // for each potential location
         for (var i = 0; i < curVizObj.view.sampleLocationsOnImage.length; i++) {
             var cur_location = curVizObj.view.sampleLocationsOnImage[i];
 
-            // if this stem is applicable to the current sample id
-            var sampleStem = cur_location.sampleStem;
-            if (sample_id.toLowerCase().startsWith(sampleStem.toLowerCase())) {
+            // if this location is applicable to the current sample id
+            var location_id = cur_location.location_id;
+            if (sample_id.toLowerCase().startsWith(location_id.toLowerCase())) {
 
-                // add the stem data to the sample id data
-                sample_data.stem = cur_location;
+                // add the location data to the sample id data
+                sample_data.location = cur_location;
 
-                // add this sample id to the stems data
-                if (curVizObj.data.sampleStems[sampleStem]) {
-                    curVizObj.data.sampleStems[sampleStem].sample_ids.push(sample_id);
+                // add this sample id to the locations data
+                if (curVizObj.data.anatomic_locations[location_id]) {
+                    curVizObj.data.anatomic_locations[location_id].sample_ids.push(sample_id);
                 }
                 else {
-                    curVizObj.data.sampleStems[sampleStem] = cur_location;
-                    curVizObj.data.sampleStems[sampleStem].sample_ids = [sample_id];
+                    curVizObj.data.anatomic_locations[location_id] = cur_location;
+                    curVizObj.data.anatomic_locations[location_id].sample_ids = [sample_id];
                 }
 
                 break;
@@ -542,8 +542,8 @@ function _getImageBounds(curVizObj) {
         min_y = Infinity,
         max_y = -1;
 
-    Object.keys(curVizObj.data.sampleStems).forEach(function(sampleStem) {
-        var cur_sampleStem = curVizObj.data.sampleStems[sampleStem];
+    Object.keys(curVizObj.data.anatomic_locations).forEach(function(location_id) {
+        var cur_sampleStem = curVizObj.data.anatomic_locations[location_id];
         if (min_x > cur_sampleStem.x) {
             min_x = cur_sampleStem.x;
         }
@@ -609,11 +609,11 @@ function _scale(curVizObj) {
         centre_prop: centre
     }
 
-    // get cropped absolute x, y coordinates for each sample stem
-    Object.keys(curVizObj.data.sampleStems).forEach(function(stem) {
-        curVizObj.data.sampleStems[stem]["cropped_coords"] = _getCroppedCoordinate(
+    // get cropped absolute x, y coordinates for each sample location
+    Object.keys(curVizObj.data.anatomic_locations).forEach(function(location) {
+        curVizObj.data.anatomic_locations[location]["cropped_coords"] = _getCroppedCoordinate(
                                                                 crop_info, 
-                                                                curVizObj.data.sampleStems[stem],
+                                                                curVizObj.data.anatomic_locations[location],
                                                                 curVizObj.generalConfig.image_top_l,
                                                                 curVizObj.generalConfig.image_plot_width
                                                             );
@@ -1089,10 +1089,6 @@ function _thresholdCPData(curVizObj) {
 
         var threshold = 0.01;
         var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
-        console.log("curVizObj.data.cp_data");
-        console.log(curVizObj.data.cp_data);
-        console.log("sample");
-        console.log(sample);
         Object.keys(curVizObj.data.cp_data[sample]).forEach(function(gtype) {
 
             var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
@@ -1503,7 +1499,7 @@ function _snapSites(curVizObj) {
                         {x: dim.viewCentre.x, y: dim.viewCentre.y});
 
         // move anatomic lines
-        if (sample_data.stem) { // if the sample was found on the anatomic image
+        if (sample_data.location) { // if the sample was found on the anatomic image
             cur_sampleG.select(".anatomicPointer.sample_" + sample)
                 .transition()
                 .attr("x1", function(d) {
@@ -1515,10 +1511,10 @@ function _snapSites(curVizObj) {
                     return d.y1;
                 })
                 .attr("x2", function(d) { 
-                    return curVizObj.data.sampleStems[sample_data.stem.sampleStem]["cropped_coords"].x;
+                    return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].x;
                 })
                 .attr("y2", function(d) { 
-                    return curVizObj.data.sampleStems[sample_data.stem.sampleStem]["cropped_coords"].y;
+                    return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].y;
                 });  
         }
 
@@ -1599,7 +1595,7 @@ function _plotSite(curVizObj, sample, drag) {
     // PLOT ANATOMIC LINES
 
     // if the sample was found on the anatomic image
-    if (sample_data.stem) {
+    if (sample_data.location) {
         cur_sampleG
             .append("line")
             .classed("anatomicPointer", true)
@@ -1613,10 +1609,10 @@ function _plotSite(curVizObj, sample, drag) {
                 return d.y1;
             })
             .attr("x2", function(d) { 
-                return curVizObj.data.sampleStems[sample_data.stem.sampleStem]["cropped_coords"].x;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].x;
             })
             .attr("y2", function(d) { 
-                return curVizObj.data.sampleStems[sample_data.stem.sampleStem]["cropped_coords"].y;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].y;
             })
             .attr("stroke", dim.anatomicLineColour)
             .attr("stroke-width", "2px");  
@@ -1625,7 +1621,7 @@ function _plotSite(curVizObj, sample, drag) {
     // PLOT ANATOMIC MARKS - marks on image 
 
     // if the sample was found on the anatomic image
-    if (sample_data.stem) {
+    if (sample_data.location) {
         d3.select("#" + view_id)
             .select(".anatomicMarksG")
             .append("g")
@@ -1638,10 +1634,10 @@ function _plotSite(curVizObj, sample, drag) {
                 return "gtypeMark clone_" + d; 
             })
             .attr("cx", function(d) { 
-                return curVizObj.data.sampleStems[sample_data.stem.sampleStem]["cropped_coords"].x;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].x;
             })
             .attr("cy", function(d) { 
-                return curVizObj.data.sampleStems[sample_data.stem.sampleStem]["cropped_coords"].y;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].y;
             })
             .attr("r", dim.sampleMark_r)
             .attr("fill", function(d) { 
@@ -1892,7 +1888,7 @@ function _initialSiteOrdering(curVizObj) {
     // for each sample
     curVizObj.data.samples.forEach(function(sample) {
         // anatomic location detected
-        if (sample.stem) {
+        if (sample.location) {
 
             // cropped x, y positions 
             var centre = _scale(curVizObj).centre_prop;
@@ -1900,12 +1896,12 @@ function _initialSiteOrdering(curVizObj) {
             // calculate angle w/the positive x-axis, formed by the line segment between the 
             // sample position & view centre
             var angle = _find_angle_of_line_segment(
-                            {x: sample.stem.x, y: sample.stem.y},
+                            {x: sample.location.x, y: sample.location.y},
                             {x: centre.x, y: centre.y});
 
             samples.push({
                 "sample_id": sample.id,
-                "stem": sample.stem.sampleStem,
+                "location": sample.location.location_id,
                 "angle": angle
             });
         }
@@ -1913,14 +1909,14 @@ function _initialSiteOrdering(curVizObj) {
         else {
             samples.push({
                 "sample_id": sample.id,
-                "stem": "NA", // no sample stem (ie. location) found
+                "location": "NA", // no sample location found
                 "angle": Math.PI/2 // auto position is on the bottom of the view (pi/2 from positive x-axis)
             });
         }
     });
 
-    // sort samples by y-direction and stem
-    _sortByKey(samples, "angle", "stem");
+    // sort samples by y-direction and location
+    _sortByKey(samples, "angle", "location");
 
     // rearrange curVizObj.data.samples array to reflect new ordering
     var new_samples_array = [];
@@ -1947,15 +1943,15 @@ function _reformatMutations(curVizObj) {
         // samples affected by this mutation
         var affected_samples = curVizObj.data.link_affected_samples[mut.clone_id];
 
-        // sample stems for affected samples
-        var sample_stems = [];
+        // sample locations for affected samples
+        var sample_locations = [];
         affected_samples.forEach(function(sample) {
             var cur_sample = _.findWhere(curVizObj.data.samples, {id: sample});
-            if (cur_sample.stem) {
-                sample_stems.push(cur_sample.stem.sampleStem);
+            if (cur_sample.location) {
+                sample_locations.push(cur_sample.location.location_id);
             }
         })
-        sample_stems = _.uniq(sample_stems);
+        sample_locations = _.uniq(sample_locations);
 
         // add this gene to the array
         var cur_mut = {
@@ -1966,7 +1962,7 @@ function _reformatMutations(curVizObj) {
             "clone_id": mut.clone_id,
             "link_id": link_id,
             "affected_samples": affected_samples,
-            "sample_stems": sample_stems
+            "sample_locations": sample_locations
         }
         if (mut.hasOwnProperty("effect")) {
             cur_mut["effect"] = mut.effect;

@@ -569,29 +569,29 @@ HTMLWidgets.widget({
         viewSVG.append("g")
             .attr("class", "anatomicMarksG")
             .selectAll(".generalMark")
-            .data(Object.keys(curVizObj.data.sampleStems))
+            .data(Object.keys(curVizObj.data.anatomic_locations))
             .enter()
             .append("circle")
             .attr("class", function(d) {
-                return "stem_" + d + " generalMark";
+                return "location_" + d + " generalMark";
             })
-            .attr("cx", function(d) { return curVizObj.data.sampleStems[d]["cropped_coords"].x; })
-            .attr("cy", function(d) { return curVizObj.data.sampleStems[d]["cropped_coords"].y; })
+            .attr("cx", function(d) { return curVizObj.data.anatomic_locations[d]["cropped_coords"].x; })
+            .attr("cy", function(d) { return curVizObj.data.anatomic_locations[d]["cropped_coords"].y; })
             .attr("r", dim.sampleMark_r)
             .attr("fill", "white")
             .attr("stroke-width", "1.5pxx")
             .attr("stroke", "#CBCBCB")
             .on("mouseover", function(d) {
                 if (_checkForSelections(curVizObj)) {
-                    // highlight this stem location
+                    // highlight this location
                     d3.select(this)
                         .attr("fill", dim.generalMarkHighlightColour);
 
                     // shade view
                     _shadeMainView(curVizObj);
 
-                    // highlight all samples with this stem
-                    _highlightSites(curVizObj.data.sampleStems[d].sample_ids, curVizObj);
+                    // highlight all samples with this location
+                    _highlightSites(curVizObj.data.anatomic_locations[d].sample_ids, curVizObj);
                 }
             })
             .on("mouseout", function(d) {
@@ -606,7 +606,7 @@ HTMLWidgets.widget({
         curVizObj.data.samples.forEach(function(sample) {
             mixture_classes[sample.phyly] = mixture_classes[sample.phyly] || [];
             mixture_classes[sample.phyly].push({"sample_id": sample.id, 
-                                                "sample_stem": (sample.stem)? sample.stem.sampleStem : null});
+                                                "sample_location": (sample.location)? sample.location.location_id : null});
         })
 
         // plot mixture classification title
@@ -655,9 +655,9 @@ HTMLWidgets.widget({
                         _highlightSites(participating_samples, curVizObj);
 
                         // highlight general anatomic marks
-                        var stems = _.uniq(_.pluck(mixture_classes[phyly], "sample_stem"));
-                        stems.forEach(function(stem) {
-                            d3.select("#" + view_id).select(".generalMark.stem_"+stem)
+                        var locations = _.uniq(_.pluck(mixture_classes[phyly], "sample_location"));
+                        locations.forEach(function(location) {
+                            d3.select("#" + view_id).select(".generalMark.location_"+location)
                                 .attr("fill", dim.generalMarkHighlightColour);
                         });
 

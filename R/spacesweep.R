@@ -299,14 +299,17 @@ spacesweep <- function(clonal_prev,
   # SAMPLE IDS
   sample_ids <- as.character(sample_ids)
 
-  # check that all sample ids are present in the clonal prevalence data
-  clonal_prev_sample_ids <- unique(clonal_prev$sample_id)
-  sample_ids_unique <- unique(sample_ids)
-  sample_ids_to_remove <- setdiff(sample_ids_unique, clonal_prev_sample_ids) # clone ids that are in the sample list but not clonal prevalence data
-  if (length(sample_ids_to_remove) > 0) {
-    stop(paste("All sample ids in the sample_ids array must have clonal prevalence data. ",
-      "The following samples do not have associated clonal prevalence data: ", 
-      paste(sample_ids_to_remove, collapse=", "), ". ", sep=""))
+  # if sample id array provided
+  if (sample_ids != "NA") {
+    # check that all sample ids are present in the clonal prevalence data
+    clonal_prev_sample_ids <- unique(clonal_prev$sample_id)
+    sample_ids_unique <- unique(sample_ids)
+    sample_ids_to_remove <- setdiff(sample_ids_unique, clonal_prev_sample_ids) # clone ids that are in the sample list but not clonal prevalence data
+    if (length(sample_ids_to_remove) > 0) {
+      stop(paste("All sample ids in the sample_ids array must have clonal prevalence data. ",
+        "The following samples do not have associated clonal prevalence data: ", 
+        paste(sample_ids_to_remove, collapse=", "), ". ", sep=""))
+    }
   }
 
   # forward options using x
