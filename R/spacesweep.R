@@ -232,6 +232,16 @@ spacesweep <- function(clonal_prev,
           "\" is not a HEX colour.", sep=""))
       }
     }
+
+    # ensure all tree nodes have associated colours
+    tree_clone_ids <- unique(unlist(tree_edges))
+    colour_clone_ids <- clone_colours$clone_id
+    diff <- setdiff(tree_clone_ids, colour_clone_ids) # set diff between tree & colour clone ids
+    diff_not_in_colour <- intersect(diff, tree_clone_ids) # clone ids that are in the tree df but not colour df
+    if (length(diff_not_in_colour) > 0) {
+      stop(paste("All clones in the tree must have associated colours. The following clone(s) must be added ",
+        "to the clone colour data frame: ", diff_not_in_colour, ".", sep=""))
+    }
   }
 
   # NUMBER OF CELLS
