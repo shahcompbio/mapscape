@@ -154,6 +154,15 @@ spacesweep <- function(clonal_prev,
     print("[Progress] No custom sample location coordinates provided; defaults will be used where possible...")
   }
 
+  # check that all samples in the clonal prevalence data are present in the sample locations data
+  clonal_prev_sample_ids <- unique(clonal_prev$sample_id)
+  sample_locations_sample_ids <- unique(sample_locations$sample_id)
+  samples_missing_from_locations_data <- setdiff(clonal_prev_sample_ids, sample_locations_sample_ids)
+  if (length(samples_missing_from_locations_data) > 0) {
+    stop(paste("All samples in the clonal prevalence data must have associated locations. The following sample(s) must be added ",
+      "to the sample locations data frame: ", paste(samples_missing_from_locations_data, collapse=", "), ".", sep=""))
+  }
+
   # MUTATIONS DATA
 
   if (is.data.frame(mutations)) {
@@ -274,11 +283,10 @@ spacesweep <- function(clonal_prev,
     # ensure all tree nodes have associated colours
     tree_clone_ids <- unique(unlist(tree_edges))
     colour_clone_ids <- clone_colours$clone_id
-    diff <- setdiff(tree_clone_ids, colour_clone_ids) # set diff between tree & colour clone ids
-    diff_not_in_colour <- intersect(diff, tree_clone_ids) # clone ids that are in the tree df but not colour df
-    if (length(diff_not_in_colour) > 0) {
+    clone_ids_not_in_colour_data <- setdiff(tree_clone_ids, colour_clone_ids) # clone ids that are in the tree df but not colour df
+    if (length(clone_ids_not_in_colour_data) > 0) {
       stop(paste("All clones in the tree must have associated colours. The following clone(s) must be added ",
-        "to the clone colour data frame: ", diff_not_in_colour, ".", sep=""))
+        "to the clone colour data frame: ", paste(clone_ids_not_in_colour_data, collapse=", "), ".", sep=""))
     }
   }
 
@@ -291,6 +299,15 @@ spacesweep <- function(clonal_prev,
   # SAMPLE IDS
   sample_ids <- as.character(sample_ids)
 
+  # check that all sample ids are present in the clonal prevalence data
+  clonal_prev_sample_ids <- unique(clonal_prev$sample_id)
+  sample_ids_unique <- unique(sample_ids)
+  sample_ids_to_remove <- setdiff(sample_ids_unique, clonal_prev_sample_ids) # clone ids that are in the sample list but not clonal prevalence data
+  if (length(sample_ids_to_remove) > 0) {
+    stop(paste("All sample ids in the sample_ids array must have clonal prevalence data. ",
+      "The following samples do not have associated clonal prevalence data: ", 
+      paste(sample_ids_to_remove, collapse=", "), ". ", sep=""))
+  }
 
   # forward options using x
   x = list(

@@ -1089,6 +1089,10 @@ function _thresholdCPData(curVizObj) {
 
         var threshold = 0.01;
         var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
+        console.log("curVizObj.data.cp_data");
+        console.log(curVizObj.data.cp_data);
+        console.log("sample");
+        console.log(sample);
         Object.keys(curVizObj.data.cp_data[sample]).forEach(function(gtype) {
 
             var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
