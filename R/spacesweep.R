@@ -219,7 +219,19 @@ spacesweep <- function(clonal_prev,
         !("colour" %in% colnames(clone_colours))) {
       stop(paste("Node colour data frame must have the following column names: ", 
           "\"clone_id\", \"colour\".", sep=""))
-    }    
+    }  
+
+    # convert to character
+    clone_colours$colour <- as.character(clone_colours$colour)
+    clone_colours$clone_id <- as.character(clone_colours$clone_id)
+
+    # ensure node colours are specified in HEX
+    for (i in 1:length(clone_colours$colour)) {
+      if (!(nchar(clone_colours$colour[i]) %in% c(6,7))) {
+        stop(paste("All colours must be specified in HEX. \"", clone_colours$colour[i], 
+          "\" is not a HEX colour.", sep=""))
+      }
+    }
   }
 
   # NUMBER OF CELLS

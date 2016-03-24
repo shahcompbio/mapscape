@@ -1001,7 +1001,7 @@ function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, cur
         console.warn("Colour palette isn't big enough to accommodate this dataset - for optimal colours, " +
             "provide your own as an input parameter in R ('clone_colours' parameter).")
         palette = $.extend({}, originalPalette);
-        curTheme = Object.keys(palette)[0];            
+        curTheme = Object.keys(palette)[0];    
     }
         
     // if the current key has one child only
