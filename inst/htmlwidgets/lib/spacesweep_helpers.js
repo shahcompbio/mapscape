@@ -217,7 +217,7 @@ function _getPropatagedItems(curVizObj, link_id, link_ids, stream_direction) {
     // highlight the general anatomic marks for those samples showing the moused-over genotype
     var locations = [];
     samples.forEach(function(sample) {
-        var cur_sample = _.findWhere(curVizObj.data.samples, {id: sample});
+        var cur_sample = _.findWhere(curVizObj.data.samples, {sample_id: sample});
         // if this sample has an anatomic mark
         if (cur_sample.location) {
             locations.push(cur_sample.location.location_id);
@@ -443,93 +443,98 @@ function _dragFunction(curVizObj, cur_sample, d) {
 
 // ANATOMY IMAGE FUNCTIONS
 
-/* function to get proportional anatomic locations on the anatomic diagram
+/* function to return database of anatomic locations on the anatomic diagram
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
-function _getSiteLocationsOnImage(curVizObj) {
+function _getSiteLocationDB(curVizObj) {
+    var w = curVizObj.view.image_width, // pixel width of image
+        h = curVizObj.view.image_height; // pixel height of image
+
     // female anatomy
     if (curVizObj.userConfig.gender == "F") {
-        curVizObj.view.sampleLocationsOnImage = [
-            {location_id: "Om", x: 0.503, y: 0.40},
-            {location_id: "RFT", x: 0.482, y: 0.435},
-            {location_id: "LFT", x: 0.524, y: 0.435},
-            {location_id: "ROv", x: 0.483, y: 0.450},
-            {location_id: "LOv", x: 0.523, y: 0.450},
-            {location_id: "Cds", x: 0.503, y: 0.470},
-            {location_id: "Cln", x: 0.503, y: 0.478},
-            {location_id: "Adnx", x: 0.503, y: 0.474},
-            {location_id: "RPv", x: 0.469, y: 0.454},
-            {location_id: "LPv", x: 0.537, y: 0.454},
-            {location_id: "Brn", x: 0.503, y: 0.05},
-            {location_id: "Bwl", x: 0.503, y: 0.415},
-            {location_id: "SBwl", x: 0.503, y: 0.42},
-            {location_id: "Ap", x: 0.483, y: 0.475},
-            {location_id: "RUt", x: 0.493, y: 0.482},
-            {location_id: "LUt", x: 0.513, y: 0.482}
+        return [
+            {location_id: "Om", x: 0.503*w, y: 0.40*h}, 
+            {location_id: "RFT", x: 0.482*w, y: 0.435*h},
+            {location_id: "LFT", x: 0.524*w, y: 0.435*h},
+            {location_id: "ROv", x: 0.483*w, y: 0.450*h},
+            {location_id: "LOv", x: 0.523*w, y: 0.450*h},
+            {location_id: "Cds", x: 0.503*w, y: 0.470*h},
+            {location_id: "Cln", x: 0.503*w, y: 0.478*h},
+            {location_id: "Adnx", x: 0.503*w, y: 0.474*h},
+            {location_id: "RPv", x: 0.469*w, y: 0.454*h},
+            {location_id: "LPv", x: 0.537*w, y: 0.454*h},
+            {location_id: "Brn", x: 0.503*w, y: 0.05*h},
+            {location_id: "Bwl", x: 0.503*w, y: 0.415*h},
+            {location_id: "SBwl", x: 0.503*w, y: 0.42*h},
+            {location_id: "Ap", x: 0.483*w, y: 0.475*h},
+            {location_id: "RUt", x: 0.493*w, y: 0.482*h},
+            {location_id: "LUt", x: 0.513*w, y: 0.482*h}
         ]        
     }
     // male anatomy
     else {
-        curVizObj.view.sampleLocationsOnImage = [
-            {location_id: "Om", x: 0.503, y: 0.40},
-            {location_id: "Cln", x: 0.503, y: 0.478},
-            {location_id: "RPv", x: 0.459, y: 0.454},
-            {location_id: "LPv", x: 0.547, y: 0.454},
-            {location_id: "Brn", x: 0.503, y: 0.05},
-            {location_id: "Bwl", x: 0.503, y: 0.415},
-            {location_id: "SBwl", x: 0.503, y: 0.42},
-            {location_id: "Ap", x: 0.483, y: 0.475},
+        return [
+            {location_id: "Om", x: 0.503*w, y: 0.40*h}, 
+            {location_id: "Cln", x: 0.503*w, y: 0.478*h},
+            {location_id: "RPv", x: 0.459*w, y: 0.454*h},
+            {location_id: "LPv", x: 0.547*w, y: 0.454*h},
+            {location_id: "Brn", x: 0.503*w, y: 0.05*h},
+            {location_id: "Bwl", x: 0.503*w, y: 0.415*h},
+            {location_id: "SBwl", x: 0.503*w, y: 0.42*h},
+            {location_id: "Ap", x: 0.483*w, y: 0.475*h},
         ]
     }
 }
 
-/* function to assign sample locations (e.g. "Om") to sample ids (e.g. "Om1"), and vice versa
-* Note: "location" = sample anatomic location (e.g. "Om")
-*       "id" = sample id (e.g. "Om1")
+/* function to map samples to anatomic locations
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
+*/
+function _mapSamplesToAnatomy(curVizObj) {
+    // get database of site locations
+    var siteLocationDB = _getSiteLocationDB(curVizObj);
+
+    curVizObj.data.samples = [];
+
+    // for each sample location, get its coordinates (if needed), and add it to the data
+    curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
+        var cur_sample = {sample_id: sample_location.sample_id}
+        cur_sample["location"] = sample_location;
+
+        // if coordinates are not provided, access them from the site location database
+        if (!curVizObj.userConfig.location_coordinates_provided) {
+            var location_in_db = _.findWhere(siteLocationDB, {location_id: sample_location.location_id});
+            cur_sample["location"]["x"] = location_in_db["x"];
+            cur_sample["location"]["y"] = location_in_db["y"];
+        }
+
+        curVizObj.data.samples.push(cur_sample);
+    })
+}
+
+
+/* function to get participating anatomic locations in this view
 * @param {Object} curVizObj -- vizObj for the current view 
 */
-function _assignAnatomicLocations(curVizObj) {
+function _getParticipatingAnatomicLocations(curVizObj) {
 
     // keep track of locations in this dataset, and their corresponding sample ids
     curVizObj.data.anatomic_locations = {};
 
-    curVizObj.data.samples = [];
+    curVizObj.data.samples.forEach(function(sample) {
+        var location_id = sample["location"].location_id;
 
-    // for each sample in the data
-    curVizObj.data.sample_ids.forEach(function(sample_id) {
-        var sample_data = {id: sample_id};
-
-        // for each potential location
-        for (var i = 0; i < curVizObj.view.sampleLocationsOnImage.length; i++) {
-            var cur_location = curVizObj.view.sampleLocationsOnImage[i];
-
-            // if this location is applicable to the current sample id
-            var location_id = cur_location.location_id;
-            if (sample_id.toLowerCase().startsWith(location_id.toLowerCase())) {
-
-                // add the location data to the sample id data
-                sample_data.location = cur_location;
-
-                // add this sample id to the locations data
-                if (curVizObj.data.anatomic_locations[location_id]) {
-                    curVizObj.data.anatomic_locations[location_id].sample_ids.push(sample_id);
-                }
-                else {
-                    curVizObj.data.anatomic_locations[location_id] = cur_location;
-                    curVizObj.data.anatomic_locations[location_id].sample_ids = [sample_id];
-                }
-
-                break;
-            }
-
-            // no sample found - throw warning
-            if (i == curVizObj.view.sampleLocationsOnImage.length-1) {
-                console.warn("No corresponding anatomic sample found for sample \"" + sample_id + "\".")
-            }
+        // add this sample id to the locations data
+        if (curVizObj.data.anatomic_locations[location_id]) {
+            curVizObj.data.anatomic_locations[location_id].sample_ids.push(sample.sample_id);
         }
-
-        // add this sample to list of samples
-        curVizObj.data.samples.push(sample_data);
+        else {
+            curVizObj.data.anatomic_locations[location_id] = {
+                "location_id": sample["location"].location_id,
+                "x": sample["location"].x,
+                "y": sample["location"].y
+            };
+            curVizObj.data.anatomic_locations[location_id].sample_ids = [sample.sample_id];
+        }
     })
 }
 
@@ -540,24 +545,27 @@ function _getImageBounds(curVizObj) {
     var min_x = Infinity,
         max_x = -1
         min_y = Infinity,
-        max_y = -1;
+        max_y = -1,
+        image_w = curVizObj.view.image_width,
+        image_h = curVizObj.view.image_height;
 
     Object.keys(curVizObj.data.anatomic_locations).forEach(function(location_id) {
-        var cur_sampleStem = curVizObj.data.anatomic_locations[location_id];
-        if (min_x > cur_sampleStem.x) {
-            min_x = cur_sampleStem.x;
+        var cur_sampleLocation = curVizObj.data.anatomic_locations[location_id];
+        if (min_x > cur_sampleLocation.x/image_w) {
+            min_x = cur_sampleLocation.x/image_w;
         }
-        if (min_y > cur_sampleStem.y) {
-            min_y = cur_sampleStem.y;
+        if (min_y > cur_sampleLocation.y/image_h) {
+            min_y = cur_sampleLocation.y/image_h;
         }
-        if (max_x < cur_sampleStem.x) {
-            max_x = cur_sampleStem.x;
+        if (max_x < cur_sampleLocation.x/image_w) {
+            max_x = cur_sampleLocation.x/image_w;
         }
-        if (max_y < cur_sampleStem.y) {
-            max_y = cur_sampleStem.y;
+        if (max_y < cur_sampleLocation.y/image_h) {
+            max_y = cur_sampleLocation.y/image_h;
         }
     })
 
+    // proportionate image bounds [0,1]
     curVizObj.view.imageBounds = {
         min_x: min_x,
         min_y: min_y,
@@ -592,6 +600,8 @@ function _scale(curVizObj) {
         x: ((bounds.max_x + bounds.min_x)/2), 
         y: ((bounds.max_y + bounds.min_y)/2)
     };
+    console.log("centre");
+    console.log(centre);
 
     // amount to shift left and up ([0,1], then absolute)
     var left_shift_prop = (centre.x - crop_width_prop/2);
@@ -600,6 +610,7 @@ function _scale(curVizObj) {
     var up_shift = up_shift_prop*new_width;
 
     var crop_info = {
+        crop_width: crop_width,
         crop_width_prop: crop_width_prop,
         new_width: new_width,
         left_shift: left_shift,
@@ -612,6 +623,8 @@ function _scale(curVizObj) {
     // get cropped absolute x, y coordinates for each sample location
     Object.keys(curVizObj.data.anatomic_locations).forEach(function(location) {
         curVizObj.data.anatomic_locations[location]["cropped_coords"] = _getCroppedCoordinate(
+                                                                curVizObj.view.image_width,
+                                                                curVizObj.view.image_height,
                                                                 crop_info, 
                                                                 curVizObj.data.anatomic_locations[location],
                                                                 curVizObj.generalConfig.image_top_l,
@@ -623,15 +636,17 @@ function _scale(curVizObj) {
 }
 
 /* function to transform a coordinate to its cropped equivalent on the anatomy image
+* @param {Number} image_width -- width (in pixels) of the original image
+* @param {Number} image_height -- height (in pixels) of the original image
 * @param {Object} crop_info -- cropping onformation (shifts, width, etc.)
-* @param {Object} prop -- object with x- and y-coordinates [0,1] on original image (properties "x", "y")
+* @param {Object} original_coords -- object with x- and y-coordinates (in pixels) on original image (properties "x", "y")
 * @param {Object} top_l -- absolute x- and y-coordinates for the top left of the plotting area (properties "x", "y")
 * @param {Number} plot_width -- absolute width for the plotting area
 * @return absolute coordinates
 */
-function _getCroppedCoordinate(crop_info, prop, top_l, plot_width) {
-    var cropped_x_prop = (prop.x - crop_info.left_shift_prop)/crop_info.crop_width_prop;
-    var cropped_y_prop = (prop.y - crop_info.up_shift_prop)/crop_info.crop_width_prop;
+function _getCroppedCoordinate(image_width, image_height, crop_info, original_coords, top_l, plot_width) {
+    var cropped_x_prop = ((original_coords.x/image_width) - crop_info.left_shift_prop)/crop_info.crop_width_prop;
+    var cropped_y_prop = ((original_coords.y/image_height) - crop_info.up_shift_prop)/crop_info.crop_width_prop;
 
     var cropped_coordinates = {
         x: top_l.x + (cropped_x_prop*plot_width), 
@@ -1280,7 +1295,7 @@ function _getSitePositioning(curVizObj) {
 
     // for each sample
     curVizObj.data.samples.forEach(function(cur_sample_obj, sample_idx) {
-        var sample_id = cur_sample_obj.id;
+        var sample_id = cur_sample_obj.sample_id;
 
         // left divider
         cur_sample_obj["leftDivider"] = {
@@ -1448,7 +1463,7 @@ function _reorderSitesData(curVizObj) {
     // rearrange curVizObj.data.samples array to reflect new ordering
     var new_samples_array = [];
     sample_order.forEach(function(sample_id) {
-        new_samples_array.push(_.findWhere(curVizObj.data.samples, {id: sample_id}));
+        new_samples_array.push(_.findWhere(curVizObj.data.samples, {sample_id: sample_id}));
     })
 
     // if we crossed the x-axis, adjust sample order so the least number of samples move
@@ -1489,7 +1504,7 @@ function _snapSites(curVizObj) {
     curVizObj.data.sample_ids.forEach(function(sample, sample_idx) {
 
         // get the data
-        var sample_data = _.findWhere(curVizObj.data.samples, {id: sample}), // data for the current sample
+        var sample_data = _.findWhere(curVizObj.data.samples, {sample_id: sample}), // data for the current sample
             cur_sampleG = d3.select("#" + view_id).select(".sampleG.sample_" + sample.replace(/ /g,"_")); // svg group for this sample
 
         // calculate angle w/the positive x-axis, formed by the line segment between the 
@@ -1576,7 +1591,7 @@ function _snapSites(curVizObj) {
 function _plotSite(curVizObj, sample, drag) {
     var view_id = curVizObj.view_id,
         dim = curVizObj.generalConfig,
-        sample_data = _.findWhere(curVizObj.data.samples, {id: sample}), // data for the current sample
+        sample_data = _.findWhere(curVizObj.data.samples, {sample_id: sample}), // data for the current sample
         cur_sampleG = d3.select("#" + view_id).select(".sampleG.sample_" + sample.replace(/ /g,"_")), // svg group for this sample
         cols = curVizObj.view.colour_assignment;
 
@@ -1831,7 +1846,7 @@ function _plotSite(curVizObj, sample, drag) {
         .attr("x", sample_data.tree.top_middle.x)
         .attr("y", function(d) {
             // set sample name in data object
-            d.sample = sample_data.id;
+            d.sample = sample_data.sample_id;
 
             if (sample_data.angle > Math.PI && sample_data.angle < 2*Math.PI) {
                 d.position = "top";
@@ -1900,7 +1915,7 @@ function _initialSiteOrdering(curVizObj) {
                             {x: centre.x, y: centre.y});
 
             samples.push({
-                "sample_id": sample.id,
+                "sample_id": sample.sample_id,
                 "location": sample.location.location_id,
                 "angle": angle
             });
@@ -1908,7 +1923,7 @@ function _initialSiteOrdering(curVizObj) {
         // if no anatomic location detected
         else {
             samples.push({
-                "sample_id": sample.id,
+                "sample_id": sample.sample_id,
                 "location": "NA", // no sample location found
                 "angle": Math.PI/2 // auto position is on the bottom of the view (pi/2 from positive x-axis)
             });
@@ -1921,7 +1936,7 @@ function _initialSiteOrdering(curVizObj) {
     // rearrange curVizObj.data.samples array to reflect new ordering
     var new_samples_array = [];
     samples.forEach(function(sample) {
-        new_samples_array.push(_.findWhere(curVizObj.data.samples, {id: sample.sample_id}));
+        new_samples_array.push(_.findWhere(curVizObj.data.samples, {sample_id: sample.sample_id}));
     })
     curVizObj.data.samples = new_samples_array;
 }
@@ -1946,7 +1961,7 @@ function _reformatMutations(curVizObj) {
         // sample locations for affected samples
         var sample_locations = [];
         affected_samples.forEach(function(sample) {
-            var cur_sample = _.findWhere(curVizObj.data.samples, {id: sample});
+            var cur_sample = _.findWhere(curVizObj.data.samples, {sample_id: sample});
             if (cur_sample.location) {
                 sample_locations.push(cur_sample.location.location_id);
             }

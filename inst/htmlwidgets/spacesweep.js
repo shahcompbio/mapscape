@@ -100,10 +100,24 @@ HTMLWidgets.widget({
         dim.image_top_l = {x: dim.viewDiameter/2 - dim.image_plot_width/2, 
                                 y: dim.viewDiameter/2 - dim.image_plot_width/2};
 
+        // get image width & height (in pixels)
+        // TODO check for user input image
+        if (curVizObj.userConfig.gender == "F") {
+            curVizObj.view.image_width = 188;
+            curVizObj.view.image_height = 554;
+        }
+        else {
+            curVizObj.view.image_width = 199;
+            curVizObj.view.image_height = 552;          
+        }
+
         // GET CONTENT
 
-        // get anatomic locations on image
-        _getSiteLocationsOnImage(curVizObj);
+        // map each sample to its anatomic location (including coordinates)
+        _mapSamplesToAnatomy(curVizObj);
+
+        // get participating anatomic locations in this view
+        _getParticipatingAnatomicLocations(curVizObj);
 
         // extract all info from tree about nodes, edges, ancestors, descendants
         _getTreeInfo(curVizObj);
@@ -115,9 +129,6 @@ HTMLWidgets.widget({
         curVizObj.data.sample_ids = (curVizObj.userConfig.sample_ids == "NA") ? 
             _.uniq(_.pluck(curVizObj.userConfig.clonal_prev, "sample_id")):
             curVizObj.userConfig.sample_ids;
-
-        // assign anatomic locations to each sample
-        _assignAnatomicLocations(curVizObj);
 
         // get image bounds for current sample data 
         _getImageBounds(curVizObj);
@@ -315,7 +326,7 @@ HTMLWidgets.widget({
             .selectAll(".sampleG")
             .data(curVizObj.data.samples)
             .enter().append("g")
-            .attr("class", function(d) { return "sampleG sample_" + d.id.replace(/ /g,"_")});
+            .attr("class", function(d) { return "sampleG sample_" + d.sample_id.replace(/ /g,"_")});
 
         // PLOT CIRCLE BORDER
 
@@ -605,7 +616,7 @@ HTMLWidgets.widget({
         var mixture_classes = {};
         curVizObj.data.samples.forEach(function(sample) {
             mixture_classes[sample.phyly] = mixture_classes[sample.phyly] || [];
-            mixture_classes[sample.phyly].push({"sample_id": sample.id, 
+            mixture_classes[sample.phyly].push({"sample_id": sample.sample_id, 
                                                 "sample_location": (sample.location)? sample.location.location_id : null});
         })
 

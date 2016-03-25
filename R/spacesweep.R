@@ -36,9 +36,9 @@
 #' @param tree_root {String} The clone id for the root of the tree.
 #' @param sample_locations {Data Frame} Anatomic locations for each tumour sample.
 #'   Format: columns are (1) {String} "sample_id" - id for the tumour sample
-#'                       (2) {String} "location_name" - name of anatomic location for this tumour sample
-#'                       (3) {Number} (Optional) "x" - x-coordinate for anatomic location on anatomic image
-#'                       (4) {Number} (Optional) "y" - y-coordinate for anatomic location on anatomic image
+#'                       (2) {String} "location_id" - name of anatomic location for this tumour sample
+#'                       (3) {Number} (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
+#'                       (4) {Number} (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image
 #' @param mutations {Data Frame} (Optional) Mutations occurring at each clone.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
@@ -131,14 +131,14 @@ spacesweep <- function(clonal_prev,
 
   # ensure column names are correct
   if (!("sample_id" %in% colnames(sample_locations)) ||
-      !("location_name" %in% colnames(sample_locations))) {
+      !("location_id" %in% colnames(sample_locations))) {
     stop(paste("Sample locations data frame must have the following column names: ", 
-        "\"sample_id\", \"location_name\".", sep=""))
+        "\"sample_id\", \"location_id\".", sep=""))
   }
 
   # ensure data is of the correct type
   sample_locations$sample_id <- as.character(sample_locations$sample_id)
-  sample_locations$location_name <- as.character(sample_locations$location_name)
+  sample_locations$location_id <- as.character(sample_locations$location_id)
 
   # check if location coordinates are provided
   if (("x" %in% colnames(sample_locations)) && ("y" %in% colnames(sample_locations))) {
