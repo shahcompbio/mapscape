@@ -604,7 +604,8 @@ function _getImageBounds(curVizObj) {
         min_y: min_y,
         max_x: max_x,
         max_y: max_y,
-        max_r: max_r
+        max_r: max_r,
+        centre: centre
     }
 }
 
@@ -634,21 +635,15 @@ function _scale(curVizObj) {
         y: ((bounds.max_y + bounds.min_y)/2)/curVizObj.view.image_height
     };
 
-    // centre of sample locations on the ORIGINAL image
-    var original_centre = {
-        x: ((bounds.max_x + bounds.min_x)/2), 
-        y: ((bounds.max_y + bounds.min_y)/2)
-    };
-
-    // centre of sample locations on the SCALED image
-    var centre = {
+    // absolute centre of sample locations on the SCALED image
+    var scaled_centre = {
         x: ((bounds.max_x + bounds.min_x)/2) * scaling_factor, 
         y: ((bounds.max_y + bounds.min_y)/2) * scaling_factor
     };
 
     // to centre the image, we need to move it left and up by how much
-    var left_shift = (centre.x - dim.image_plot_diameter/2);
-    var up_shift = (centre.y - dim.image_plot_diameter/2);
+    var left_shift = (scaled_centre.x - dim.image_plot_diameter/2);
+    var up_shift = (scaled_centre.y - dim.image_plot_diameter/2);
 
     var crop_info = {
         crop_width_prop: crop_width_prop,
@@ -658,21 +653,14 @@ function _scale(curVizObj) {
         crop_diameter: crop_diameter,
         left_shift: left_shift,
         up_shift: up_shift,
-        original_centre: original_centre,
         centre_prop, centre_prop
     }
 
     // get cropped absolute x, y coordinates for each sample location
     Object.keys(curVizObj.data.anatomic_locations).forEach(function(location) {
-        curVizObj.data.anatomic_locations[location]["cropped_coords"] = _getCroppedCoordinate(
-                                                                crop_info, 
-                                                                curVizObj.data.anatomic_locations[location],
-                                                                dim.image_top_l
-                                                            );
+        curVizObj.data.anatomic_locations[location]["cropped_coords"] = 
+            _getCroppedCoordinate(crop_info, curVizObj.data.anatomic_locations[location], dim.image_top_l);
     })
-
-    console.log("within scale function -- curVizObj");
-    console.log(curVizObj);
 
     return crop_info;
 }
@@ -1939,13 +1927,13 @@ function _initialSiteOrdering(curVizObj) {
         if (sample.location) {
 
             // cropped x, y positions 
-            var centre = _scale(curVizObj).original_centre;
+            var bounds = curVizObj.view.imageBounds;
 
             // calculate angle w/the positive x-axis, formed by the line segment between the 
             // sample position & view centre
             var angle = _find_angle_of_line_segment(
                             {x: sample.location.x, y: sample.location.y},
-                            {x: centre.x, y: centre.y});
+                            {x: bounds.centre.x, y: bounds.centre.y});
 
             samples.push({
                 "sample_id": sample.sample_id,
