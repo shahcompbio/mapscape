@@ -598,8 +598,8 @@ function _getImageBounds(curVizObj) {
         }
     })
 
-    // proportionate image bounds [0,1]
-    curVizObj.view.imageBounds = {
+    // proportionate sample location bounds [0,1], and the absolute centre these locations on the original image
+    curVizObj.view.sampleBounds = {
         min_x: min_x,
         min_y: min_y,
         max_x: max_x,
@@ -618,7 +618,7 @@ function _scale(curVizObj) {
     var anatomy_padding = 15; // in pixels
 
     // get the width & height of the cropped section
-    var bounds = curVizObj.view.imageBounds;
+    var bounds = curVizObj.view.sampleBounds;
 
     // diameter of the cropped region on the SAMPLE image
     var crop_diameter = (bounds.max_r + anatomy_padding) * 2;
@@ -1927,7 +1927,7 @@ function _initialSiteOrdering(curVizObj) {
         if (sample.location) {
 
             // cropped x, y positions 
-            var bounds = curVizObj.view.imageBounds;
+            var bounds = curVizObj.view.sampleBounds;
 
             // calculate angle w/the positive x-axis, formed by the line segment between the 
             // sample position & view centre
