@@ -443,6 +443,23 @@ function _dragFunction(curVizObj, cur_sample, d) {
 
 // ANATOMY IMAGE FUNCTIONS
 
+/* function to get dimensions (h & w) of image from its url
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
+* @param {String} url -- url to image
+* @return dimensions of image
+*/
+function _getImageDimensions(curVizObj, url){   
+    var img = new Image();
+    img.onload = function(){
+        curVizObj.view.image_width = this.width;
+        curVizObj.view.image_height = this.height;
+        curVizObj.view.aspect_ratio = this.width/this.height; // aspect ratio of image
+        curVizObj.imgDimDeferred.resolve("obtained image dimensions")
+    };
+    img.src = url;
+}
+
+
 /* function to return database of anatomic locations on the anatomic diagram
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
@@ -538,30 +555,46 @@ function _getParticipatingAnatomicLocations(curVizObj) {
     })
 }
 
-/* function to get image bounds for the anatomic data in this dataset
+/* function to get absolute boundaries for the anatomic data in this dataset
 * @param {Object} curVizObj -- vizObj for the current view
 */
 function _getImageBounds(curVizObj) {
     var min_x = Infinity,
         max_x = -1
         min_y = Infinity,
-        max_y = -1,
-        image_w = curVizObj.view.image_width,
-        image_h = curVizObj.view.image_height;
+        max_y = -1;
 
+    // get the boundaries of the sample locations on the image
     Object.keys(curVizObj.data.anatomic_locations).forEach(function(location_id) {
         var cur_sampleLocation = curVizObj.data.anatomic_locations[location_id];
-        if (min_x > cur_sampleLocation.x/image_w) {
-            min_x = cur_sampleLocation.x/image_w;
+        if (min_x > cur_sampleLocation.x) {
+            min_x = cur_sampleLocation.x;
         }
-        if (min_y > cur_sampleLocation.y/image_h) {
-            min_y = cur_sampleLocation.y/image_h;
+        if (min_y > cur_sampleLocation.y) {
+            min_y = cur_sampleLocation.y;
         }
-        if (max_x < cur_sampleLocation.x/image_w) {
-            max_x = cur_sampleLocation.x/image_w;
+        if (max_x < cur_sampleLocation.x) {
+            max_x = cur_sampleLocation.x;
         }
-        if (max_y < cur_sampleLocation.y/image_h) {
-            max_y = cur_sampleLocation.y/image_h;
+        if (max_y < cur_sampleLocation.y) {
+            max_y = cur_sampleLocation.y;
+        }
+    })
+
+    // centre of sample locations on the image
+    var centre = {
+        x: ((max_x + min_x)/2), 
+        y: ((max_y + min_y)/2)
+    };
+
+    // find the largest radius from the centre of the sample locations to each sample locations
+    var max_r = -1;
+    Object.keys(curVizObj.data.anatomic_locations).forEach(function(location_id) {
+        var cur_sampleLocation = curVizObj.data.anatomic_locations[location_id];
+        var dist = Math.sqrt( Math.pow((cur_sampleLocation.x-centre.x), 2) + 
+                                Math.pow((cur_sampleLocation.y-centre.y), 2) );
+        if (dist > max_r) {
+            max_r = dist;
         }
     })
 
@@ -570,7 +603,8 @@ function _getImageBounds(curVizObj) {
         min_x: min_x,
         min_y: min_y,
         max_x: max_x,
-        max_y: max_y
+        max_y: max_y,
+        max_r: max_r
     }
 }
 
@@ -579,80 +613,81 @@ function _getImageBounds(curVizObj) {
 */
 function _scale(curVizObj) {
 
-    var anatomy_padding = 0.05; // 5% of the image
-    var original_width = curVizObj.generalConfig.image_plot_width;
+    var dim = curVizObj.generalConfig;
+    var anatomy_padding = 15; // in pixels
 
-    // get the width (width == height) of the cropped section
+    // get the width & height of the cropped section
     var bounds = curVizObj.view.imageBounds;
-    var crop_width_prop = ((bounds.max_x - bounds.min_x) > (bounds.max_y - bounds.min_y)) ? 
-        (bounds.max_x - bounds.min_x + anatomy_padding*2) :
-        (bounds.max_y - bounds.min_y + anatomy_padding*2);
-    var crop_width = crop_width_prop*curVizObj.generalConfig.image_plot_width; 
 
-    // scaling factor
-    var scaling_factor = crop_width/original_width; 
+    // diameter of the cropped region on the SAMPLE image
+    var crop_diameter = (bounds.max_r + anatomy_padding) * 2;
+    var crop_width_prop = crop_diameter/curVizObj.view.image_width; // (crop_diameter : original_width) ratio
 
-    // new height == new width (must blow up the image by the scaling factor)
-    var new_width = (original_width/scaling_factor); 
+    // scale image such that region of interest is as big as the image plot diameter
+    var scaling_factor = dim.image_plot_diameter/crop_diameter;
+    var scaled_image_width = scaling_factor * curVizObj.view.image_width;
+    var scaled_image_height = scaling_factor * curVizObj.view.image_height;
 
-    // fractional centre of original image
-    var centre = {
+    // PROPORTIONAL centre of sample locations
+    var centre_prop = {
+        x: ((bounds.max_x + bounds.min_x)/2)/curVizObj.view.image_width, 
+        y: ((bounds.max_y + bounds.min_y)/2)/curVizObj.view.image_height
+    };
+
+    // centre of sample locations on the ORIGINAL image
+    var original_centre = {
         x: ((bounds.max_x + bounds.min_x)/2), 
         y: ((bounds.max_y + bounds.min_y)/2)
     };
-    console.log("centre");
-    console.log(centre);
 
-    // amount to shift left and up ([0,1], then absolute)
-    var left_shift_prop = (centre.x - crop_width_prop/2);
-    var up_shift_prop = (centre.y - crop_width_prop/2);
-    var left_shift = left_shift_prop*new_width;
-    var up_shift = up_shift_prop*new_width;
+    // centre of sample locations on the SCALED image
+    var centre = {
+        x: ((bounds.max_x + bounds.min_x)/2) * scaling_factor, 
+        y: ((bounds.max_y + bounds.min_y)/2) * scaling_factor
+    };
+
+    // to centre the image, we need to move it left and up by how much
+    var left_shift = (centre.x - dim.image_plot_diameter/2);
+    var up_shift = (centre.y - dim.image_plot_diameter/2);
 
     var crop_info = {
-        crop_width: crop_width,
         crop_width_prop: crop_width_prop,
-        new_width: new_width,
+        scaled_image_width: scaled_image_width,
+        scaled_image_height: scaled_image_height,
+        scaling_factor: scaling_factor,
+        crop_diameter: crop_diameter,
         left_shift: left_shift,
         up_shift: up_shift,
-        left_shift_prop: left_shift_prop,
-        up_shift_prop: up_shift_prop,
-        centre_prop: centre
+        original_centre: original_centre,
+        centre_prop, centre_prop
     }
 
     // get cropped absolute x, y coordinates for each sample location
     Object.keys(curVizObj.data.anatomic_locations).forEach(function(location) {
         curVizObj.data.anatomic_locations[location]["cropped_coords"] = _getCroppedCoordinate(
-                                                                curVizObj.view.image_width,
-                                                                curVizObj.view.image_height,
                                                                 crop_info, 
                                                                 curVizObj.data.anatomic_locations[location],
-                                                                curVizObj.generalConfig.image_top_l,
-                                                                curVizObj.generalConfig.image_plot_width
+                                                                dim.image_top_l
                                                             );
     })
+
+    console.log("within scale function -- curVizObj");
+    console.log(curVizObj);
 
     return crop_info;
 }
 
 /* function to transform a coordinate to its cropped equivalent on the anatomy image
-* @param {Number} image_width -- width (in pixels) of the original image
-* @param {Number} image_height -- height (in pixels) of the original image
 * @param {Object} crop_info -- cropping onformation (shifts, width, etc.)
 * @param {Object} original_coords -- object with x- and y-coordinates (in pixels) on original image (properties "x", "y")
 * @param {Object} top_l -- absolute x- and y-coordinates for the top left of the plotting area (properties "x", "y")
-* @param {Number} plot_width -- absolute width for the plotting area
 * @return absolute coordinates
 */
-function _getCroppedCoordinate(image_width, image_height, crop_info, original_coords, top_l, plot_width) {
-    var cropped_x_prop = ((original_coords.x/image_width) - crop_info.left_shift_prop)/crop_info.crop_width_prop;
-    var cropped_y_prop = ((original_coords.y/image_height) - crop_info.up_shift_prop)/crop_info.crop_width_prop;
+function _getCroppedCoordinate(crop_info, original_coords, top_l) {
+    var cropped_x = (original_coords.x * crop_info.scaling_factor) - crop_info.left_shift;
+    var cropped_y = (original_coords.y * crop_info.scaling_factor) - crop_info.up_shift;
 
-    var cropped_coordinates = {
-        x: top_l.x + (cropped_x_prop*plot_width), 
-        y: top_l.y + (cropped_y_prop*plot_width)
-    };
-    return cropped_coordinates;
+    return { x: top_l.x + cropped_x, y: top_l.y + cropped_y };
 }
 
 // TREE FUNCTIONS
@@ -1289,7 +1324,7 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
 /* function to get positions of sample tab, dividers, voronoi tesselation centre, tree centre for each sample
 * @param {Object} curVizObj -- vizObj for the current view
 */
-function _getSitePositioning(curVizObj) {
+function _getSamplePositioning(curVizObj) {
     var dim = curVizObj.generalConfig,
         n_samples = curVizObj.data.sample_ids.length; // number of samples
 
@@ -1327,9 +1362,7 @@ function _getSitePositioning(curVizObj) {
             );
 
         // add colour (genotype) information to each vertex
-        cur_sample_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(curVizObj, 
-                                                                        sample_id, 
-                                                                        vertices);
+        cur_sample_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(curVizObj, sample_id, vertices);
 
         // 2D array of x- and y- positions for vertices
         cur_sample_obj["voronoi"]["vertex_coords"] = vertices.map(function(vertex) {
@@ -1906,7 +1939,7 @@ function _initialSiteOrdering(curVizObj) {
         if (sample.location) {
 
             // cropped x, y positions 
-            var centre = _scale(curVizObj).centre_prop;
+            var centre = _scale(curVizObj).original_centre;
 
             // calculate angle w/the positive x-axis, formed by the line segment between the 
             // sample position & view centre
