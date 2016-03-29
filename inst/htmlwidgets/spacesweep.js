@@ -33,9 +33,7 @@ HTMLWidgets.widget({
             nClickedNodes: 0, // number of clicked nodes
             curCloneIDs: [], // array of clone ids currently in the mutation table
             phantomRoot: "phantomRoot",
-            anatomy_male_image_ref: 
-            "https://bytebucket.org/mas29/public_resources/raw/0dc6ace1c4aad304b34bee455d53af604ba96fce/images/anatomy/tumours_A22.png",
-            // "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
+            anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
             anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
         };
 
@@ -70,12 +68,19 @@ HTMLWidgets.widget({
 
         // SET CONFIGURATIONS FOR THIS VIEW
 
-        // image for use
-        if (curVizObj.userConfig.gender == "F") {
-            dim.image_ref = dim.anatomy_female_image_ref;
+        // image for use 
+        // custom image
+        if (curVizObj.userConfig.img_ref != "NA") {
+            dim.image_ref = curVizObj.userConfig.img_ref
         }
+        // default images
         else {
-            dim.image_ref = dim.anatomy_male_image_ref;
+            if (curVizObj.userConfig.gender == "F") {
+                dim.image_ref = dim.anatomy_female_image_ref;
+            }
+            else {
+                dim.image_ref = dim.anatomy_male_image_ref;
+            }
         }
 
 

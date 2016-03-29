@@ -59,6 +59,8 @@
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
+#' @param img_ref {String} (Optional) A URL for the custom anatomical image to use. 
+#'                                    If unspecified, will use default generic male and female images.
 #' @export
 spacesweep <- function(clonal_prev, 
                       tree_edges,
@@ -70,6 +72,7 @@ spacesweep <- function(clonal_prev,
                       gender,
                       sample_ids = "NA",
                       n_cells = 100,
+                      img_ref = "NA",
                       width = 960, 
                       height = 960) {
 
@@ -139,6 +142,13 @@ spacesweep <- function(clonal_prev,
   # ensure data is of the correct type
   sample_locations$sample_id <- as.character(sample_locations$sample_id)
   sample_locations$location_id <- as.character(sample_locations$location_id)
+
+  # if custom image reference provided, but no location coordinates are provided, throw error
+  if ((img_ref != "NA") &&
+    !(("x" %in% colnames(sample_locations)) && ("y" %in% colnames(sample_locations)))) {
+    stop(paste("When providing a custom image, you must specify coordinates (\"x\" and \"y\" columns) ",
+      "for each sample in the sample_locations data frame.", sep=""))
+  }
 
   # check if location coordinates are provided
   if (("x" %in% colnames(sample_locations)) && ("y" %in% colnames(sample_locations))) {
@@ -324,7 +334,8 @@ spacesweep <- function(clonal_prev,
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
     gender = gender,
     sample_ids = sample_ids,
-    n_cells = n_cells
+    n_cells = n_cells,
+    img_ref = img_ref
   )
 
   # create widget

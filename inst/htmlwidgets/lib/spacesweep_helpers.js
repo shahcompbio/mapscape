@@ -507,25 +507,43 @@ function _getSiteLocationDB(curVizObj) {
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
 function _mapSamplesToAnatomy(curVizObj) {
-    // get database of site locations
-    var siteLocationDB = _getSiteLocationDB(curVizObj);
-
     curVizObj.data.samples = [];
 
-    // for each sample location, get its coordinates (if needed), and add it to the data
-    curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
-        var cur_sample = {sample_id: sample_location.sample_id}
-        cur_sample["location"] = sample_location;
+    // CUSTOM IMAGE PROVIDED
 
-        // if coordinates are not provided, access them from the site location database
-        if (!curVizObj.userConfig.location_coordinates_provided) {
-            var location_in_db = _.findWhere(siteLocationDB, {location_id: sample_location.location_id});
-            cur_sample["location"]["x"] = location_in_db["x"];
-            cur_sample["location"]["y"] = location_in_db["y"];
-        }
+    if (curVizObj.userConfig.img_ref != "NA") {
 
-        curVizObj.data.samples.push(cur_sample);
-    })
+        // for each sample location, get its coordinates, and add it to the data
+        curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
+            var cur_sample = {sample_id: sample_location.sample_id}
+            cur_sample["location"] = sample_location;
+
+            curVizObj.data.samples.push(cur_sample);
+        })
+    }
+
+    // CUSTOM IMAGE NOT PROVIDED -- USE DEFAULT IMAGE
+
+    else {
+        // get database of site locations
+        var siteLocationDB = _getSiteLocationDB(curVizObj);
+
+        // for each sample location, get its coordinates (if needed), and add it to the data
+        curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
+            var cur_sample = {sample_id: sample_location.sample_id}
+            cur_sample["location"] = sample_location;
+
+            // if coordinates are not provided, access them from the site location database
+            // (here the user chooses to use the default image, but custom locations on it)
+            if (!curVizObj.userConfig.location_coordinates_provided) {
+                var location_in_db = _.findWhere(siteLocationDB, {location_id: sample_location.location_id});
+                cur_sample["location"]["x"] = location_in_db["x"];
+                cur_sample["location"]["y"] = location_in_db["y"];
+            }
+
+            curVizObj.data.samples.push(cur_sample);
+        })
+    }
 }
 
 
