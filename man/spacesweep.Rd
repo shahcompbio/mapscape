@@ -4,13 +4,14 @@
 \alias{spacesweep}
 \title{SpaceSweep}
 \usage{
-spacesweep(clonal_prev, tree_edges, tree_root, clone_colours = "NA",
-  mutations = "NA", mutation_prevalences = "NA", gender, site_ids = "NA",
-  n_cells = 100, width = 960, height = 960)
+spacesweep(clonal_prev, tree_edges, tree_root, sample_locations,
+  clone_colours = "NA", mutations = "NA", mutation_prevalences = "NA",
+  gender, sample_ids = "NA", n_cells = 100, img_ref = "NA", width = 960,
+  height = 960)
 }
 \arguments{
 \item{clonal_prev}{{Data Frame} Clonal prevalence.
-Format: columns are (1) {String} "site_id" - id for the anatomic site
+Format: columns are (1) {String} "sample_id" - id for the tumour sample
                     (2) {String} "clone_id" - clone id
                     (3) {Number} "clonal_prev" - clonal prevalence.}
 
@@ -20,7 +21,13 @@ Format: columns are (1) {String} "source" - source clone id
 
 \item{tree_root}{{String} The clone id for the root of the tree.}
 
-\item{clone_colours}{{Data Frame} (Optional) Clone ids and their corresponding colours 
+\item{sample_locations}{{Data Frame} Anatomic locations for each tumour sample.
+Format: columns are (1) {String} "sample_id" - id for the tumour sample
+                    (2) {String} "location_id" - name of anatomic location for this tumour sample
+                    (3) {Number} (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
+                    (4) {Number} (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image}
+
+\item{clone_colours}{{Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 Format: columns are (1) {String} "clone_id" - the clone ids
                     (2) {String} "colour" - the corresponding Hex colour for each clone id.}
 
@@ -30,10 +37,10 @@ Format: columns are (1) {String} "chrom" - chromosome number
                     (3) {String} "clone_id" - clone id
                     (4) {String} "gene_name" - name of the affected gene (can be "" if none affected).}
 
-\item{mutation_prevalences}{{Data Frame} (Optional) Mutation prevalences for each anatomic site in a patient.
+\item{mutation_prevalences}{{Data Frame} (Optional) Mutation prevalences for each tumour sample in a patient.
 Format: columns are (1) {String} "chrom" - chromosome number
                     (2) {Number} "coord" - coordinate of mutation on chromosome
-                    (3) {String} "site_id" - anatomic site id
+                    (3) {String} "sample_id" - id for the tumour sample
                     (4) {Number} "prev" - prevalence of the mutation
                     (5) {String} (Optional) "effect" - effect of the mutation 
                                                        (e.g. non-synonymous, upstream, etc.)
@@ -41,10 +48,15 @@ Format: columns are (1) {String} "chrom" - chromosome number
 
 \item{gender}{{String} Gender of the patient (M/F).}
 
-\item{site_ids}{{Vector} (Optional) Ids of the sites in the order your wish to display them 
+\item{sample_ids}{{Vector} (Optional) Ids of the samples in the order your wish to display them 
 (clockwise from positive x-axis).}
 
 \item{n_cells}{{Number} (Optional) The number of cells to plot (for voronoi tessellation).}
+
+\item{img_ref}{{String} (Optional) A reference for the custom anatomical image to use, 
+either a URL to an image hosted online 
+or a path to the image in local file system. 
+If unspecified, will use default generic male and female images.}
 }
 \description{
 Generates patient clonal SpaceSweeps.
@@ -52,21 +64,21 @@ Generates patient clonal SpaceSweeps.
 \details{
 Interactive components in main view:
 
-1. reorder sites by grabbing the site name and dragging it around the circle. \cr
-2. hover over anatomic site of interest to view patient data associated with that site. \cr
-3. hover over site tree nodes to view cellular prevalence.
+1. reorder samples by grabbing the sample name and dragging it around the circle. \cr
+2. hover over tumour sample of interest to view patient data associated with that sample. \cr
+3. hover over sample tree nodes to view cellular prevalence.
 
 Interactive components in legend:
 
-1. hover over legend tree node to view sites expressing the genotype. \cr
-2. hover over legend tree branch to view sites expressing all descendant genotypes. \cr
-3. click on legend tree nodes to view (a) updated mutations table showing new mutations at that clone, and (b) sites expressing the new mutations at that clone. \cr
-4. hover over mixture classification to view corresponding sites, and the participating branches at each site.
+1. hover over legend tree node to view tumour samples expressing the genotype. \cr
+2. hover over legend tree branch to view tumour samples  expressing all descendant genotypes. \cr
+3. click on legend tree nodes to view (a) updated mutations table showing new mutations at that clone, and (b) tumour samples expressing the new mutations at that clone. \cr
+4. hover over mixture classification to view corresponding tumour sample, and the participating branches in each tumour sample.
 
 Interactive components in mutation table:
 
 1. search for any mutation, coordinate, gene, etc. \cr
-2. click on a row in the table, and the view will update to show the sites with that mutation, and the mutation prevalence at each site. \cr
+2. click on a row in the table, and the view will update to show the tumour samples with that mutation, and the mutation prevalence in each tumour sample. \cr
 3. order the table by a column (all columns sortable except the Clone column).
 
 Note: Click on the view background to exit a selection.

@@ -59,7 +59,9 @@
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
-#' @param img_ref {String} (Optional) A URL for the custom anatomical image to use. 
+#' @param img_ref {String} (Optional) A reference for the custom anatomical image to use, 
+#'                                    either a URL to an image hosted online 
+#'                                    or a path to the image in local file system. 
 #'                                    If unspecified, will use default generic male and female images.
 #' @export
 spacesweep <- function(clonal_prev, 
