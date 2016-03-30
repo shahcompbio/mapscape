@@ -12,10 +12,7 @@ HTMLWidgets.widget({
             widgetMargin: 10, // marging between widgets
             rootColour: '#717171',
             pureColour: '#D3D2D2',
-            monophyleticColour: '767676',
-            polyphyleticColour: '000000',
             anatomicLineColour: '#2D2D2D',
-            generalMarkHighlightColour: "#616161",
             legendWidth: 130,
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
@@ -610,7 +607,7 @@ HTMLWidgets.widget({
                 .on("mouseover", function(d) {
                     if (_checkForSelections(curVizObj)) {
                         // highlight this location
-                        d3.select(this)
+                        d3.select(this) 
                             .attr("fill", dim.anatomicLineColour);
 
                         // shade view
@@ -684,7 +681,7 @@ HTMLWidgets.widget({
                             var locations = _.uniq(_.pluck(mixture_classes[phyly], "sample_location"));
                             locations.forEach(function(location) {
                                 d3.select("#" + view_id).select(".generalMark.location_"+location)
-                                    .attr("fill", dim.generalMarkHighlightColour);
+                                    .attr("fill", dim.anatomicLineColour);
                             });
 
                             // highlight only those links that participate in the mixture classification
