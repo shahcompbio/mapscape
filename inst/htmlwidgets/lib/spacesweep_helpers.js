@@ -1718,7 +1718,31 @@ function _plotSite(curVizObj, sample, drag) {
                     sample_data.voronoi.top_l_corner.y], 
                     [sample_data.voronoi.top_l_corner.x + dim.oncoMixWidth, 
                     sample_data.voronoi.top_l_corner.y + dim.oncoMixWidth]]);
-        
+
+    // plot opaque white cells first (to cover up the anatomic line)
+    var vertices = sample_data.voronoi.vertices;
+    var whiteCells = curSiteOncoMixG.append("g")
+        .classed("whiteCellsG", true)
+        .classed("sample_" + sample, true)
+        .selectAll("path")
+        .data(voronoi(sample_data.voronoi.vertex_coords), _polygon)
+        .enter().append("path")
+        .attr("class", "whiteCell")
+        .attr("d", _polygon)
+        .attr("fill", function(d, i) {
+            return (vertices[i].real_cell) ? "white" : "none";
+        })
+        .attr("fill-opacity", function(d, i) {
+            return (vertices[i].real_cell) ? 1 : 0;
+        })
+        .attr("stroke", function(d, i) {
+            return (vertices[i].real_cell) ? "white" : "none";
+        })
+        .attr("stroke-width", "1.5px")
+        .attr("stroke-opacity", function(d, i) {
+            return (vertices[i].real_cell) ? 1 : 0;
+        });
+
     // plot cells
     var vertices = sample_data.voronoi.vertices;
     var cells = curSiteOncoMixG.append("g")
