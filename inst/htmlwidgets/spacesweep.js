@@ -14,13 +14,13 @@ HTMLWidgets.widget({
             pureColour: '#D3D2D2',
             monophyleticColour: '767676',
             polyphyleticColour: '000000',
-            anatomicLineColour: '#CBCBCB',
+            anatomicLineColour: '#2D2D2D',
             generalMarkHighlightColour: "#616161",
             legendWidth: 130,
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
             max_r: 8, // maximum radius for tree nodes
-            sampleMark_r: 4, // sample mark radius
+            sampleMark_r: 5, // sample mark radius
             dragOn: false, // whether or not drag is on
             selectOn: false, // whether or not link selection is on
             mutSelectOn: false, // whether or not the mutation selection is on
@@ -496,7 +496,7 @@ HTMLWidgets.widget({
                         // remove any mutation prevalence plotting from the node mouseover
                         d3.select("#" + curVizObj.view_id).selectAll(".mutationPrevalences").remove();
                         // reset any general anatomic marks
-                        d3.select("#" + curVizObj.view_id).selectAll(".generalMark").attr("fill", "white");
+                        d3.select("#" + curVizObj.view_id).selectAll(".generalMark").attr("fill", "#CBCBCB");
 
                         // show loading icon
                         $('#loading').show();
@@ -604,14 +604,14 @@ HTMLWidgets.widget({
                 .attr("cx", function(d) { return curVizObj.data.anatomic_locations[d]["cropped_coords"].x; })
                 .attr("cy", function(d) { return curVizObj.data.anatomic_locations[d]["cropped_coords"].y; })
                 .attr("r", dim.sampleMark_r)
-                .attr("fill", "white")
+                .attr("fill", "#CBCBCB")
                 .attr("stroke-width", "1.5pxx")
-                .attr("stroke", "#CBCBCB")
+                .attr("stroke", dim.anatomicLineColour)
                 .on("mouseover", function(d) {
                     if (_checkForSelections(curVizObj)) {
                         // highlight this location
                         d3.select(this)
-                            .attr("fill", dim.generalMarkHighlightColour);
+                            .attr("fill", dim.anatomicLineColour);
 
                         // shade view
                         _shadeMainView(curVizObj);

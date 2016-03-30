@@ -186,7 +186,7 @@ function _propagatedEffects(curVizObj, link_id, link_ids, stream_direction) {
     curVizObj.view.propagation.locations.forEach(function(location) {
         d3.select("#" + view_id)
             .select(".generalMark.location_" + location)
-            .attr("fill", curVizObj.generalConfig.generalMarkHighlightColour);        
+            .attr("fill", curVizObj.generalConfig.anatomicLineColour);        
     });
 
     // highlight sample title & link to anatomy
@@ -358,7 +358,7 @@ function _resetView(curVizObj) {
 
     // reset anatomic marks
     d3.select("#" + view_id).selectAll(".gtypeMark").attr("fill-opacity", 0);
-    d3.select("#" + view_id).selectAll(".generalMark").attr("fill", "white").attr("fill-opacity", 1)
+    d3.select("#" + view_id).selectAll(".generalMark").attr("fill", "#CBCBCB").attr("fill-opacity", 1)
         .attr("stroke-opacity", 1);
 
     // reset legend tree nodes & links
