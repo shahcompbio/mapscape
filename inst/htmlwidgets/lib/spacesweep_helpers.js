@@ -1059,41 +1059,23 @@ function _getPhyloColours(curVizObj) {
         });
     }
 
-    // clone colours not specified -- calculate it based on the phylogeny
+    // clone colours not specified
     else {
-        colour_assignment = _calculateHuePhylo(curVizObj.data.treeStructure, 0, 360, []);
+        var s = 0.95, // saturation
+            l = 0.7; // lightness
+
+        // number of nodes
+        var n_nodes = curVizObj.data.nodesColourOrder.length;
+
+        for (var i = 0; i < n_nodes; i++) {
+            var h = i/n_nodes;
+            var rgb = _hslToRgb(h, s, l); // hsl to rgb
+            var col = _rgb2hex("rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")"); // rgb to hex
+
+            colour_assignment[curVizObj.data.nodesColourOrder[i].id] = col;
+        }
     }
     curVizObj.view.colour_assignment = colour_assignment;  
-}
-
-/* function to calculate the hue for each node in the phylogeny
-* @param {Object} curNode -- current node in phylogeny
-* @param {Number} start -- start degree of colour wheel for this node (0 to 360)
-* @param {Number} end -- end degree of colour wheel for this node (0 to 360)
-* @param {Object} colour_assignment -- originally empty array of colours mapped to each node id
-*/
-function _calculateHuePhylo(curNode, start, end, colour_assignment) {
-
-    var s = 0.95, // saturation
-        l = 0.7; // lightness
-
-    // calculate colour value for this node
-    var h = Math.round((end+start)/2)/360;
-    var rgb = _hslToRgb(h, s, l); // hsl to rgb
-    var col = _rgb2hex("rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")"); // rgb to hex
-    console.log("node " + curNode.id + " h " + h + " col " + col);
-    colour_assignment[curNode.id] = col;
-
-    // interval of hues for each child
-    var n_children = curNode.children.length;
-    var interval = (n_children == 0) ? (end-start) : Math.round((end-start)/n_children);
-
-    // for each child, calculate its colour value
-    for (var i = 0; i < n_children; i++) {
-        _calculateHuePhylo(curNode.children[i], start + (interval*i), start + (interval*(i+1)), colour_assignment);
-    }
-
-    return colour_assignment;
 }
 
 // function to decrease brightness of hex colour
