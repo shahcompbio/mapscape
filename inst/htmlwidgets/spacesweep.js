@@ -142,8 +142,8 @@ HTMLWidgets.widget({
             // extract all info from tree about nodes, edges, ancestors, descendants
             _getTreeInfo(curVizObj);
 
-            // get colour assignment
-            _getColours(curVizObj);
+            // get phylogenetic colours
+            _getPhyloColours(curVizObj);
 
             // sample ids
             curVizObj.data.sample_ids = (curVizObj.userConfig.sample_ids == "NA") ? 

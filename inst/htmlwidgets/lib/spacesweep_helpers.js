@@ -734,6 +734,10 @@ function _getTreeInfo(curVizObj) {
     var root_tree = _findNodeByName(nodesByName, phantomRoot); 
     curVizObj.data.treeStructure = root_tree; 
 
+    // get in-order traversal node order of tree
+    curVizObj.data.nodesColourOrder = _phyloTraversal(curVizObj.data.treeStructure, [], 0);
+    console.log(_.pluck(curVizObj.data.nodesColourOrder, "id"));
+
     // get descendants for each node
     curVizObj.data.treeDescendantsArr = {};
     curVizObj.data.treeNodes.forEach(function(node, idx) {
@@ -952,12 +956,90 @@ function _getSitesAffectedByLink(curVizObj) {
     curVizObj.data.link_affected_samples = affected_samples;
 }
 
+/* traversal of tree for phylogenetic colouring
+* @param {Object} curNode -- current node object
+* @param {Array} nodes_ordered -- originally empty array of ordered nodes
+* @param {Number} cur_height -- originally 0, the height of the current node
+*/
+function _phyloTraversal(curNode, nodes_ordered, cur_height) {
+
+    // no children -- add to ordered nodes
+    var n_children = curNode.children.length;
+    if (n_children == 0) {
+        nodes_ordered.push({"id": curNode.id,
+                            "height": cur_height});
+    }
+
+    // children -- add to ordered nodes, then search children
+    else {
+        nodes_ordered.push({"id": curNode.id,
+                            "height": cur_height});
+        // search children
+        for (var i = 0; i < n_children; i++) {
+            _phyloTraversal(curNode.children[i], nodes_ordered, cur_height+1);
+        }
+    }
+    return nodes_ordered;
+}
+
 // COLOUR FUNCTIONS
 
-/*
+/**
+ * Converts an HSL color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+ * Assumes h, s, and l are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   Number  h       The hue
+ * @param   Number  s       The saturation
+ * @param   Number  l       The lightness
+ * @return  Array           The RGB representation
+ */
+function _hslToRgb(h, s, l){
+    var r, g, b;
+
+    if(s == 0){
+        r = g = b = l; // achromatic
+    }else{
+        var hue2rgb = function hue2rgb(p, q, t){
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
+
+// convert RGB to hex
+// http://stackoverflow.com/questions/1740700/get-hex-value-rather-than-rgb-value-using-jquery
+function _rgb2hex(rgb) {
+     if (  rgb.search("rgb") == -1 ) {
+          return rgb;
+     } else {
+          rgb = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+))?\)$/);
+          function hex(x) {
+               return ("0" + parseInt(x).toString(16)).slice(-2);
+          }
+          return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]); 
+     }
+}
+
+/* function to calculate colours based on phylogeny 
 * @param {Object} curVizObj -- vizObj for the current view
 */
-function _getColours(curVizObj) {
+function _getPhyloColours(curVizObj) {
+
     var colour_assignment = {}, // standard colour assignment
         cur_colours = curVizObj.userConfig.clone_cols;
 
@@ -979,124 +1061,21 @@ function _getColours(curVizObj) {
 
     // clone colours not specified
     else {
-        var colour_palette = _getColourPalette(),
-            chains = _getLinearTreeSegments(curVizObj.data.treeStructure, {}, "");
-        colour_assignment = _colourTree(curVizObj, chains, curVizObj.data.treeStructure, 
-            colour_palette, {}, "Greys", $.extend({}, colour_palette));
-    }
-    curVizObj.view.colour_assignment = colour_assignment;  
+        var s = 0.95, // saturation
+            l = 0.7; // lightness
 
-}
+        // number of nodes
+        var n_nodes = curVizObj.data.nodesColourOrder.length;
 
-/* function to get a colour palette
-*/
-function _getColourPalette() {
+        for (var i = 0; i < n_nodes; i++) {
+            var h = i/n_nodes;
+            var rgb = _hslToRgb(h, s, l); // hsl to rgb
+            var col = _rgb2hex("rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")"); // rgb to hex
 
-    var colours = {
-        "Reds": 
-            ["#df6a62", "#F8766D", "#f8837b", "#f9918a", "#fa9f99", "#fbada7", "#fcbbb6", "#fcc8c5", 
-            "#fdd6d3", "#fee4e2"].reverse(),
-        "Greens":
-            ["#53B400", "#64bb19", "#75c333", "#86ca4c", "#98d266", "#a9da80", "#bae199", "#cce9b3", 
-            "#ddf0cc", "#eef8e6"].reverse(),
-        "Pinks":
-            ["#FB61D7", "#f870db", "#f980df", "#fa90e3", "#fba0e7", "#fcb0eb", "#fcc0ef", "#fdd0f3", 
-            "#fee0f7", "#fff0fb"].reverse(),
-        "Turquoises":
-            ["#00C094", "#19c69e", "#33cca9", "#4cd3b4", "#66d9bf", "#80e0ca", "#99e6d4", "#b3ecdf", 
-            "#ccf3ea", "#e6f9f5"].reverse(),
-        "Oranges":
-            ["#FF8D15", "#ff982c", "#ffa444", "#ffaf5b", "#ffbb73", "#ffc68a", "#ffd2a2", "#ffddb9", 
-            "#ffe9d1", "#fff4e8"].reverse(),
-        "Purples":
-            ["#A58AFF", "#ae95ff", "#b7a1ff", "#c0adff", "#c9b9ff", "#d2c5ff", "#dbd0ff", "#e4dcff", 
-            "#ede8ff", "#f6f4ff"].reverse(),
-        "Blues":
-            ["#00B6EB", "#19bded", "#33c4ef", "#4cccf1", "#66d3f3", "#80dbf5", "#99e2f7", "#b3e9f9", 
-            "#ccf1fb", "#e6f8fd"].reverse(),
-        "Yellows":
-            ["#C49A00","#caa419", "#d0ae33", "#d6b84c", "#dcc266", "#e2cd80", "#e8d799", "#eee1b3", 
-            "#f4ebcc", "#faf5e6"].reverse(),
-        "Browns":
-            ["#91553A", "#9c664d", "#a77761", "#b28875", "#bd9989", "#c8aa9d", "#d3bbb0", "#deccc4", 
-            "#e9ddd8", "#f4eeec"].reverse(),
-        "Greys":
-            ["#CBCBCB", "#d0d0d0", "#d5d5d5", "#dadada", "#e0e0e0", "#e5e5e5", "#eaeaea", "#f0f0f0", 
-            "#f5f5f5", "#fafafa"]
-    }
-
-    return colours;
-}
-
-/*
-* function to, using the tree hierarchy, get appropriate colours for each genotype
-* @param {Object} curVizObj -- vizObj for the current view
-* @param {Object} chains -- the linear segments (chains) in the genotype tree 
-*                           (key is segment start key, value is array of descendants in this chain)
-* @param {Object} curNode -- current key in the tree
-* @param {Array} palette -- (modified throughout function) colour themes to choose from
-* @param {Object} colour_assignment -- originally empty array of the final colour assignments
-* @param {String} curTheme -- the colour theme currently in use
-* @param {Array} originalPalette -- (original array) colour themes to choose from
-*/
-function _colourTree(curVizObj, chains, curNode, palette, colour_assignment, curTheme, originalPalette) {
-
-    // colour node
-    colour_assignment[curNode.id] = palette[curTheme].shift();
-
-    // if the current key has zero or >1 child to search through
-    if (curNode.children.length != 1 && curNode.id) { 
-
-        // remove its colour theme from the colour themes available
-        delete palette[curTheme];
-
-    }
-
-    // if the palette is finished, start again
-    if (Object.keys(palette).length == 0) {
-        console.warn("Colour palette isn't big enough to accommodate this dataset - for optimal colours, " +
-            "provide your own as an input parameter in R ('clone_colours' parameter).")
-        palette = $.extend({}, originalPalette);
-        curTheme = Object.keys(palette)[0];    
-    }
-        
-    // if the current key has one child only
-    if (curNode.children.length == 1) {
-
-        // colour child with the same theme as its parent
-        _colourTree(curVizObj, chains, curNode.children[0], palette, colour_assignment, curTheme, originalPalette)
-    }
-
-    // otherwise
-    else {
-        // reorder the children according to their emergent cellular prevalence
-        var tmpChildren = $.extend([], curNode.children);
-        
-        // for each child
-        for (var i = 0; i < tmpChildren.length; i++) {
-
-            // give it a new colour theme
-            curTheme = Object.keys(palette)[0];
-
-            // modify the colour palette to contain the most contrasting colours
-            var n = chains[tmpChildren[i].id].length+1; // + 1 to include the base key (this child)
-            var tmp_palette = [];
-            if (n == 1) { // if there's only one item in this chain, set it to a bright colour (not the darkest)
-                tmp_palette.push(palette[curTheme][7]);
-            }
-            else {
-                for (var j = 8; j >= 0; j -= Math.floor(9/n)) {
-                    tmp_palette.push(palette[curTheme][j]);
-                }
-            }
-            palette[curTheme] = tmp_palette;
-
-            // colour child
-            _colourTree(curVizObj, chains, tmpChildren[i], palette, colour_assignment, curTheme, originalPalette)
+            colour_assignment[curVizObj.data.nodesColourOrder[i].id] = col;
         }
     }
-
-    return colour_assignment;
+    curVizObj.view.colour_assignment = colour_assignment;  
 }
 
 // function to decrease brightness of hex colour
@@ -2171,3 +2150,4 @@ function _fromLineGetPoint(d3_line_object, dist, start_point) {
 
     return coords;
 }
+
