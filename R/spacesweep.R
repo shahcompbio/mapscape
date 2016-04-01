@@ -33,7 +33,6 @@
 #' @param tree_edges {Data Frame} Tree edges. 
 #'   Format: columns are (1) {String} "source" - source clone id
 #'                       (2) {String} "target" - target clone id.
-#' @param tree_root {String} The clone id for the root of the tree.
 #' @param sample_locations {Data Frame} Anatomic locations for each tumour sample.
 #'   Format: columns are (1) {String} "sample_id" - id for the tumour sample
 #'                       (2) {String} "location_id" - name of anatomic location for this tumour sample
@@ -63,7 +62,6 @@
 #' @export
 spacesweep <- function(clonal_prev, 
                       tree_edges,
-                      tree_root,
                       sample_locations,
                       clone_colours = "NA",
                       mutations = "NA",
@@ -92,9 +90,6 @@ spacesweep <- function(clonal_prev,
   }
   if (missing(tree_edges)) {
     stop("Tree edge data frame must be provided (parameter \"tree_edges\").")
-  }
-  if (missing(tree_root)) {
-    stop("Tree root clone id must be provided (parameter \"tree_root\").")
   }
   if (missing(gender)) {
     stop("The gender of the patient must be provided (parameter \"gender\").")
@@ -201,7 +196,7 @@ spacesweep <- function(clonal_prev,
         !("sample_id" %in% colnames(mutations)) ||
         !("VAF" %in% colnames(mutations))) {
       stop(paste("Mutations data frame must have the following column names: ", 
-          "\"chrom\", \"coord\", \"clone_id\", \"sample_id\", \"VAF\"..", sep=""))
+          "\"chrom\", \"coord\", \"clone_id\", \"sample_id\", \"VAF\".", sep=""))
     }
 
     # ensure data is of the correct type
@@ -249,7 +244,6 @@ spacesweep <- function(clonal_prev,
     mutation_prevalences <- mutation_prevalences[which(mutation_prevalences$clone_id %in% clones_in_phylo),]
 
     # compress results
-    mutation_prevalences$location <- apply(mutation_prevalences[, c("chrom","coord")], 1 , paste, collapse = ":")
     prevs_split <- split(mutation_prevalences, f = mutation_prevalences$location)
 
     # reduce the size of the data frame in each list
@@ -325,7 +319,6 @@ spacesweep <- function(clonal_prev,
   x = list(
     clonal_prev = jsonlite::toJSON(clonal_prev),
     tree_edges = jsonlite::toJSON(tree_edges),
-    tree_root = tree_root,
     sample_locations = jsonlite::toJSON(sample_locations),
     location_coordinates_provided = location_coordinates_provided,
     clone_cols = jsonlite::toJSON(clone_colours),

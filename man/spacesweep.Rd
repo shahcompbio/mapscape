@@ -4,10 +4,9 @@
 \alias{spacesweep}
 \title{SpaceSweep}
 \usage{
-spacesweep(clonal_prev, tree_edges, tree_root, sample_locations,
-  clone_colours = "NA", mutations = "NA", mutation_prevalences = "NA",
-  gender, sample_ids = "NA", n_cells = 100, img_ref = "NA", width = 960,
-  height = 960)
+spacesweep(clonal_prev, tree_edges, sample_locations, clone_colours = "NA",
+  mutations = "NA", gender, sample_ids = "NA", n_cells = 100,
+  img_ref = "NA", width = 960, height = 960)
 }
 \arguments{
 \item{clonal_prev}{{Data Frame} Clonal prevalence.
@@ -18,8 +17,6 @@ Format: columns are (1) {String} "sample_id" - id for the tumour sample
 \item{tree_edges}{{Data Frame} Tree edges. 
 Format: columns are (1) {String} "source" - source clone id
                     (2) {String} "target" - target clone id.}
-
-\item{tree_root}{{String} The clone id for the root of the tree.}
 
 \item{sample_locations}{{Data Frame} Anatomic locations for each tumour sample.
 Format: columns are (1) {String} "sample_id" - id for the tumour sample
@@ -35,16 +32,12 @@ Format: columns are (1) {String} "clone_id" - the clone ids
 Format: columns are (1) {String} "chrom" - chromosome number
                     (2) {Number} "coord" - coordinate of mutation on chromosome
                     (3) {String} "clone_id" - clone id
-                    (4) {String} "gene_name" - name of the affected gene (can be "" if none affected).}
-
-\item{mutation_prevalences}{{Data Frame} (Optional) Mutation prevalences for each tumour sample in a patient.
-Format: columns are (1) {String} "chrom" - chromosome number
-                    (2) {Number} "coord" - coordinate of mutation on chromosome
-                    (3) {String} "sample_id" - id for the tumour sample
-                    (4) {Number} "prev" - prevalence of the mutation
-                    (5) {String} (Optional) "effect" - effect of the mutation 
+                    (4) {String} "sample_id" - id for the tumour sample 
+                    (5) {Number} "VAF" - variant allele frequency of the mutation in the corresponding sample
+                    (6) {String} (Optional) "gene_name" - name of the affected gene (can be "" if none affected).
+                    (7) {String} (Optional) "effect" - effect of the mutation 
                                                        (e.g. non-synonymous, upstream, etc.)
-                    (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).}
+                    (8) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).}
 
 \item{gender}{{String} Gender of the patient (M/F).}
 

@@ -703,7 +703,6 @@ function _getCroppedCoordinate(crop_info, original_coords, top_l) {
 */
 function _getTreeInfo(curVizObj) {
     var userConfig = curVizObj.userConfig,
-        rootName = userConfig.tree_root,
         cur_edges = userConfig.tree_edges,
         phantomRoot = curVizObj.generalConfig.phantomRoot; // root so we have a lead-in link to the real root
 
@@ -719,6 +718,20 @@ function _getTreeInfo(curVizObj) {
             "target": cur_edges[i].target
         })
     }
+
+    // find tree root
+    var cur_source = curVizObj.data.treeEdges[0].source;
+    var source_as_target = // edge where the current source is the target
+        _.findWhere(curVizObj.data.treeEdges, {"target": cur_source}); 
+    while (source_as_target) { // iterate as long as there are edges with the current source as the target
+        console.log("cur_source = " + cur_source);
+        cur_source = source_as_target.source;
+        source_as_target = _.findWhere(curVizObj.data.treeEdges, {"target": cur_source});
+    }
+    var rootName = cur_source;
+    console.log("rootName = " + rootName);
+
+    // add the phantomRoot to the tree edges array
     curVizObj.data.treeEdges.push({
         "source": phantomRoot,
         "target": rootName
