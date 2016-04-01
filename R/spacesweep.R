@@ -264,6 +264,7 @@ spacesweep <- function(clonal_prev,
   }
   else {
     prevs_split_small <- "NA"
+    mutation_info <- "NA"
   }
 
   # NODE COLOURS

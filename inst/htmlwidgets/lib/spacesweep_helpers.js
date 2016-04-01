@@ -736,7 +736,6 @@ function _getTreeInfo(curVizObj) {
 
     // get in-order traversal node order of tree
     curVizObj.data.nodesColourOrder = _phyloTraversal(curVizObj.data.treeStructure, [], 0);
-    console.log(_.pluck(curVizObj.data.nodesColourOrder, "id"));
 
     // get descendants for each node
     curVizObj.data.treeDescendantsArr = {};
