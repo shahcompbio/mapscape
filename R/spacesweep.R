@@ -43,15 +43,12 @@
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "clone_id" - clone id
-#'                       (4) {String} (Optional) "gene_name" - name of the affected gene (can be "" if none affected).
-#'                       (5) {String} (Optional) "effect" - effect of the mutation 
+#'                       (4) {String} "sample_id" - id for the tumour sample 
+#'                       (5) {Number} "VAF" - variant allele frequency of the mutation in the corresponding sample
+#'                       (6) {String} (Optional) "gene_name" - name of the affected gene (can be "" if none affected).
+#'                       (7) {String} (Optional) "effect" - effect of the mutation 
 #'                                                          (e.g. non-synonymous, upstream, etc.)
-#'                       (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
-#' @param mutation_prevalences {Data Frame} (Optional) Mutation prevalences for each tumour sample in a patient.
-#'   Format: columns are (1) {String} "chrom" - chromosome number
-#'                       (2) {Number} "coord" - coordinate of mutation on chromosome
-#'                       (3) {String} "sample_id" - id for the tumour sample
-#'                       (4) {Number} "prev" - prevalence of the mutation.
+#'                       (8) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
 #' @param gender {String} Gender of the patient (M/F). 
 #' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
@@ -70,7 +67,6 @@ spacesweep <- function(clonal_prev,
                       sample_locations,
                       clone_colours = "NA",
                       mutations = "NA",
-                      mutation_prevalences = "NA",
                       gender,
                       sample_ids = "NA",
                       n_cells = 100,
@@ -201,15 +197,19 @@ spacesweep <- function(clonal_prev,
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutations)) ||
         !("coord" %in% colnames(mutations)) ||
-        !("clone_id" %in% colnames(mutations))) {
+        !("clone_id" %in% colnames(mutations)) ||
+        !("sample_id" %in% colnames(mutations)) ||
+        !("VAF" %in% colnames(mutations))) {
       stop(paste("Mutations data frame must have the following column names: ", 
-          "\"chrom\", \"coord\", \"clone_id\".", sep=""))
+          "\"chrom\", \"coord\", \"clone_id\", \"sample_id\", \"VAF\"..", sep=""))
     }
 
     # ensure data is of the correct type
     mutations$chrom <- toupper(as.character(mutations$chrom)) # upper case X & Y
     mutations$coord <- as.character(mutations$coord)
     mutations$clone_id <- as.character(mutations$clone_id)
+    mutations$sample_id <- as.character(mutations$sample_id)
+    mutations$VAF <- as.numeric(as.character(mutations$VAF))
 
     # check for optional info, and ensure data of correct type
     if ("gene_name" %in% colnames(mutations)) {
@@ -237,40 +237,13 @@ spacesweep <- function(clonal_prev,
 
     # keep only those mutations whose clone ids are present in the phylogeny
     mutations <- mutations[which(mutations$clone_id %in% clones_in_phylo),]
-  }
 
-  # MUTATION PREVALENCES DATA
 
-  if (is.data.frame(mutation_prevalences)) {
+    # MUTATION PREVALENCES DATA
+
+    mutation_prevalences <- mutations
+
     print("[Progress] Processing mutation prevalences data...")
-
-    # if mutations data is not present, but mutation prevalences data is, throw error
-    if (!is.data.frame(mutations)) {
-      stop(paste("'mutation_prevalences' data frame must be accompanied by 'mutations' data frame - ", 
-        "only 'mutation_prevalences' data frame has been provided.", sep=""))
-    }
-
-    # ensure column names are correct
-    if (!("chrom" %in% colnames(mutation_prevalences)) ||
-        !("coord" %in% colnames(mutation_prevalences)) ||
-        !("sample_id" %in% colnames(mutation_prevalences)) ||
-        !("prev" %in% colnames(mutation_prevalences))) {
-      stop(paste("Mutation prevalences data frame must have the following column names: ", 
-          "\"chrom\", \"coord\", \"sample_id\", \"prev\".", sep=""))
-    }
-
-    # ensure data is of the correct type
-    mutation_prevalences$chrom <- toupper(as.character(mutation_prevalences$chrom)) # upper case X & Y
-    mutation_prevalences$coord <- as.character(mutation_prevalences$coord)
-    mutation_prevalences$sample_id <- as.character(mutation_prevalences$sample_id)
-    mutation_prevalences$prev <- as.numeric(as.character(mutation_prevalences$prev))
-
-    # check X & Y chromosomes are labelled "X" and "Y", not "23", "24"
-    num_23 <- mutation_prevalences[which(mutation_prevalences$chrom == "23"),]
-    if (nrow(num_23) > 0) {
-      stop(paste("Chromosome numbered \"23\" was detected in mutation prevalences data frame - X and Y chromosomes ",
-        "must be labelled \"X\" and \"Y\".", sep=""))
-    }
 
     # keep only those mutations whose clone ids are present in the phylogeny
     mutation_prevalences <- mutation_prevalences[which(mutation_prevalences$clone_id %in% clones_in_phylo),]
@@ -281,8 +254,13 @@ spacesweep <- function(clonal_prev,
 
     # reduce the size of the data frame in each list
     prevs_split_small <- lapply(prevs_split, function(prevs) {
-      return(prevs[,c("sample_id", "prev")])
+      return(prevs[,c("sample_id", "VAF")])
     })
+
+
+    # MUTATION INFO 
+    mutation_info <- unique(mutations[,c("chrom","coord","clone_id")])
+
   }
   else {
     prevs_split_small <- "NA"
@@ -350,7 +328,7 @@ spacesweep <- function(clonal_prev,
     sample_locations = jsonlite::toJSON(sample_locations),
     location_coordinates_provided = location_coordinates_provided,
     clone_cols = jsonlite::toJSON(clone_colours),
-    mutations = jsonlite::toJSON(mutations),
+    mutations = jsonlite::toJSON(mutation_info),
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
     gender = gender,
     sample_ids = sample_ids,

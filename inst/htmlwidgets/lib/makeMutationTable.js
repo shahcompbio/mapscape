@@ -101,8 +101,8 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
                             var threshold = 0.01;
 
                             // filter mutations (get rid of those < threshold)
-                            var cur_prevs_filtered = _.filter(cur_prevs, function(prev) { 
-                            	return prev.prev >= threshold; 
+                            var cur_prevs_filtered = _.filter(cur_prevs, function(VAF) { 
+                            	return VAF.VAF >= threshold; 
                             });
 
                             d3.select("#" + view_id).select(".viewSVG")
@@ -139,7 +139,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
                             	.attr("font-family", "sans-serif")
                             	.attr("font-size", 10) 
                             	.text(function(d) { 
-                            		return (Math.round(d.prev*100)/100).toFixed(2); 
+                            		return (Math.round(d.VAF*100)/100).toFixed(2); 
                             	});
                             
                         }
