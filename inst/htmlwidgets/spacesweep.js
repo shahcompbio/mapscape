@@ -584,7 +584,8 @@ HTMLWidgets.widget({
                 .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
                 .attr("cy", dim.legend_image_top_l.y + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_height)
                 .attr("r", (curVizObj.view.crop_info.crop_width_prop/2) * dim.legend_image_width)
-                .attr("stroke", dim.neutralGrey)
+                .attr("stroke-width", "2px")
+                .attr("stroke", dim.anatomicLineColour)
                 .attr("fill", "none");
 
             // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
