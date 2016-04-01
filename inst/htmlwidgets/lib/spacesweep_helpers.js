@@ -2014,12 +2014,14 @@ function _reformatMutations(curVizObj) {
         var cur_mut = {
             "chrom": mut.chrom,
             "coord": mut.coord,
-            "gene_name": mut.gene_name,
             "empty": "", // add an empty string for an empty column (clone column) that will contain an SVG
             "clone_id": mut.clone_id,
             "link_id": link_id,
             "affected_samples": affected_samples,
             "sample_locations": sample_locations
+        }
+        if (mut.hasOwnProperty("gene_name")) {
+            cur_mut["gene_name"] = mut.gene_name;
         }
         if (mut.hasOwnProperty("effect")) {
             cur_mut["effect"] = mut.effect;

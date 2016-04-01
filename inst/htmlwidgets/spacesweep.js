@@ -178,15 +178,19 @@ HTMLWidgets.widget({
                 dim.mutationColumns = [
                                 { "data": "chrom", "title": "Chromosome" },
                                 { "data": "coord", "title": "Coordinate" },
-                                { "data": "gene_name", "title": "Gene Name" },
                                 { "data": "empty", "title": "Clone", "bSortable": false }
                             ];
+                if (curVizObj.userConfig.mutations[0].hasOwnProperty("gene_name")) {
+                    dim.mutationColumns.push({ "data": "gene_name", "title": "Gene Name" });
+                }
                 if (curVizObj.userConfig.mutations[0].hasOwnProperty("effect")) {
                     dim.mutationColumns.push({ "data": "effect", "title": "Effect" });
                 }
                 if (curVizObj.userConfig.mutations[0].hasOwnProperty("impact")) {
                     dim.mutationColumns.push({ "data": "impact", "title": "Impact" });
                 }
+
+                
             }
 
             console.log("curVizObj");

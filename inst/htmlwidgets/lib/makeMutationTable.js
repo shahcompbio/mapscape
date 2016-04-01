@@ -169,9 +169,13 @@ function _addCloneSVGsToTable(curVizObj, clone_ids) {
 	// remove any previous clone SVGs
 	d3.select("#" + curVizObj.view_id).selectAll(".svgCloneCircle").remove();
 
+	// get clone column number
+	var mut_columns = _.pluck(curVizObj.generalConfig.mutationColumns, "data");
+	var clone_column_no = mut_columns.indexOf("empty") + 1;
+
 	// add clone SVGs
 	var rows = d3.select("#" + curVizObj.view_id + "_mutationTable").selectAll("tr");
-	var svgColumn = rows.selectAll("td:nth-child(4)")
+	var svgColumn = rows.selectAll("td:nth-child(" + clone_column_no + ")")
 		.append("div")
 		.attr("id", "svgCloneCircleDIV")
 		.style("height","100%")

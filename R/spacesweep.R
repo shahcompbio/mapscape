@@ -43,15 +43,15 @@
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "clone_id" - clone id
-#'                       (4) {String} "gene_name" - name of the affected gene (can be "" if none affected).
+#'                       (4) {String} (Optional) "gene_name" - name of the affected gene (can be "" if none affected).
+#'                       (5) {String} (Optional) "effect" - effect of the mutation 
+#'                                                          (e.g. non-synonymous, upstream, etc.)
+#'                       (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
 #' @param mutation_prevalences {Data Frame} (Optional) Mutation prevalences for each tumour sample in a patient.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "sample_id" - id for the tumour sample
-#'                       (4) {Number} "prev" - prevalence of the mutation
-#'                       (5) {String} (Optional) "effect" - effect of the mutation 
-#'                                                          (e.g. non-synonymous, upstream, etc.)
-#'                       (5) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
+#'                       (4) {Number} "prev" - prevalence of the mutation.
 #' @param gender {String} Gender of the patient (M/F). 
 #' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
@@ -106,6 +106,24 @@ spacesweep <- function(clonal_prev,
   if (missing(sample_locations)) {
     stop("The locations of the tumour samples must be provided (parameter \"sample_locations\").")
   }
+
+  # TREE EDGES DATA
+
+  print("[Progress] Processing tree edges data...")
+
+  # ensure column names are correct
+  if (!("source" %in% colnames(tree_edges)) ||
+      !("target" %in% colnames(tree_edges))) {
+    stop(paste("Tree edges data frame must have the following column names: ", 
+        "\"source\", \"target\".", sep=""))
+  }
+
+  # ensure data is of the correct type
+  tree_edges$source <- as.character(tree_edges$source)
+  tree_edges$target <- as.character(tree_edges$target)
+
+  # get list of clones in the phylogeny
+  clones_in_phylo <- unique(c(tree_edges$source, tree_edges$target))
 
   # GENDER
 
@@ -183,17 +201,26 @@ spacesweep <- function(clonal_prev,
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutations)) ||
         !("coord" %in% colnames(mutations)) ||
-        !("clone_id" %in% colnames(mutations)) ||
-        !("gene_name" %in% colnames(mutations))) {
+        !("clone_id" %in% colnames(mutations))) {
       stop(paste("Mutations data frame must have the following column names: ", 
-          "\"chrom\", \"coord\", \"clone_id\", \"gene_name\".", sep=""))
+          "\"chrom\", \"coord\", \"clone_id\".", sep=""))
     }
 
     # ensure data is of the correct type
     mutations$chrom <- toupper(as.character(mutations$chrom)) # upper case X & Y
     mutations$coord <- as.character(mutations$coord)
     mutations$clone_id <- as.character(mutations$clone_id)
-    mutations$gene_name <- as.character(mutations$gene_name)
+
+    # check for optional info, and ensure data of correct type
+    if ("gene_name" %in% colnames(mutations)) {
+      mutations$gene_name <- as.character(mutations$gene_name)
+    }
+    if ("effect" %in% colnames(mutations)) {
+      mutations$effect <- as.character(mutations$effect)
+    }
+    if ("impact" %in% colnames(mutations)) {
+      mutations$impact <- as.character(mutations$impact)
+    }
 
     # create a location column, combining the chromosome and the coordinate
     mutations$location <- apply(mutations[, c("chrom","coord")], 1 , paste, collapse = ":")
@@ -207,6 +234,9 @@ spacesweep <- function(clonal_prev,
       stop(paste("Chromosome numbered \"23\" was detected in mutations data frame - X and Y chromosomes ",
         "must be labelled \"X\" and \"Y\".", sep=""))
     }
+
+    # keep only those mutations whose clone ids are present in the phylogeny
+    mutations <- mutations[which(mutations$clone_id %in% clones_in_phylo),]
   }
 
   # MUTATION PREVALENCES DATA
@@ -242,6 +272,9 @@ spacesweep <- function(clonal_prev,
         "must be labelled \"X\" and \"Y\".", sep=""))
     }
 
+    # keep only those mutations whose clone ids are present in the phylogeny
+    mutation_prevalences <- mutation_prevalences[which(mutation_prevalences$clone_id %in% clones_in_phylo),]
+
     # compress results
     mutation_prevalences$location <- apply(mutation_prevalences[, c("chrom","coord")], 1 , paste, collapse = ":")
     prevs_split <- split(mutation_prevalences, f = mutation_prevalences$location)
@@ -254,21 +287,6 @@ spacesweep <- function(clonal_prev,
   else {
     prevs_split_small <- "NA"
   }
-
-  # TREE EDGES DATA
-
-  print("[Progress] Processing tree edges data...")
-
-  # ensure column names are correct
-  if (!("source" %in% colnames(tree_edges)) ||
-      !("target" %in% colnames(tree_edges))) {
-    stop(paste("Tree edges data frame must have the following column names: ", 
-        "\"source\", \"target\".", sep=""))
-  }
-
-  # ensure data is of the correct type
-  tree_edges$source <- as.character(tree_edges$source)
-  tree_edges$target <- as.character(tree_edges$target)
 
   # NODE COLOURS
   if (is.data.frame(clone_colours)) {
