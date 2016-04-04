@@ -62,30 +62,6 @@ function _checkForSelections(curVizObj) {
     return false;
 }
 
-/* background click activate, with loading icon before and after
-* @param {Object} curVizObj -- vizObj for the current view
-*/
-function _backgroundClickAndLoading(curVizObj) {
-    // if the process that has just been cancelled takes a long time
-    if (curVizObj.generalConfig.longLoadTime) {
-        // show loading icon
-        $('#loading').show();
-    }
-
-    // create deferred object
-    curVizObj.bgClickDeferred = new $.Deferred();
-
-    // reset view
-    setTimeout(function() { // timeout so loading icon shows first
-        _backgroundClick(curVizObj);
-    }, 50);
-
-    // turn off loading icon
-    $.when(curVizObj.bgClickDeferred.promise()).then(function() {
-        $('#loading').hide();
-    })
-}
-
 /* background click function (turns off selections, resets view)
 * @param {Object} curVizObj -- vizObj for the current view
 */
