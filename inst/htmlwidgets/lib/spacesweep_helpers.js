@@ -1942,15 +1942,32 @@ function _plotSite(curVizObj, sample, drag) {
         })
         .on('mouseover', function(d) {
             d.sample = sample;
-            if (!dim.selectOn && !dim.dragOn && !dim.mutationSelectOn) {
+            // if there are no selections
+            if (_checkForSelections(curVizObj)) {
+                var view_id = curVizObj.view_id;
+
                 // plot clonal prevalence text
                 _plotClonalPrevText(curVizObj, d.sample, d.id);
+
+                // shade this oncoMix
+                d3.select("#" + view_id).selectAll(".voronoiCell.sample_" + sample)
+                    .attr("fill-opacity", dim.shadeAlpha)
+                    .attr("stroke-opacity", dim.shadeAlpha);
+
+                // highlight oncoMix cells with this genotype
+                d3.select("#" + view_id)
+                    .selectAll(".voronoiCell.clone_" + d.id + ".sample_" + sample)
+                    .attr("fill-opacity", 1)
+                    .attr("stroke-opacity", 1);
             }
         })
         .on('mouseout', function(d) {
             if (!dim.selectOn && !dim.dragOn && !dim.mutationSelectOn) {
                 // remove clonal prevalence text
                 d3.select("#" + view_id).select(".clonalPrev").remove();
+
+                // reset view
+                _resetView(curVizObj);
             }
         });
 
