@@ -1224,47 +1224,6 @@ function _getVoronoiVertices(curVizObj, cx, cy, seed) {
     return vertices;
 }
 
-/* function to add colour (genotype) information to each vertex for this anatomic sample
-* @param {Object} curVizObj -- vizObj for the current view 
-* @param {String} sample -- current anatomic sample of interest
-* @param {Array} vertices -- array of voronoi vertices objects (properties: x, y, real_cell) for this sample 
-*/
-function _addGtypeInfoToVertices(curVizObj, sample, vertices) {
-
-    var gtypes = curVizObj.data["sample_genotypes"][sample], // genotypes to plot for this sample
-        cumulative_cp = curVizObj.data.cp_data[sample][gtypes[0]].adj_cp, // cumulative CP thus far
-        gtype_i = 0, // index of the current genotype to show
-        cur_gtype, // current genotype
-        n_real_cells = 1; // # real cells seen
-
-    // for each vertex    
-    vertices.forEach(function(v, i) {
-
-        cur_gtype = gtypes[gtype_i];
-
-        // if this is a real cell
-        if (v.real_cell) {
-
-            // if the current genotype has been allocated enough cells, advance one genotype
-            if (n_real_cells/curVizObj.userConfig.n_cells > Math.round(cumulative_cp * 100)/100) {
-                cur_gtype = gtypes[++gtype_i]; // update current genotype
-                cumulative_cp += curVizObj.data.cp_data[sample][cur_gtype].adj_cp; // update cumulative CP
-            }
-
-            // note colour for this vertex, based on appropriate genotype
-            v.col = curVizObj.view.colour_assignment[cur_gtype];
-
-            // note the genotype for this vertex
-            v.gtype = cur_gtype;
-
-            // we've seen another real cell
-            n_real_cells++;
-        }
-    })
-
-    return vertices;
-}
-
 // LAYOUT FUNCTIONS
 
 /* function to get coordinates for a point evenly spaced around circle perimeter
@@ -1301,13 +1260,14 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
     return {x: x, y: y};
 }
 
-/* function to order vertices such that genotypes are clustered
+/* function to order oncoMix vertices such that genotypes are clustered, 
+* & add colour (genotype) information to each vertex for this anatomic sample
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {Array} vertices -- array of voronoi vertices objects (properties: x, y, real_cell) for this sample 
 * @param {String} sample -- current anatomic sample of interest
 * @param {Object} oncoMix_centre -- centre of oncoMix
 */
-function _orderVertices(curVizObj, vertices, sample, oncoMix_centre) {
+function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
 
     var gtypes = curVizObj.data["sample_genotypes"][sample], // genotypes to plot for this sample
         cumulative_cp = curVizObj.data.cp_data[sample][gtypes[0]].adj_cp, // cumulative CP thus far
@@ -1365,6 +1325,13 @@ function _orderVertices(curVizObj, vertices, sample, oncoMix_centre) {
         // for each cell in this cluster, assign the cluster to a vertex & place vertex in assigned array
         for (var i = 0; i < gtypes_and_ncells[cur_gtype]; i++) {
             if (unassigned_real_vertices.length > 0) { // we haven't exceeded our cell count
+
+                // note colour for this vertex, based on appropriate genotype
+                unassigned_real_vertices[0].col = curVizObj.view.colour_assignment[cur_gtype];
+
+                // note the genotype for this vertex
+                unassigned_real_vertices[0].gtype = cur_gtype;
+
                 assigned_real_vertices.push(unassigned_real_vertices.shift());
             }
         }
@@ -1372,6 +1339,8 @@ function _orderVertices(curVizObj, vertices, sample, oncoMix_centre) {
 
     // append fake cells onto the end of the real cells
     var all_vertices = assigned_real_vertices.concat(fake_vertices);
+    console.log("all_vertices");
+    console.log(all_vertices);
     return all_vertices;
 
 }
@@ -1417,15 +1386,13 @@ function _getSamplePositioning(curVizObj) {
                 sample_idx + 1
             );
 
-        // order vertices
-        vertices_ordered = _orderVertices(curVizObj, vertices, sample_id, cur_sample_obj["voronoi"]["centre"]);
+        // order vertices, add colour (genotype) information to each vertex
+        vertices_ordered = _colourOncoMix(curVizObj, vertices, sample_id, cur_sample_obj["voronoi"]["centre"]);
+        cur_sample_obj["voronoi"]["vertices"] = vertices_ordered;
 
         // note real vertices
         cur_sample_obj["voronoi"]["real_vertices"] = 
             $.extend([], _.filter(vertices_ordered, function(vertex) { return vertex.real_cell; }));
-
-        // add colour (genotype) information to each vertex
-        cur_sample_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(curVizObj, sample_id, vertices_ordered);
 
         // 2D array of x- and y- positions for vertices
         cur_sample_obj["voronoi"]["vertex_coords"] = vertices_ordered.map(function(vertex) {
