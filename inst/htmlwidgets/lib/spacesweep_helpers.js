@@ -724,12 +724,10 @@ function _getTreeInfo(curVizObj) {
     var source_as_target = // edge where the current source is the target
         _.findWhere(curVizObj.data.treeEdges, {"target": cur_source}); 
     while (source_as_target) { // iterate as long as there are edges with the current source as the target
-        console.log("cur_source = " + cur_source);
         cur_source = source_as_target.source;
         source_as_target = _.findWhere(curVizObj.data.treeEdges, {"target": cur_source});
     }
     var rootName = cur_source;
-    console.log("rootName = " + rootName);
 
     // add the phantomRoot to the tree edges array
     curVizObj.data.treeEdges.push({
@@ -1200,17 +1198,21 @@ function _polygon(d) {
 * @param {Object} curVizObj -- vizObj for the current view 
 * @param {Number} cx -- x-coordinate at centre of oncoMix
 * @param {Number} cy -- y-coordinate at centre of oncoMix
+* @param {Number} seed -- seed for random generator TODO !!!!!!!!!!!!!!!!!!!! works when seed is set to 20, but not when it's the sample index
 */
-function _getVoronoiVertices(curVizObj, cx, cy) {
+function _getVoronoiVertices(curVizObj, cx, cy, seed) {
     var dim = curVizObj.generalConfig;
+
+    // set seed in curVizObj
+    curVizObj.seed = seed;
 
     // voronoi vertices 
     var circleRadius = dim.oncoMixWidth*1/3;
     var n_real_cells = 1;
     var vertices = [];
     while (n_real_cells <= curVizObj.userConfig.n_cells) {
-        var x = (cx - dim.oncoMixWidth/2) + (Math.random() * dim.oncoMixWidth);
-        var y = (cy - dim.oncoMixWidth/2) + (Math.random() * dim.oncoMixWidth);
+        var x = (cx - dim.oncoMixWidth/2) + (_random(curVizObj) * dim.oncoMixWidth); 
+        var y = (cy - dim.oncoMixWidth/2) + (_random(curVizObj) * dim.oncoMixWidth);
         var dist = Math.sqrt(Math.pow(x-cx, 2) + Math.pow(y-cy, 2));
         var inside_circle = (dist < circleRadius);
         if (inside_circle) {
@@ -1355,8 +1357,13 @@ function _getSamplePositioning(curVizObj) {
         var vertices = _getVoronoiVertices(
                 curVizObj, 
                 cur_sample_obj["voronoi"]["centre"].x,
-                cur_sample_obj["voronoi"]["centre"].y
+                cur_sample_obj["voronoi"]["centre"].y,
+                sample_idx + 1
             );
+
+        // note real vertices
+        cur_sample_obj["voronoi"]["real_vertices"] = 
+            $.extend([], _.filter(vertices, function(vertex) { return vertex.real_cell; }));
 
         // add colour (genotype) information to each vertex
         cur_sample_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(curVizObj, sample_id, vertices);
@@ -1949,6 +1956,7 @@ function _plotSite(curVizObj, sample, drag) {
 
 /* initial ordering of samples based on their anatomic locations 
 * (angle with positive x-axis, formed by the line segment between the sample position on the image & view centre)
+* @param {Object} curVizObj -- vizObj for the current view
 */
 function _initialSiteOrdering(curVizObj) {
     var samples = [], // samples and their y-coordinates
@@ -1998,6 +2006,7 @@ function _initialSiteOrdering(curVizObj) {
 // MUTATION FUNCTIONS
 
 /* function to get the mutations into a better format
+* @param {Object} curVizObj -- vizObj for the current view
 */
 function _reformatMutations(curVizObj) {
     var original_muts = curVizObj.userConfig.mutations, // muts from user data
@@ -2165,3 +2174,39 @@ function _fromLineGetPoint(d3_line_object, dist, start_point) {
     return coords;
 }
 
+function RNG(seed) {
+  // LCG using GCC's constants
+  this.m = 0x80000000; // 2**31;
+  this.a = 1103515245;
+  this.c = 12345;
+
+  this.state = seed ? seed : Math.floor(Math.random() * (this.m-1));
+}
+RNG.prototype.nextInt = function() {
+  this.state = (this.a * this.state + this.c) % this.m;
+  return this.state;
+}
+RNG.prototype.nextFloat = function() {
+  // returns in range [0,1]
+  return this.nextInt() / (this.m - 1);
+}
+RNG.prototype.nextRange = function(start, end) {
+  // returns in range [start, end): including start, excluding end
+  // can't modulu nextInt because of weak randomness in lower bits
+  var rangeSize = end - start;
+  var randomUnder1 = this.nextInt() / this.m;
+  return start + Math.floor(randomUnder1 * rangeSize);
+}
+RNG.prototype.choice = function(array) {
+  return array[this.nextRange(0, array.length)];
+}
+
+
+/* random number generator [0,1], 
+* from http://stackoverflow.com/questions/521295/javascript-random-seeds
+* @param {Object} curVizObj -- vizObj for the current view
+*/
+function _random(curVizObj) {
+    var x = Math.sin(curVizObj.seed++) * 10000;
+    return x - Math.floor(x);
+}
