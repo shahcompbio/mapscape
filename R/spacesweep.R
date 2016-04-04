@@ -242,6 +242,11 @@ spacesweep <- function(clonal_prev,
 
     # keep only those mutations whose clone ids are present in the phylogeny
     mutation_prevalences <- mutation_prevalences[which(mutation_prevalences$clone_id %in% clones_in_phylo),]
+    if (nrow(mutation_prevalences) > 10000) {
+      print(paste("[WARNING] Number of rows in mutations data exceeds 10,000. ",
+        "Resultantly, visualization may be slow. ",
+        "It is recommended to filter the data to a smaller set of mutations.", sep=""))
+    }
 
     # compress results
     prevs_split <- split(mutation_prevalences, f = mutation_prevalences$location)
