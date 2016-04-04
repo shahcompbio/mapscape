@@ -1305,8 +1305,9 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
 * @param {Object} curVizObj -- vizObj for the current view
 * @param {Array} vertices -- array of voronoi vertices objects (properties: x, y, real_cell) for this sample 
 * @param {String} sample -- current anatomic sample of interest
+* @param {Object} oncoMix_centre -- centre of oncoMix
 */
-function _orderVertices(curVizObj, vertices, sample) {
+function _orderVertices(curVizObj, vertices, sample, oncoMix_centre) {
 
     var gtypes = curVizObj.data["sample_genotypes"][sample], // genotypes to plot for this sample
         cumulative_cp = curVizObj.data.cp_data[sample][gtypes[0]].adj_cp, // cumulative CP thus far
@@ -1330,15 +1331,23 @@ function _orderVertices(curVizObj, vertices, sample) {
     // so smallest groups are placed first, and guaranteed a spot, despite rounding function
     gtypes.sort(function(a, b) {return gtypes_and_ncells[a] - gtypes_and_ncells[b]; });
 
-    // choose cluster centres (initially random)
-    var centres = real_vertices.slice(0, gtypes.length);
-    gtypes.forEach(function(gtype, gtype_i) {
-        centres[gtype_i]["clust_gtype"] = gtype;
-    })
-
     // copy real vertices (vertices will be removed as they're used)
     var unassigned_real_vertices = $.extend([], real_vertices); 
     var assigned_real_vertices = []; // to fill with vertices that have a cluster assignment
+
+    // order real vertices by distance to centre of oncoMix (farthest to closest)
+    unassigned_real_vertices.forEach(function(vertex) {
+        vertex["dist_to_oncoMix_centre"] = 
+            Math.sqrt(Math.pow(vertex.x - oncoMix_centre.x, 2) + Math.pow(vertex.y - oncoMix_centre.y, 2));
+    });
+    _sortByKey(unassigned_real_vertices, "dist_to_oncoMix_centre");
+    unassigned_real_vertices.reverse();
+
+    // choose cluster centres (random outskirts of oncoMix)
+    var centres = unassigned_real_vertices.slice(0, gtypes.length);
+    gtypes.forEach(function(gtype, gtype_i) {
+        centres[gtype_i]["clust_gtype"] = gtype;
+    })
 
     // order coordinates by distance for each cluster centre, and assign
     centres.forEach(function(centre) {
@@ -1346,11 +1355,12 @@ function _orderVertices(curVizObj, vertices, sample) {
 
         // get distances to cluster centre
         unassigned_real_vertices.forEach(function(vertex) {
-            vertex["dist"] = Math.sqrt(Math.pow(vertex.x - centre.x, 2) + Math.pow(vertex.y - centre.y, 2));
+            vertex["dist_to_clust_centre"] = 
+                Math.sqrt(Math.pow(vertex.x - centre.x, 2) + Math.pow(vertex.y - centre.y, 2));
         });
 
         // order vertices by distance to cluster centre
-        _sortByKey(unassigned_real_vertices, "dist");
+        _sortByKey(unassigned_real_vertices, "dist_to_clust_centre");
 
         // for each cell in this cluster, assign the cluster to a vertex & place vertex in assigned array
         for (var i = 0; i < gtypes_and_ncells[cur_gtype]; i++) {
@@ -1408,7 +1418,7 @@ function _getSamplePositioning(curVizObj) {
             );
 
         // order vertices
-        vertices_ordered = _orderVertices(curVizObj, vertices, sample_id);
+        vertices_ordered = _orderVertices(curVizObj, vertices, sample_id, cur_sample_obj["voronoi"]["centre"]);
 
         // note real vertices
         cur_sample_obj["voronoi"]["real_vertices"] = 
