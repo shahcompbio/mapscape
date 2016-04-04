@@ -12,7 +12,7 @@ HTMLWidgets.widget({
             widgetMargin: 10, // marging between widgets
             rootColour: '#717171',
             pureColour: '#D3D2D2',
-            anatomicLineColour: '#2D2D2D',
+            anatomicLineColour: '#444444',
             legendWidth: 130,
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
