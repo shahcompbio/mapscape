@@ -1221,24 +1221,6 @@ function _getVoronoiVertices(curVizObj, cx, cy, seed) {
         vertices.push({x: x, y: y, real_cell: inside_circle});
     }
 
-    // sort vertices
-    vertices.sort(function(a, b) { 
-        if ((a.x > b.x) && (a.y > b.y)) {
-            return 1;
-        }
-        else {
-            return -1;
-        };
-    });
-    vertices.sort(function(a, b) { 
-        if ((a.x > b.x) && (a.y < b.y)) {
-            return 1;
-        }
-        else {
-            return -1;
-        };
-    });
-
     return vertices;
 }
 
@@ -1319,6 +1301,70 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
     return {x: x, y: y};
 }
 
+/* function to order vertices such that genotypes are clustered
+* @param {Object} curVizObj -- vizObj for the current view
+* @param {Array} vertices -- array of voronoi vertices objects (properties: x, y, real_cell) for this sample 
+* @param {String} sample -- current anatomic sample of interest
+*/
+function _orderVertices(curVizObj, vertices, sample) {
+
+    var gtypes = curVizObj.data["sample_genotypes"][sample], // genotypes to plot for this sample
+        cumulative_cp = curVizObj.data.cp_data[sample][gtypes[0]].adj_cp, // cumulative CP thus far
+        gtype_i = 0, // index of the current genotype to show
+        n_real_cells = 1; // # real cells seen
+
+    // separate out real cells and fake cells
+    var real_vertices = $.extend([], _.filter(vertices, function(v) { return v.real_cell; }));
+    var fake_vertices = $.extend([], _.filter(vertices, function(v) { return !v.real_cell; }));
+
+    // get genotypes and corresponding number of cells
+    var gtypes_and_ncells = {};
+    var n_cells = 0;
+    gtypes.forEach(function(gtype) {
+        gtypes_and_ncells[gtype] = 
+            Math.round(curVizObj.data.cp_data[sample][gtype].adj_cp * curVizObj.userConfig.n_cells);
+        n_cells += (curVizObj.data.cp_data[sample][gtype].adj_cp * curVizObj.userConfig.n_cells);
+    })
+
+    // order genotypes from smallest cellular prevalence to largest cellular prevalence
+    // so smallest groups are placed first, and guaranteed a spot, despite rounding function
+    gtypes.sort(function(a, b) {return gtypes_and_ncells[a] - gtypes_and_ncells[b]; });
+
+    // choose cluster centres (initially random)
+    var centres = real_vertices.slice(0, gtypes.length);
+    gtypes.forEach(function(gtype, gtype_i) {
+        centres[gtype_i]["clust_gtype"] = gtype;
+    })
+
+    // copy real vertices (vertices will be removed as they're used)
+    var unassigned_real_vertices = $.extend([], real_vertices); 
+    var assigned_real_vertices = []; // to fill with vertices that have a cluster assignment
+
+    // order coordinates by distance for each cluster centre, and assign
+    centres.forEach(function(centre) {
+        var cur_gtype = centre.clust_gtype;
+
+        // get distances to cluster centre
+        unassigned_real_vertices.forEach(function(vertex) {
+            vertex["dist"] = Math.sqrt(Math.pow(vertex.x - centre.x, 2) + Math.pow(vertex.y - centre.y, 2));
+        });
+
+        // order vertices by distance to cluster centre
+        _sortByKey(unassigned_real_vertices, "dist");
+
+        // for each cell in this cluster, assign the cluster to a vertex & place vertex in assigned array
+        for (var i = 0; i < gtypes_and_ncells[cur_gtype]; i++) {
+            if (unassigned_real_vertices.length > 0) { // we haven't exceeded our cell count
+                assigned_real_vertices.push(unassigned_real_vertices.shift());
+            }
+        }
+    })
+
+    // append fake cells onto the end of the real cells
+    var all_vertices = assigned_real_vertices.concat(fake_vertices);
+    return all_vertices;
+
+}
 
 /* function to get positions of sample tab, dividers, voronoi tesselation centre, tree centre for each sample
 * @param {Object} curVizObj -- vizObj for the current view
@@ -1361,15 +1407,18 @@ function _getSamplePositioning(curVizObj) {
                 sample_idx + 1
             );
 
+        // order vertices
+        vertices_ordered = _orderVertices(curVizObj, vertices, sample_id);
+
         // note real vertices
         cur_sample_obj["voronoi"]["real_vertices"] = 
-            $.extend([], _.filter(vertices, function(vertex) { return vertex.real_cell; }));
+            $.extend([], _.filter(vertices_ordered, function(vertex) { return vertex.real_cell; }));
 
         // add colour (genotype) information to each vertex
-        cur_sample_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(curVizObj, sample_id, vertices);
+        cur_sample_obj["voronoi"]["vertices"] = _addGtypeInfoToVertices(curVizObj, sample_id, vertices_ordered);
 
         // 2D array of x- and y- positions for vertices
-        cur_sample_obj["voronoi"]["vertex_coords"] = vertices.map(function(vertex) {
+        cur_sample_obj["voronoi"]["vertex_coords"] = vertices_ordered.map(function(vertex) {
             return [vertex.x, vertex.y];
         });
 
