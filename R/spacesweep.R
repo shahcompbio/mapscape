@@ -199,13 +199,17 @@ spacesweep <- function(clonal_prev,
     mutations$VAF <- as.numeric(as.character(mutations$VAF))
 
     # check for optional info, and ensure data of correct type
+    extra_columns <- vector()
     if ("gene_name" %in% colnames(mutations)) {
+      extra_columns <- append(extra_columns, "gene_name")
       mutations$gene_name <- as.character(mutations$gene_name)
     }
     if ("effect" %in% colnames(mutations)) {
+      extra_columns <- append(extra_columns, "effect")
       mutations$effect <- as.character(mutations$effect)
     }
     if ("impact" %in% colnames(mutations)) {
+      extra_columns <- append(extra_columns, "impact")
       mutations$impact <- as.character(mutations$impact)
     }
 
@@ -277,8 +281,7 @@ spacesweep <- function(clonal_prev,
 
 
     # MUTATION INFO 
-    mutation_info <- unique(mutations[,c("chrom","coord","clone_id")])
-
+    mutation_info <- unique(mutations[,c("chrom","coord","clone_id",extra_columns)])
   }
   else {
     prevs_split_small <- "NA"
