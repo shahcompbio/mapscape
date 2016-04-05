@@ -1315,8 +1315,6 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
 
     // append fake cells onto the end of the real cells
     var all_vertices = assigned_real_vertices.concat(fake_vertices);
-    console.log("all_vertices");
-    console.log(all_vertices);
     return all_vertices;
 
 }

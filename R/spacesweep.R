@@ -139,6 +139,16 @@ spacesweep <- function(clonal_prev,
   clonal_prev$clone_id <- as.character(clonal_prev$clone_id)
   clonal_prev$clonal_prev <- as.numeric(as.character(clonal_prev$clonal_prev))
 
+  # ensure all clone ids in clonal prevalence data have associated nodes in the tree
+  tree_clone_ids <- unique(unlist(tree_edges))
+  clonal_prev_clone_ids <- unique(clonal_prev$clone_id)
+  clone_ids_not_in_tree_data <- setdiff(clonal_prev_clone_ids, tree_clone_ids) 
+  if (length(clone_ids_not_in_tree_data) > 0) {
+    stop(paste("All clone IDs in the clonal prevalence data must have associated tree nodes. ",
+      "The following clone ID(s) are present in the clonal prevalences data, but not in the tree edges data: ",
+      paste(clone_ids_not_in_tree_data, collapse=", "), ".", sep=""))
+  }
+
   # SAMPLE LOCATIONS DATA
 
   print("[Progress] Processing sample locations data...")
@@ -215,6 +225,33 @@ spacesweep <- function(clonal_prev,
     }
     if ("impact" %in% colnames(mutations)) {
       mutations$impact <- as.character(mutations$impact)
+    }
+
+    # check that all SAMPLES in the mutations data are present in the sample locations & clonal prev data
+    mutations_sample_ids <- unique(mutations$sample_id)
+    sample_locations_sample_ids <- unique(sample_locations$sample_id)
+    clonal_prev_sample_ids <- unique(clonal_prev$sample_id)
+    samples_missing_from_locations_data <- setdiff(mutations_sample_ids, sample_locations_sample_ids)
+    samples_missing_from_clonal_prev_data <- setdiff(mutations_sample_ids, clonal_prev_sample_ids)
+    if (length(samples_missing_from_locations_data) > 0) {
+      stop(paste("The following sample(s) are present in the mutations data but ",
+        "are missing from the sample locations data: ",
+        paste(samples_missing_from_locations_data, collapse=", "), ".", sep=""))
+    }
+    if (length(samples_missing_from_clonal_prev_data) > 0) {
+      stop(paste("The following sample(s) are present in the mutations data but ",
+        "are missing from the clonal prevalence data: ",
+        paste(samples_missing_from_clonal_prev_data, collapse=", "), ".", sep=""))
+    }
+
+    # check that all CLONE IDS in the mutations data are present in the clonal prev data
+    mutations_clone_ids <- unique(mutations$clone_id)
+    clonal_prev_clone_ids <- unique(clonal_prev$clone_id)
+    clone_ids_missing_from_clonal_prev_data <- setdiff(mutations_clone_ids, clonal_prev_clone_ids)
+    if (length(clone_ids_missing_from_clonal_prev_data) > 0) {
+      stop(paste("The following clone ID(s) are present in the mutations data but ",
+        "are missing from the clonal prevalence data: ",
+        paste(clone_ids_missing_from_clonal_prev_data, collapse=", "), ".", sep=""))
     }
 
     # create a location column, combining the chromosome and the coordinate
