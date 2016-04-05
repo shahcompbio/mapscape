@@ -4,9 +4,9 @@
 \alias{spacesweep}
 \title{SpaceSweep}
 \usage{
-spacesweep(clonal_prev, tree_edges, sample_locations, clone_colours = "NA",
-  mutations = "NA", gender, sample_ids = "NA", n_cells = 100,
-  img_ref = "NA", width = 960, height = 960)
+spacesweep(clonal_prev, tree_edges, sample_locations, img_ref,
+  clone_colours = "NA", mutations = "NA", sample_ids = "NA",
+  n_cells = 100, width = 960, height = 960)
 }
 \arguments{
 \item{clonal_prev}{{Data Frame} Clonal prevalence.
@@ -24,6 +24,11 @@ Format: columns are (1) {String} "sample_id" - id for the tumour sample
                     (3) {Number} (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
                     (4) {Number} (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image}
 
+\item{img_ref}{{String} A reference for the custom anatomical image to use, *** in PNG format ***,
+either a URL to an image hosted online 
+or a path to the image in local file system. 
+If unspecified, will use default generic male and female images.}
+
 \item{clone_colours}{{Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 Format: columns are (1) {String} "clone_id" - the clone ids
                     (2) {String} "colour" - the corresponding Hex colour for each clone id.}
@@ -39,17 +44,10 @@ Format: columns are (1) {String} "chrom" - chromosome number
                                                        (e.g. non-synonymous, upstream, etc.)
                     (8) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).}
 
-\item{gender}{{String} Gender of the patient (M/F).}
-
 \item{sample_ids}{{Vector} (Optional) Ids of the samples in the order your wish to display them 
 (clockwise from positive x-axis).}
 
 \item{n_cells}{{Number} (Optional) The number of cells to plot (for voronoi tessellation).}
-
-\item{img_ref}{{String} (Optional) A reference for the custom anatomical image to use, 
-either a URL to an image hosted online 
-or a path to the image in local file system. 
-If unspecified, will use default generic male and female images.}
 }
 \description{
 Generates patient clonal SpaceSweeps.
@@ -57,23 +55,32 @@ Generates patient clonal SpaceSweeps.
 \details{
 Interactive components in main view:
 
-1. reorder samples by grabbing the sample name and dragging it around the circle. \cr
-2. hover over tumour sample of interest to view patient data associated with that sample. \cr
-3. hover over sample tree nodes to view cellular prevalence.
+1. Reorder samples by grabbing the sample name and dragging it radially. \cr
+2. Hover over anatomic location of interest to view patient data associated with that location. \cr
+3. Hover over tree nodes to view cellular prevalence of that clone.
 
 Interactive components in legend:
 
-1. hover over legend tree node to view tumour samples expressing the genotype. \cr
-2. hover over legend tree branch to view tumour samples  expressing all descendant genotypes. \cr
-3. click on legend tree nodes to view (a) updated mutations table showing new mutations at that clone, and (b) tumour samples expressing the new mutations at that clone. \cr
-4. hover over mixture classification to view corresponding tumour sample, and the participating branches in each tumour sample.
+1. Hover over legend tree node to the clonal prevalence at each tumour sample. Any anatomic locations expressing that clone will be highlighted. \cr
+2. Hover over legend tree branch to view tumour samples expressing all descendant clones. \cr
+3. Click on legend tree node(s) to view (a) updated mutations table showing novel mutations at that clone(s), and (b) tumour samples expressing the novel mutations at that clone(s). \cr
+4. Hover over a mixture class (e.g. "pure", "polyphyletic", "monophyletic") to view corresponding tumour samples, and the participating phylogeny in each tumour sample.
 
 Interactive components in mutation table:
 
-1. search for any mutation, coordinate, gene, etc. \cr
-2. click on a row in the table, and the view will update to show the tumour samples with that mutation, and the mutation prevalence in each tumour sample. \cr
-3. order the table by a column (all columns sortable except the Clone column).
+1. Search for any chromosome, coordinate, gene, etc. \cr
+2. Click on a row in the table, and the view will update to show the tumour samples with that mutation, and the variant allele frequency for that mutation in each tumour sample. \cr
+3. Sort the table by a column (all columns sortable except the Clone column).
 
 Note: Click on the view background to exit a selection.
+}
+\examples{
+library("spacesweep")
+clonal_prev <- read.csv(system.file("extdata", "exampleData_clonal_prev.csv", package = "spacesweep"))
+mutations <- read.csv(system.file("extdata", "exampleData_mutations.csv", package = "spacesweep"))
+sample_locations <- read.csv(system.file("extdata", "exampleData_sample_locations.csv", package = "spacesweep"))
+tree_edges <- read.csv(system.file("extdata", "exampleData_tree.csv", package = "spacesweep"))
+img_ref <- system.file("extdata", "exampleData_anatomical_image.png", package = "spacesweep")
+spacesweep(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, img_ref = img_ref)
 }
 
