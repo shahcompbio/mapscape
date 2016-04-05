@@ -38,7 +38,7 @@
 #'                       (2) {String} "location_id" - name of anatomic location for this tumour sample
 #'                       (3) {Number} (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
 #'                       (4) {Number} (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image
-#' @param img_ref {String} A reference for the custom anatomical image to use, 
+#' @param img_ref {String} A reference for the custom anatomical image to use, *** in PNG format ***,
 #'                         either a URL to an image hosted online 
 #'                         or a path to the image in local file system. 
 #'                         If unspecified, will use default generic male and female images.
@@ -94,6 +94,13 @@ spacesweep <- function(clonal_prev,
   }
   if (missing(img_ref)) {
     stop("The anatomical image reference must be provided (parameter \"img_ref\").")
+  }
+
+  # IMAGE 
+
+  # check image is png
+  if (!grepl('.png', img_ref)) {
+    stop("The anatomical image must be in PNG format (must end in \".png\").")
   }
 
   # TREE EDGES DATA

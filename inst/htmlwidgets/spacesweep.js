@@ -98,11 +98,9 @@ HTMLWidgets.widget({
         // get image width & height (in pixels)
         curVizObj.imgDimDeferred = new $.Deferred();
         _getImageDimensions(curVizObj, dim.image_ref);
-        console.log('after get image dimensions');
 
         // when image dimensions acquired...
         $.when(curVizObj.imgDimDeferred.promise()).then(function() {
-            console.log("dimensions acquired");
 
             // get legend image dimensions
             dim.legend_image_width = dim.legend_image_plot_diameter;
@@ -122,7 +120,7 @@ HTMLWidgets.widget({
 
 
             // GET CONTENT
-            console.log("getting content");
+
             // extract all info from tree about nodes, edges, ancestors, descendants
             _getTreeInfo(curVizObj);
 
