@@ -435,91 +435,19 @@ function _getImageDimensions(curVizObj, url){
     img.src = url;
 }
 
-
-/* function to return database of anatomic locations on the anatomic diagram
-* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
-*/
-function _getSiteLocationDB(curVizObj) {
-    var w = curVizObj.view.image_width, // pixel width of image
-        h = curVizObj.view.image_height; // pixel height of image
-
-    // female anatomy
-    if (curVizObj.userConfig.gender == "F") {
-        return [
-            {location_id: "Om", x: 0.503*w, y: 0.40*h}, 
-            {location_id: "RFT", x: 0.482*w, y: 0.435*h},
-            {location_id: "LFT", x: 0.524*w, y: 0.435*h},
-            {location_id: "ROv", x: 0.483*w, y: 0.450*h},
-            {location_id: "LOv", x: 0.523*w, y: 0.450*h},
-            {location_id: "Cds", x: 0.503*w, y: 0.470*h},
-            {location_id: "Cln", x: 0.503*w, y: 0.478*h},
-            {location_id: "Adnx", x: 0.503*w, y: 0.474*h},
-            {location_id: "RPv", x: 0.469*w, y: 0.454*h},
-            {location_id: "LPv", x: 0.537*w, y: 0.454*h},
-            {location_id: "Brn", x: 0.503*w, y: 0.05*h},
-            {location_id: "Bwl", x: 0.503*w, y: 0.415*h},
-            {location_id: "SBwl", x: 0.503*w, y: 0.42*h},
-            {location_id: "Ap", x: 0.483*w, y: 0.475*h},
-            {location_id: "RUt", x: 0.493*w, y: 0.482*h},
-            {location_id: "LUt", x: 0.513*w, y: 0.482*h}
-        ]        
-    }
-    // male anatomy
-    else {
-        return [
-            {location_id: "Om", x: 0.503*w, y: 0.40*h}, 
-            {location_id: "Cln", x: 0.503*w, y: 0.478*h},
-            {location_id: "RPv", x: 0.459*w, y: 0.454*h},
-            {location_id: "LPv", x: 0.547*w, y: 0.454*h},
-            {location_id: "Brn", x: 0.503*w, y: 0.05*h},
-            {location_id: "Bwl", x: 0.503*w, y: 0.415*h},
-            {location_id: "SBwl", x: 0.503*w, y: 0.42*h},
-            {location_id: "Ap", x: 0.483*w, y: 0.475*h},
-        ]
-    }
-}
-
 /* function to map samples to anatomic locations
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
 function _mapSamplesToAnatomy(curVizObj) {
     curVizObj.data.samples = [];
 
-    // CUSTOM IMAGE PROVIDED
+    // for each sample location, get its coordinates, and add it to the data
+    curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
+        var cur_sample = {sample_id: sample_location.sample_id}
+        cur_sample["location"] = sample_location;
 
-    if (curVizObj.userConfig.img_ref != "NA") {
-
-        // for each sample location, get its coordinates, and add it to the data
-        curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
-            var cur_sample = {sample_id: sample_location.sample_id}
-            cur_sample["location"] = sample_location;
-
-            curVizObj.data.samples.push(cur_sample);
-        })
-    }
-
-    // CUSTOM IMAGE NOT PROVIDED -- USE DEFAULT IMAGE
-
-    else {
-        // get database of site locations
-        var siteLocationDB = _getSiteLocationDB(curVizObj);
-
-        // for each sample location, get its coordinates (if needed), and add it to the data
-        curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
-            var cur_sample = {sample_id: sample_location.sample_id}
-            cur_sample["location"] = sample_location;
-
-            // if coordinates are not provided, access them from the site location database
-            // (here the user chooses to use the default image, but custom locations on it)
-            if (!curVizObj.userConfig.location_coordinates_provided) {
-                var location_in_db = _.findWhere(siteLocationDB, {location_id: sample_location.location_id});
-                cur_sample["location"]["x"] = location_in_db["x"];
-                cur_sample["location"]["y"] = location_in_db["y"];
-            }
-
-            curVizObj.data.samples.push(cur_sample);
-        })
-    }
+        curVizObj.data.samples.push(cur_sample);
+    })
 }
 
 

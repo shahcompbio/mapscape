@@ -38,6 +38,10 @@
 #'                       (2) {String} "location_id" - name of anatomic location for this tumour sample
 #'                       (3) {Number} (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
 #'                       (4) {Number} (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image
+#' @param img_ref {String} A reference for the custom anatomical image to use, 
+#'                         either a URL to an image hosted online 
+#'                         or a path to the image in local file system. 
+#'                         If unspecified, will use default generic male and female images.
 #' @param mutations {Data Frame} (Optional) Mutations occurring at each clone.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
@@ -48,27 +52,21 @@
 #'                       (7) {String} (Optional) "effect" - effect of the mutation 
 #'                                                          (e.g. non-synonymous, upstream, etc.)
 #'                       (8) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
-#' @param gender {String} Gender of the patient (M/F). 
 #' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
-#' @param img_ref {String} (Optional) A reference for the custom anatomical image to use, 
-#'                                    either a URL to an image hosted online 
-#'                                    or a path to the image in local file system. 
-#'                                    If unspecified, will use default generic male and female images.
 #' @export
 spacesweep <- function(clonal_prev, 
                       tree_edges,
                       sample_locations,
+                      img_ref,
                       clone_colours = "NA",
                       mutations = "NA",
-                      gender,
                       sample_ids = "NA",
                       n_cells = 100,
-                      img_ref = "NA",
                       width = 960, 
                       height = 960) {
 
@@ -91,11 +89,11 @@ spacesweep <- function(clonal_prev,
   if (missing(tree_edges)) {
     stop("Tree edge data frame must be provided (parameter \"tree_edges\").")
   }
-  if (missing(gender)) {
-    stop("The gender of the patient must be provided (parameter \"gender\").")
-  }
   if (missing(sample_locations)) {
     stop("The locations of the tumour samples must be provided (parameter \"sample_locations\").")
+  }
+  if (missing(img_ref)) {
+    stop("The anatomical image reference must be provided (parameter \"img_ref\").")
   }
 
   # TREE EDGES DATA
@@ -115,12 +113,6 @@ spacesweep <- function(clonal_prev,
 
   # get list of clones in the phylogeny
   clones_in_phylo <- unique(c(tree_edges$source, tree_edges$target))
-
-  # GENDER
-
-  if (gender != "F" && gender != "M") {
-    stop("The gender must be specified as \"F\" or \"M\".")
-  }
 
   # CLONAL PREVALENCE DATA
 
@@ -155,35 +147,18 @@ spacesweep <- function(clonal_prev,
 
   # ensure column names are correct
   if (!("sample_id" %in% colnames(sample_locations)) ||
-      !("location_id" %in% colnames(sample_locations))) {
+      !("location_id" %in% colnames(sample_locations)) ||
+      !("x" %in% colnames(sample_locations)) ||
+      !("y" %in% colnames(sample_locations))) {
     stop(paste("Sample locations data frame must have the following column names: ", 
-        "\"sample_id\", \"location_id\".", sep=""))
+        "\"sample_id\", \"location_id\", \"x\", \"y\".", sep=""))
   }
 
   # ensure data is of the correct type
   sample_locations$sample_id <- as.character(sample_locations$sample_id)
   sample_locations$location_id <- as.character(sample_locations$location_id)
-
-  # if custom image reference provided, but no location coordinates are provided, throw error
-  if ((img_ref != "NA") &&
-    !(("x" %in% colnames(sample_locations)) && ("y" %in% colnames(sample_locations)))) {
-    stop(paste("When providing a custom image, you must specify coordinates (\"x\" and \"y\" columns) ",
-      "for each sample in the sample_locations data frame.", sep=""))
-  }
-
-  # check if location coordinates are provided
-  if (("x" %in% colnames(sample_locations)) && ("y" %in% colnames(sample_locations))) {
-    location_coordinates_provided <- TRUE
-    print("[Progress] Custom sample location coordinates provided...")
-
-    # ensure coordinates are numeric
-    sample_locations$x <- as.numeric(as.character(sample_locations$x))
-    sample_locations$y <- as.numeric(as.character(sample_locations$y))
-  }
-  else {
-    location_coordinates_provided <- FALSE
-    print("[Progress] No custom sample location coordinates provided; defaults will be used where possible...")
-  }
+  sample_locations$x <- as.numeric(as.character(sample_locations$x))
+  sample_locations$y <- as.numeric(as.character(sample_locations$y))
 
   # check that all samples in the clonal prevalence data are present in the sample locations data
   clonal_prev_sample_ids <- unique(clonal_prev$sample_id)
@@ -362,11 +337,9 @@ spacesweep <- function(clonal_prev,
     clonal_prev = jsonlite::toJSON(clonal_prev),
     tree_edges = jsonlite::toJSON(tree_edges),
     sample_locations = jsonlite::toJSON(sample_locations),
-    location_coordinates_provided = location_coordinates_provided,
     clone_cols = jsonlite::toJSON(clone_colours),
     mutations = jsonlite::toJSON(mutation_info),
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
-    gender = gender,
     sample_ids = sample_ids,
     n_cells = n_cells,
     img_ref = img_ref

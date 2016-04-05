@@ -29,9 +29,7 @@ HTMLWidgets.widget({
             longLoadTime: false, // whether or not the cancellation of the current process will take a long time
             nClickedNodes: 0, // number of clicked nodes
             curCloneIDs: [], // array of clone ids currently in the mutation table
-            phantomRoot: "phantomRoot",
-            anatomy_male_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_male.png",
-            anatomy_female_image_ref: "https://bytebucket.org/mas29/public_resources/raw/c9e20e1236b6996a30bc2948627beb57ec185243/images/anatomy/muscle_anatomy_female.png"
+            phantomRoot: "phantomRoot"
         };
 
         // set configurations
@@ -53,7 +51,6 @@ HTMLWidgets.widget({
 
     renderValue: function(el, x, instance) {
 
-
         // vizObj for the current view
         var view_id = el.id;
         var curVizObj = vizObj[view_id]; 
@@ -66,20 +63,7 @@ HTMLWidgets.widget({
         // SET CONFIGURATIONS FOR THIS VIEW
 
         // image for use 
-        // custom image
-        if (curVizObj.userConfig.img_ref != "NA") {
-            dim.image_ref = curVizObj.userConfig.img_ref
-        }
-        // default images
-        else {
-            if (curVizObj.userConfig.gender == "F") {
-                dim.image_ref = dim.anatomy_female_image_ref;
-            }
-            else {
-                dim.image_ref = dim.anatomy_male_image_ref;
-            }
-        }
-
+        dim.image_ref = curVizObj.userConfig.img_ref
 
         // mutation table layout
         dim.mutationTableHeight = 300;
@@ -111,14 +95,14 @@ HTMLWidgets.widget({
         dim.image_top_l = {x: dim.viewDiameter/2 - dim.image_plot_diameter/2, 
                                 y: dim.viewDiameter/2 - dim.image_plot_diameter/2};
 
-
-
         // get image width & height (in pixels)
         curVizObj.imgDimDeferred = new $.Deferred();
         _getImageDimensions(curVizObj, dim.image_ref);
+        console.log('after get image dimensions');
 
         // when image dimensions acquired...
         $.when(curVizObj.imgDimDeferred.promise()).then(function() {
+            console.log("dimensions acquired");
 
             // get legend image dimensions
             dim.legend_image_width = dim.legend_image_plot_diameter;
@@ -138,7 +122,7 @@ HTMLWidgets.widget({
 
 
             // GET CONTENT
-
+            console.log("getting content");
             // extract all info from tree about nodes, edges, ancestors, descendants
             _getTreeInfo(curVizObj);
 
