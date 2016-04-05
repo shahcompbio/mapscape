@@ -94,11 +94,11 @@ HTMLWidgets.widget({
         dim.innerRadius = dim.viewDiameter/6; // radius for centre circle (where anatomy will go)
         dim.circBorderWidth = 3; // width for circular border width
         
-        // - 8, - 10, - 3 for extra space
+        // - 8, - 20, - 3 for extra space
         dim.oncoMixWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 8; 
-        dim.treeWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 10; 
+        dim.treeWidth = ((dim.outerRadius - dim.circBorderWidth - dim.innerRadius)/2) - 20; 
         dim.radiusToOncoMix = dim.innerRadius + dim.oncoMixWidth/2 - 3; // radius to oncoMix centre
-        dim.radiusToTree = dim.innerRadius + dim.oncoMixWidth + dim.treeWidth/2; // radius to tree centre
+        dim.radiusToTree = dim.innerRadius + dim.oncoMixWidth + dim.treeWidth/2 + 10; // radius to tree centre
 
         // legend layout
         dim.legendHeight = dim.viewDiameter;
