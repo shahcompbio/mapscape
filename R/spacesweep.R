@@ -113,7 +113,7 @@ spacesweep <- function(clonal_prev,
 
   # TREE EDGES DATA
 
-  print("[Progress] Processing tree edges data...")
+  # print("[Progress] Processing tree edges data...")
 
   # ensure column names are correct
   if (!("source" %in% colnames(tree_edges)) ||
@@ -131,7 +131,7 @@ spacesweep <- function(clonal_prev,
 
   # CLONAL PREVALENCE DATA
 
-  print("[Progress] Processing clonal prevalence data...")
+  # print("[Progress] Processing clonal prevalence data...")
 
   # ensure column names are correct
   if (!("sample_id" %in% colnames(clonal_prev)) ||
@@ -158,7 +158,7 @@ spacesweep <- function(clonal_prev,
 
   # SAMPLE LOCATIONS DATA
 
-  print("[Progress] Processing sample locations data...")
+  # print("[Progress] Processing sample locations data...")
 
   # ensure column names are correct
   if (!("sample_id" %in% colnames(sample_locations)) ||
@@ -187,7 +187,7 @@ spacesweep <- function(clonal_prev,
   # MUTATIONS DATA
 
   if (is.data.frame(mutations)) {
-    print("[Progress] Processing mutations data...")
+    # print("[Progress] Processing mutations data...")
 
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutations)) ||
@@ -268,8 +268,6 @@ spacesweep <- function(clonal_prev,
     # MUTATION PREVALENCES DATA
 
     mutation_prevalences <- mutations
-
-    print("[Progress] Processing mutation prevalences data...")
 
     # keep only those mutations whose clone ids are present in the phylogeny
     mutation_prevalences <- mutation_prevalences[which(mutation_prevalences$clone_id %in% clones_in_phylo),]
