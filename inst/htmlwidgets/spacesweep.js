@@ -249,7 +249,10 @@ HTMLWidgets.widget({
                 .style("position", "relative")
                 .style("width", dim.mutationTableWidth + "px")
                 .style("height", dim.mutationTableHeight + "px")
-                .style("float", "left");
+                .style("float", "left")
+                .on("click", function() {
+                     _backgroundClick(curVizObj);
+                });
 
             // SVGS
 
