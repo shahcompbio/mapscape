@@ -91,10 +91,6 @@ function _backgroundClick(curVizObj) {
     d3.select("#" + curVizObj.view_id).selectAll(".mutationPrev").remove();
 
     _resetView(curVizObj);
-
-    // background click reset complete
-    curVizObj.bgClickDeferred.resolve("view reset");
-    curVizObj.generalConfig.longLoadTime = false;
 }
 
 /* recursive function to perform downstream or upstream effects on legend tree link

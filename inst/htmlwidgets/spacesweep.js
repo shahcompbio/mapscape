@@ -26,7 +26,6 @@ HTMLWidgets.widget({
             shadeAlpha: 0.08, // alpha value for shading
             neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
             legendTitleColour: "#000000", // colour used for legend titles
-            longLoadTime: false, // whether or not the cancellation of the current process will take a long time
             nClickedNodes: 0, // number of clicked nodes
             curCloneIDs: [], // array of clone ids currently in the mutation table
             phantomRoot: "phantomRoot"
@@ -465,7 +464,6 @@ HTMLWidgets.widget({
                     if (curVizObj.userConfig.mutations[0] != "NA") {
 
                         dim.selectOn = true;
-                        dim.longLoadTime = true;
                         dim.nClickedNodes++; // increment the number of clicked nodes
 
                         // remove any clonal prevalence plotting from the node mouseover
