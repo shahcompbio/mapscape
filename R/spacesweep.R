@@ -30,7 +30,7 @@
 #'   Format: columns are (1) {String} "sample_id" - id for the tumour sample
 #'                       (2) {String} "clone_id" - clone id
 #'                       (3) {Number} "clonal_prev" - clonal prevalence.
-#' @param tree_edges {Data Frame} Tree edges. 
+#' @param tree_edges {Data Frame} Tree edges for a rooted tree. 
 #'   Format: columns are (1) {String} "source" - source clone id
 #'                       (2) {String} "target" - target clone id.
 #' @param sample_locations {Data Frame} Anatomic locations for each tumour sample.
