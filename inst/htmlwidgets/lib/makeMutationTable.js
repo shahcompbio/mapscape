@@ -105,7 +105,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
                             	return VAF.VAF >= threshold; 
                             });
 
-                            d3.select("#" + view_id).select(".viewSVG")
+                            d3.select("#" + view_id).select(".spacesweep_" + view_id)
                             	.append("g")
                             	.attr("class", "mutationPrevalences")
                             	.selectAll(".mutationPrev")

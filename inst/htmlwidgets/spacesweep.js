@@ -233,12 +233,12 @@ HTMLWidgets.widget({
                 .text("Download SVG")
                 .on("click", function() {
                     // download the svg
-                    downloadSVG("viewSVG");
+                    downloadSVG("spacesweep_" + view_id);
                 });
 
             var canvasDIV = d3.select(el)
                 .append("div")
-                .attr("class", "spacesweep_" + view_id)
+                .attr("class", "canvasDIV")
                 .style("position", "relative")
                 .style("width", (dim.viewDiameter + dim.legendWidth) + "px")
                 .style("height", (dim.viewDiameter) + "px")
@@ -255,7 +255,7 @@ HTMLWidgets.widget({
             // SVGS
 
             var viewSVG = canvasDIV.append("svg:svg")
-                .attr("class", "viewSVG")
+                .attr("class", "spacesweep_" + view_id)
                 .attr("x", 0)
                 .attr("y", 0)
                 .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
