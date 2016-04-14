@@ -259,7 +259,7 @@ function _plotClonalPrevText(curVizObj, sample, gtype) {
         })
         .attr("text-anchor", "middle")
         .attr("dy", "+0.35em")
-        .attr("font-family", "sans-serif")
+        .attr("font-family", "Arial")
         .attr("font-size", 10) 
         .text(function() { 
             return (Math.round(curVizObj.data.cp_data[sample][gtype].cp * 100)/100).toFixed(2);
@@ -1563,7 +1563,7 @@ function _plotSite(curVizObj, sample, drag) {
         .attr('class', 'd3-tip')
         .offset([-10, 0])
         .html(function(d) {
-            return "<span style='color:white; font-family: sans-serif; font-weight:normal'>" +
+            return "<span style='color:white; font-family: Arial; font-weight:normal'>" +
                 "Site: " + d.sample + "</span>";
         });
     d3.select("#" + view_id).select(".viewSVG").call(sampleTitleTip);
@@ -1864,7 +1864,7 @@ function _plotSite(curVizObj, sample, drag) {
             return "0em";
         })
         .attr("text-anchor", "middle")
-        .attr("font-family", "sans-serif")
+        .attr("font-family", "Arial")
         .attr("font-size", dim.viewDiameter/40)
         .attr("fill", dim.legendTitleColour)
         .style("cursor", "pointer")

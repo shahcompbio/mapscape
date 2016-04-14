@@ -5,7 +5,7 @@ ul {
 
 .treeTitle, .voronoiTitle {
 	text-anchor: middle;
-	font-family: sans-serif;
+	font-family: Arial;
 	font-size: 15px;
 	font-weight: bold;
 }
@@ -13,7 +13,7 @@ ul {
 .legendTitle {
     color: #616161;
     text-anchor: middle;
-    font-family: sans-serif;
+    font-family: Arial;
 }
 
 .d3-tip {
@@ -50,15 +50,15 @@ ul {
 }
 
 td, tr, th {
-    font-family: sans-serif;
+    font-family: Arial;
 }
 
 .dataTables_info {
-    font-family: sans-serif;    
+    font-family: Arial;    
     color: '#9E9A9A';
 }
 label {
-    font-family: sans-serif;
+    font-family: Arial;
 }
 
 .mutationTableDIV .dataTable thead th {

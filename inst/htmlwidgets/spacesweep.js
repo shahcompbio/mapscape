@@ -226,20 +226,22 @@ HTMLWidgets.widget({
 
             // DIVS
 
-            var viewDIV = d3.select(el)
-                .append("div")
-                .attr("class", "viewDIV")
-                .style("position", "relative")
-                .style("width", dim.viewDiameter + "px")
-                .style("height", dim.viewDiameter + "px")
-                .style("float", "left");
+            var buttonDIV = d3.select(el).append("div")
+                .append("button")
+                .attr("type","button")
+                .attr("class", "downloadButton")
+                .text("Download SVG")
+                .on("click", function() {
+                    // download the svg
+                    downloadSVG("viewSVG");
+                });
 
-            var legendDIV = d3.select(el)
+            var canvasDIV = d3.select(el)
                 .append("div")
-                .attr("class", "legendDIV")
+                .attr("class", "spacesweep_" + view_id)
                 .style("position", "relative")
-                .style("width", dim.legendWidth + "px")
-                .style("height", dim.legendHeight + "px")
+                .style("width", (dim.viewDiameter + dim.legendWidth) + "px")
+                .style("height", (dim.viewDiameter) + "px")
                 .style("float", "left");
 
             curVizObj.view.mutationTableDIV = d3.select(el)
@@ -252,24 +254,14 @@ HTMLWidgets.widget({
 
             // SVGS
 
-            var viewSVG = viewDIV.append("svg:svg")
+            var viewSVG = canvasDIV.append("svg:svg")
                 .attr("class", "viewSVG")
                 .attr("x", 0)
                 .attr("y", 0)
-                .attr("width", dim.viewDiameter + "px")
+                .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
                 .attr("height", dim.viewDiameter + "px")
                 .on("click", function() {
                      _backgroundClick(curVizObj);
-                });
-
-            var legendSVG = legendDIV.append("svg:svg")
-                .attr("class", "legendSVG")
-                .attr("x", dim.viewDiameter)
-                .attr("y", 0)
-                .attr("width", dim.legendWidth)
-                .attr("height", dim.legendHeight)
-                .on("click", function() {
-                    _backgroundClick(curVizObj);
                 });
 
             // PLOT ANATOMY IMAGE IN MAIN VIEW
@@ -335,11 +327,12 @@ HTMLWidgets.widget({
             // PLOT LEGEND GENOTYPE TREE
 
             // tree title
-            legendSVG.append("text")
+            viewSVG.append("text")
                 .attr("class", "legendTitle")
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", 22)
                 .attr("font-size", dim.legendTitleHeight)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .text("Phylogeny");
 
             // d3 tree layout
@@ -362,8 +355,9 @@ HTMLWidgets.widget({
 
             // create links
             curVizObj.link_ids = [];
-            legendSVG.append("g")
+            viewSVG.append("g")
                 .attr("class","gtypeTreeLinkG")
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .selectAll(".legendTreeLink")                  
                 .data(links)                   
                 .enter().append("path")                   
@@ -398,8 +392,9 @@ HTMLWidgets.widget({
             
             // create nodes
             var cols = curVizObj.view.colour_assignment;
-            legendSVG.append("g")
+            viewSVG.append("g")
                 .attr("class", "gtypeTreeNodeG")
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .selectAll(".legendTreeNode")                  
                 .data(nodes)                   
                 .enter()
@@ -522,27 +517,30 @@ HTMLWidgets.widget({
             // PLOT ANATOMY IN LEGEND
 
             // anatomy title
-            legendSVG.append("text")
+            viewSVG.append("text")
                 .attr("class", "legendTitle")
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Anatomy");
 
             // anatomy image
-            legendSVG.append("image")
+            viewSVG.append("image")
                 .attr("xlink:href", function() {
                     return dim.image_ref;
                 })
                 .attr("x", dim.legend_image_top_l.x)
                 .attr("y", dim.legend_image_top_l.y)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("width", dim.legend_image_width)
                 .attr("height", dim.legend_image_height);
 
             // anatomy region of interest
-            legendSVG.append("circle")
+            viewSVG.append("circle")
                 .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
                 .attr("cy", dim.legend_image_top_l.y + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_height)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("r", (curVizObj.view.crop_info.crop_width_prop/2) * dim.legend_image_width)
                 .attr("stroke-width", "2px")
                 .attr("stroke", dim.anatomicLineColour)
@@ -594,18 +592,20 @@ HTMLWidgets.widget({
             })
 
             // plot mixture classification title
-            legendSVG.append("text")
+            viewSVG.append("text")
                 .attr("class", "MixtureLegendTitle legendTitle")
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", dim.legend_mixture_top)
                 .attr("dy", "+0.71em")
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Mixture");
-            legendSVG.append("text")
+            viewSVG.append("text")
                 .attr("class", "ClassificationLegendTitle legendTitle")
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", dim.legend_mixture_top + dim.legendTitleHeight)
                 .attr("dy", "+0.71em")
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Classification");
 
@@ -613,7 +613,7 @@ HTMLWidgets.widget({
                 d3.select("#" + view_id).select(".ClassificationLegendTitle").node().getBBox().width;
             var spacing_below_title = 5;
             Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
-                legendSVG.append("text")
+                viewSVG.append("text")
                     .attr("class", "mixtureClass")
                     .attr("x", dim.legendWidth/2 - (mixtureClassLegendTitle_width/2)) 
                     .attr("y", function() {
@@ -622,8 +622,9 @@ HTMLWidgets.widget({
                         return y;
                     })
                     .attr("dy", "+0.71em")
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                     .attr("fill", dim.neutralGrey)
-                    .attr("font-family", "sans-serif")
+                    .attr("font-family", "Arial")
                     .attr("font-size", dim.mixtureClassFontSize)
                     .text(function() { return " - " + phyly; })
                     .style("cursor", "default")

@@ -42,3 +42,7 @@ dependencies:
    src: "htmlwidgets/lib"
    script: spacesweep_helpers.js
    stylesheet: spacesweep.css
+ - name: my_svg_crowbar
+   version: 0.0.0
+   src: "htmlwidgets/lib"
+   script: my_svg_crowbar.js

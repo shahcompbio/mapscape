@@ -136,7 +136,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
                             	})
                             	.attr("text-anchor", "middle")
                             	.attr("dy", "+0.35em")
-                            	.attr("font-family", "sans-serif")
+                            	.attr("font-family", "Arial")
                             	.attr("font-size", 10) 
                             	.text(function(d) { 
                             		return (Math.round(d.VAF*100)/100).toFixed(2); 
