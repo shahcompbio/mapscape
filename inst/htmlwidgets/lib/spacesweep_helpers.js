@@ -233,7 +233,7 @@ function _plotClonalPrevText(curVizObj, sample, gtype) {
     var dim = curVizObj.generalConfig;
 
     // plot clonal prevalence text
-    d3.select("#" + curVizObj.view_id).select(".spacesweep_" + view_id).append("text")
+    d3.select("#" + curVizObj.view_id).select(".spacesweep_" + curVizObj.view_id).append("text")
         .attr("class", "clonalPrev")
         .attr("x", function() {
 
@@ -2150,4 +2150,35 @@ RNG.prototype.choice = function(array) {
 function _random(curVizObj) {
     var x = Math.sin(curVizObj.seed++) * 10000;
     return x - Math.floor(x);
+}
+
+/* function to download PNG
+* @param className -- name of the class of the svg to download (e.g. "mySVG")
+* @param fileOutputName -- filename for output
+*/
+function _downloadPNG(className, fileOutputName) {
+    var html = d3.select("." + className)
+        .attr("version", 1.1)
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .node().parentNode.innerHTML;
+
+    var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+  
+    var canvas = document.querySelector("canvas"),
+        context = canvas.getContext("2d");
+
+    var image = new Image;
+    image.src = imgsrc;
+    image.onload = function() {
+        context.drawImage(image, 0, 0);
+
+        var canvasdata = canvas.toDataURL("image/png");
+
+        var pngimg = '<img src="'+canvasdata+'">'; 
+
+        var a = document.createElement("a");
+        a.download = fileOutputName;
+        a.href = canvasdata;
+        a.click();
+    };
 }

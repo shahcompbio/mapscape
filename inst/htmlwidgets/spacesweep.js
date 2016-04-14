@@ -236,6 +236,17 @@ HTMLWidgets.widget({
                     downloadSVG("spacesweep_" + view_id);
                 });
 
+            var buttonDIV = d3.select(el).append("div")
+                .append("button")
+                .attr("type","button")
+                .attr("class", "downloadPNGButton")
+                .attr("id", "downloadPNGButton")
+                .text("Download PNG")
+                .on("click", function(){
+                    // download the png
+                    _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
+                });
+
             var canvasDIV = d3.select(el)
                 .append("div")
                 .attr("class", "canvasDIV")
@@ -251,6 +262,12 @@ HTMLWidgets.widget({
                 .style("width", dim.mutationTableWidth + "px")
                 .style("height", dim.mutationTableHeight + "px")
                 .style("float", "left");
+
+            // canvas for image png output
+            var canvas = d3.select(el).append("canvas")
+                .attr("height", (dim.viewDiameter) + "px")
+                .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
+                .attr("style", "display:none");
 
             // SVGS
 
@@ -331,7 +348,10 @@ HTMLWidgets.widget({
                 .attr("class", "legendTitle")
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", 22)
+                .attr("text-anchor", "middle")
+                .attr("font-family", "Arial")
                 .attr("font-size", dim.legendTitleHeight)
+                .attr("color", dim.legendTitleColour)
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .text("Phylogeny");
 
@@ -521,7 +541,10 @@ HTMLWidgets.widget({
                 .attr("class", "legendTitle")
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
+                .attr("text-anchor", "middle")
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                .attr("color", dim.legendTitleColour)
+                .attr("font-family", "Arial")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Anatomy");
 
@@ -597,6 +620,9 @@ HTMLWidgets.widget({
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", dim.legend_mixture_top)
                 .attr("dy", "+0.71em")
+                .attr("text-anchor", "middle")
+                .attr("color", dim.legendTitleColour)
+                .attr("font-family", "Arial")
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Mixture");
@@ -605,6 +631,9 @@ HTMLWidgets.widget({
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", dim.legend_mixture_top + dim.legendTitleHeight)
                 .attr("dy", "+0.71em")
+                .attr("text-anchor", "middle")
+                .attr("font-family", "Arial")
+                .attr("color", dim.legendTitleColour)
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Classification");
@@ -680,7 +709,7 @@ HTMLWidgets.widget({
                 // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
                 _plotSite(curVizObj, sample, drag);            
             });
-        }); // end when statement
+        }); // end when statement        
     },
 
     resize: function(el, width, height, instance) {

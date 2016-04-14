@@ -3,19 +3,6 @@ ul {
     -webkit-padding-start: 0px; /* override user agent stylesheet */
 }
 
-.treeTitle, .voronoiTitle {
-	text-anchor: middle;
-	font-family: Arial;
-	font-size: 15px;
-	font-weight: bold;
-}
-
-.legendTitle {
-    color: #616161;
-    text-anchor: middle;
-    font-family: Arial;
-}
-
 .d3-tip {
     line-height: 1;
     font-weight: bold;
