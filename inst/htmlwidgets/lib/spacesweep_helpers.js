@@ -1827,7 +1827,7 @@ function _plotSite(curVizObj, sample, drag) {
             }
         })
         .on('mouseout', function(d) {
-            if (!dim.selectOn && !dim.dragOn && !dim.mutationSelectOn) {
+            if (_checkForSelections(curVizObj)) {
                 // remove clonal prevalence text
                 d3.select("#" + view_id).select(".clonalPrev").remove();
 
