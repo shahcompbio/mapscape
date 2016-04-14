@@ -115,6 +115,11 @@ spacesweep <- function(clonal_prev,
 
   # print("[Progress] Processing tree edges data...")
 
+  # ensure there is data within it
+  if (nrow(tree_edges) == 0) {
+    stop("Tree edges data frame contains no data.")
+  }
+
   # ensure column names are correct
   if (!("source" %in% colnames(tree_edges)) ||
       !("target" %in% colnames(tree_edges))) {
@@ -152,6 +157,12 @@ spacesweep <- function(clonal_prev,
 
   # print("[Progress] Processing clonal prevalence data...")
 
+
+  # ensure there is data within it
+  if (nrow(clonal_prev) == 0) {
+    stop("Clonal prevalence data frame contains no data.")
+  }
+
   # ensure column names are correct
   if (!("sample_id" %in% colnames(clonal_prev)) ||
       !("clone_id" %in% colnames(clonal_prev)) ||
@@ -178,6 +189,11 @@ spacesweep <- function(clonal_prev,
   # SAMPLE LOCATIONS DATA
 
   # print("[Progress] Processing sample locations data...")
+
+  # ensure there is data within it
+  if (nrow(sample_locations) == 0) {
+    stop("Sample locations data frame contains no data.")
+  }
 
   # ensure column names are correct
   if (!("sample_id" %in% colnames(sample_locations)) ||
@@ -207,6 +223,11 @@ spacesweep <- function(clonal_prev,
 
   if (is.data.frame(mutations)) {
     # print("[Progress] Processing mutations data...")
+
+    # ensure there is data within it
+    if (nrow(mutations) == 0) {
+      stop("Mutations data frame contains no data.")
+    }
 
     # ensure column names are correct
     if (!("chrom" %in% colnames(mutations)) ||
