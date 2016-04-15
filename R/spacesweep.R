@@ -111,6 +111,8 @@ spacesweep <- function(clonal_prev,
     stop("The anatomical image must be in PNG format (must end in \".png\").")
   }
 
+  img_ref_base64 <- base64enc::base64encode(img_ref)
+
   # TREE EDGES DATA
 
   # print("[Progress] Processing tree edges data...")
@@ -398,7 +400,7 @@ spacesweep <- function(clonal_prev,
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
     sample_ids = sample_ids,
     n_cells = n_cells,
-    img_ref = img_ref
+    img_ref = img_ref_base64
   )
 
   # create widget

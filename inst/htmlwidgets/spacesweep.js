@@ -62,7 +62,7 @@ HTMLWidgets.widget({
         // SET CONFIGURATIONS FOR THIS VIEW
 
         // image for use 
-        dim.image_ref = curVizObj.userConfig.img_ref
+        dim.image_ref = "data:image/png;base64," + curVizObj.userConfig.img_ref;
 
         // mutation table layout
         dim.mutationTableHeight = 300;
@@ -296,9 +296,7 @@ HTMLWidgets.widget({
                 .attr("y", 0)
                 .attr("height", dim.image_plot_diameter)
                 .attr("width", dim.image_plot_diameter)
-                .attr("xlink:href", function() {
-                    return dim.image_ref;
-                });
+                .attr("xlink:href", dim.image_ref);
 
             viewSVG.append("circle")
                 .attr("class", "anatomyDiagram")
@@ -550,14 +548,12 @@ HTMLWidgets.widget({
 
             // anatomy image
             viewSVG.append("image")
-                .attr("xlink:href", function() {
-                    return dim.image_ref;
-                })
+                .attr("xlink:href", dim.image_ref)
                 .attr("x", dim.legend_image_top_l.x)
                 .attr("y", dim.legend_image_top_l.y)
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("width", dim.legend_image_width)
-                .attr("height", dim.legend_image_height);
+                .attr("height", dim.legend_image_height)
 
             // anatomy region of interest
             viewSVG.append("circle")
@@ -709,6 +705,9 @@ HTMLWidgets.widget({
                 // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
                 _plotSite(curVizObj, sample, drag);            
             });
+
+
+
         }); // end when statement        
     },
 
