@@ -183,13 +183,9 @@ HTMLWidgets.widget({
             // VIEW SETUP
 
             // radii (- 8, - 6 = how much space to give between nodes)
-            var tree_height = curVizObj.data.tree_height, // height of the tree (# nodes)
-                node_r = ((dim.treeWidth - 6*tree_height)/tree_height)/2, // sample tree
-                legendNode_r = ((dim.legendTreeWidth - 8*tree_height)/tree_height)/2; // legend tree
-
-            // make sure radii do not surpass the maximum
-            dim.node_r = (node_r > dim.max_r) ? dim.max_r : node_r;
-            dim.legendNode_r = (legendNode_r > dim.max_r) ? dim.max_r : legendNode_r;
+            var tree_height = curVizObj.data.tree_height + 1;
+            dim.node_r = ((dim.treeWidth - 6*tree_height)/tree_height)/2; // sample tree
+            dim.legendNode_r = ((dim.legendTreeWidth - 8*tree_height)/tree_height)/2; // legend tree
 
             // DRAG BEHAVIOUR
 
