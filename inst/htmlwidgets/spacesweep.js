@@ -28,7 +28,10 @@ HTMLWidgets.widget({
             legendTitleColour: "#000000", // colour used for legend titles
             nClickedNodes: 0, // number of clicked nodes
             curCloneIDs: [], // array of clone ids currently in the mutation table
-            phantomRoot: "phantomRoot"
+            phantomRoot: "phantomRoot",
+            topBarHeight: 30, // height of top panel
+            topBarColour: "#ECECEC",
+            topBarHighlight: "#C6C6C6"
         };
 
         // set configurations
@@ -225,26 +228,12 @@ HTMLWidgets.widget({
 
             // DIVS
 
-            var buttonDIV = d3.select(el).append("div")
-                .append("button")
-                .attr("type","button")
-                .attr("class", "downloadButton")
-                .text("Download SVG")
-                .on("click", function() {
-                    // download the svg
-                    downloadSVG("spacesweep_" + view_id);
-                });
-
-            var buttonDIV = d3.select(el).append("div")
-                .append("button")
-                .attr("type","button")
-                .attr("class", "downloadPNGButton")
-                .attr("id", "downloadPNGButton")
-                .text("Download PNG")
-                .on("click", function(){
-                    // download the png
-                    _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
-                });
+            var topBarDIV = d3.select(el).append("div")
+                .attr("class", "topBarDIV")
+                .style("position", "relative")
+                .style("width", (dim.viewDiameter + dim.legendWidth) + "px")
+                .style("height", dim.topBarHeight + "px")
+                .style("float", "left");
 
             var canvasDIV = d3.select(el)
                 .append("div")
@@ -275,10 +264,133 @@ HTMLWidgets.widget({
                 .attr("x", 0)
                 .attr("y", 0)
                 .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
-                .attr("height", dim.viewDiameter + "px")
+                .attr("height", dim.viewDiameter + "px");
+
+
+            // PLOT TOP PANEL
+
+            // svg
+            var topBarSVG = topBarDIV.append("svg:svg")
+                .attr("class", "topBar_" + view_id)
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
+                .attr("height", dim.topBarHeight + "px");
+
+            // background bar
+            topBarSVG.append("rect")
+                .attr("x",0)
+                .attr("y",0)
+                .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
+                .attr("height", dim.topBarHeight)
+                .attr("rx", 10)
+                .attr("ry", 10)
+                .attr("fill", dim.topBarColour);
+
+            // reset button
+
+            var downloadButtonWidth = 50;
+            var resetButton_base64 = "data:image/svg+xml;base64," + "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNC4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDQzMzYzKSAgLS0+DQo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNTEycHgiIGhlaWdodD0iNTEycHgiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCA1MTIgNTEyIiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KCTxwYXRoIGZpbGw9IiNGRkZGRkYiIGQ9Ik00MzIuOTc1LDgwLjAzNGMtMjcuOTk4LTI3Ljk2My02MC45MjYtNDcuODYtOTYuMDM3LTU5Ljc2NHY3NS4xODkNCgkJYzE2LjkwNCw4LjQxNywzMi45MjgsMTkuMzY5LDQ2Ljk4LDMzLjQ1NmM3MC4xODgsNzAuMjI0LDcwLjE4OCwxODQuMzk3LDAsMjU0LjU4NGMtNzAuMTg5LDcwLjA4NC0xODQuMjkzLDcwLjA4NC0yNTQuNTg3LDANCgkJYy03MC4xMTctNzAuMjU4LTcwLjExNy0xODQuMzYxLDAtMjU0LjU4NGMwLjE3Ny0wLjIxMSwwLjc0LTAuNTYzLDAuOTg3LTAuODhoMC4wN2w3NC4yMTcsODEuNzMxTDIxNC41LDguNUw4LjkwNSwzLjM1Ng0KCQlsNzIuNDYxLDc1LjU4NmMtMC4yNDcsMC40MjItMC42MzQsMC44NDUtMC45NTEsMS4wOTJjLTk3LjMwNSw5Ny4yNy05Ny4zMDUsMjU1LjA3OSwwLDM1Mi4zNDkNCgkJYzk3LjQ0Niw5Ny4zNzUsMjU1LjE1LDk3LjM3NSwzNTIuNTYsMEM1MzAuMjA5LDMzNS4xMTMsNTMwLjMxNCwxNzcuMzA0LDQzMi45NzUsODAuMDM0eiIvPg0KPC9nPg0KPC9zdmc+DQo="
+            var resetButtonWidth = dim.topBarHeight - 10;
+            topBarSVG.append("rect")
+                .attr("class", "resetButton")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", downloadButtonWidth)
+                .attr("height", dim.topBarHeight)
+                .attr("rx", 10)
+                .attr("ry", 10)
+                .attr("fill", dim.topBarColour)
+                .on("mouseover", function() {
+                    d3.select(this).attr("fill", dim.topBarHighlight);
+                })
+                .on("mouseout", function() {
+                    d3.select(this).attr("fill", dim.topBarColour);
+                })
                 .on("click", function() {
-                     _backgroundClick(curVizObj);
+                    // background click
+                    _backgroundClick(curVizObj);
                 });
+            topBarSVG.append("image")
+                .attr("xlink:href", resetButton_base64)
+                .attr("x", (downloadButtonWidth/2) - (resetButtonWidth/2))
+                .attr("y", 5)
+                .attr("width", resetButtonWidth)
+                .attr("height", resetButtonWidth)
+                .on("mouseover", function() {
+                    d3.select("#" + view_id).select(".resetButton").attr("fill", dim.topBarHighlight);
+                })
+                .on("mouseout", function() {
+                    d3.select("#" + view_id).select(".resetButton").attr("fill", dim.topBarColour);
+                })
+                .on("click", function() {
+                    // background click
+                    _backgroundClick(curVizObj);
+                });
+
+            // SVG button
+            topBarSVG.append("rect")
+                .attr("class", "svgButton")
+                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth)
+                .attr("y", 0)
+                .attr("width", downloadButtonWidth)
+                .attr("height", dim.topBarHeight)
+                .attr("rx", 10)
+                .attr("ry", 10)
+                .attr("fill", dim.topBarColour)
+                .on("mouseover", function() {
+                    d3.select(this).attr("fill", dim.topBarHighlight);
+                })
+                .on("mouseout", function() {
+                    d3.select(this).attr("fill", dim.topBarColour);
+                })
+                .on("click", function() {
+                    // download the svg
+                    downloadSVG("spacesweep_" + view_id);
+                });
+            topBarSVG.append("text")
+                .attr("class", "svgButtonText")
+                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth/2)
+                .attr("y", dim.topBarHeight/2)
+                .attr("text-anchor", "middle")
+                .attr("dy", "+0.35em")
+                .attr("font-family", "Arial")
+                .attr("fill", "white")
+                .attr("pointer-events","none")
+                .text("SVG");
+
+            // PNG button
+            topBarSVG.append("rect")
+                .attr("class", "pngButton")
+                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth*2)
+                .attr("y", 0)
+                .attr("width", downloadButtonWidth)
+                .attr("height", dim.topBarHeight)
+                .attr("rx", 10)
+                .attr("ry", 10)
+                .attr("fill",dim.topBarColour)
+                .on("mouseover", function() {
+                    d3.select(this).attr("fill", dim.topBarHighlight);
+                })
+                .on("mouseout", function() {
+                    d3.select(this).attr("fill", dim.topBarColour);
+                })
+                .on("click", function(){
+                    console.log("click");
+                    // download the png
+                    _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
+                });
+            topBarSVG.append("text")
+                .attr("class", "pngButtonText")
+                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth - downloadButtonWidth/2)
+                .attr("y", dim.topBarHeight/2)
+                .attr("text-anchor", "middle")
+                .attr("dy", "+0.35em")
+                .attr("font-family", "Arial")
+                .attr("fill", "white")
+                .attr("pointer-events","none")
+                .text("PNG");
+
 
             // PLOT ANATOMY IMAGE IN MAIN VIEW
 

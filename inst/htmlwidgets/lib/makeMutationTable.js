@@ -72,6 +72,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 
     						// unhighlight (red) the previous link
     						d3.select("#" + view_id).selectAll(".legendTreeLink").attr("stroke", dim.neutralGrey);
+
 			        	}
 
 		        		// shade main view & legend tree nodes & links
