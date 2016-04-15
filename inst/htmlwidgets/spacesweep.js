@@ -389,7 +389,7 @@ HTMLWidgets.widget({
                 })
                 .attr('stroke', dim.neutralGrey)
                 .attr('fill', 'none')
-                .attr('stroke-width', '2px')               
+                .attr('stroke-width', '3px')               
                 .attr("d", function(d) {
                     return _elbow(d);
                 })
