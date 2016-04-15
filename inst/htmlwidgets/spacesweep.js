@@ -287,16 +287,21 @@ HTMLWidgets.widget({
                 .attr("ry", 10)
                 .attr("fill", dim.topBarColour);
 
-            // reset button
+            var downloadButtonWidth = 80; // width of the top panel download button
+            var resetButtonWidth = 42; // width of the top panel reset button
 
-            var downloadButtonWidth = 50;
             var resetButton_base64 = "data:image/svg+xml;base64," + "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNC4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDQzMzYzKSAgLS0+DQo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iNTEycHgiIGhlaWdodD0iNTEycHgiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCA1MTIgNTEyIiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KCTxwYXRoIGZpbGw9IiNGRkZGRkYiIGQ9Ik00MzIuOTc1LDgwLjAzNGMtMjcuOTk4LTI3Ljk2My02MC45MjYtNDcuODYtOTYuMDM3LTU5Ljc2NHY3NS4xODkNCgkJYzE2LjkwNCw4LjQxNywzMi45MjgsMTkuMzY5LDQ2Ljk4LDMzLjQ1NmM3MC4xODgsNzAuMjI0LDcwLjE4OCwxODQuMzk3LDAsMjU0LjU4NGMtNzAuMTg5LDcwLjA4NC0xODQuMjkzLDcwLjA4NC0yNTQuNTg3LDANCgkJYy03MC4xMTctNzAuMjU4LTcwLjExNy0xODQuMzYxLDAtMjU0LjU4NGMwLjE3Ny0wLjIxMSwwLjc0LTAuNTYzLDAuOTg3LTAuODhoMC4wN2w3NC4yMTcsODEuNzMxTDIxNC41LDguNUw4LjkwNSwzLjM1Ng0KCQlsNzIuNDYxLDc1LjU4NmMtMC4yNDcsMC40MjItMC42MzQsMC44NDUtMC45NTEsMS4wOTJjLTk3LjMwNSw5Ny4yNy05Ny4zMDUsMjU1LjA3OSwwLDM1Mi4zNDkNCgkJYzk3LjQ0Niw5Ny4zNzUsMjU1LjE1LDk3LjM3NSwzNTIuNTYsMEM1MzAuMjA5LDMzNS4xMTMsNTMwLjMxNCwxNzcuMzA0LDQzMi45NzUsODAuMDM0eiIvPg0KPC9nPg0KPC9zdmc+DQo="
-            var resetButtonWidth = dim.topBarHeight - 10;
+            var downloadButton_base64 = "data:image/svg+xml;base64," + "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNC4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDQzMzYzKSAgLS0+DQo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCINCgkgd2lkdGg9IjUxMnB4IiBoZWlnaHQ9IjUxMnB4IiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgNTEyIDUxMiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8cG9seWdvbiBmaWxsPSIjRkZGRkZGIiBwb2ludHM9IjM1NC41LDMzMy41IDMzMy41LDMxMy41IDI3MS44MzUsMzY1LjU2NCAyNzEuODM1LDcuOTE3IDI0MC4xNjUsNy45MTcgMjQwLjE2NSwzNjUuNTY0IDE4MC41LDMxNC41IA0KCTE1Ny41LDMzNi41IDI1Niw0MjYuMTg4ICIvPg0KPHBvbHlnb24gZmlsbD0iI0ZGRkZGRiIgcG9pbnRzPSIyOC41LDQ3Mi40MTIgNDg5LjUsNDcyLjQxMiA0OTAuNSw1MDQuMDgyIDI3LjUsNTA0LjA4MiAiLz4NCjxwb2x5Z29uIGZpbGw9IiNGRkZGRkYiIHBvaW50cz0iMjYuNTgsMzY2LjQxMiA2My40NjcsMzY2LjQxMiA2My41NDcsNTAyLjUgMjYuNSw1MDIuNSAiLz4NCjxwb2x5Z29uIGZpbGw9IiNGRkZGRkYiIHBvaW50cz0iNDUyLjUzMywzNjUuNDEyIDQ4OS40MTksMzY1LjQxMiA0ODkuNSw1MDEuNSA0NTIuNDUzLDUwMS41ICIvPg0KPC9zdmc+DQo="
+            
+            var resetButtonIconWidth = dim.topBarHeight - 10; // icon size for reset button
+            var downloadButtonIconWidth = dim.topBarHeight - 10; // icon size for download button
+
+            // reset button
             topBarSVG.append("rect")
                 .attr("class", "resetButton")
                 .attr("x", 0)
                 .attr("y", 0)
-                .attr("width", downloadButtonWidth)
+                .attr("width", resetButtonWidth)
                 .attr("height", dim.topBarHeight)
                 .attr("rx", 10)
                 .attr("ry", 10)
@@ -313,10 +318,10 @@ HTMLWidgets.widget({
                 });
             topBarSVG.append("image")
                 .attr("xlink:href", resetButton_base64)
-                .attr("x", (downloadButtonWidth/2) - (resetButtonWidth/2))
+                .attr("x", (resetButtonWidth/2) - (resetButtonIconWidth/2))
                 .attr("y", 5)
-                .attr("width", resetButtonWidth)
-                .attr("height", resetButtonWidth)
+                .attr("width", resetButtonIconWidth)
+                .attr("height", resetButtonIconWidth)
                 .on("mouseover", function() {
                     d3.select("#" + view_id).select(".resetButton").attr("fill", dim.topBarHighlight);
                 })
@@ -350,14 +355,30 @@ HTMLWidgets.widget({
                 });
             topBarSVG.append("text")
                 .attr("class", "svgButtonText")
-                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth/2)
+                .attr("x", dim.viewDiameter + dim.legendWidth - 10)
                 .attr("y", dim.topBarHeight/2)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", "end")
                 .attr("dy", "+0.35em")
                 .attr("font-family", "Arial")
                 .attr("fill", "white")
                 .attr("pointer-events","none")
                 .text("SVG");
+            topBarSVG.append("image")
+                .attr("xlink:href", downloadButton_base64)
+                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth + 10)
+                .attr("y", 5)
+                .attr("width", downloadButtonIconWidth)
+                .attr("height", downloadButtonIconWidth)
+                .on("mouseover", function() {
+                    d3.select("#" + view_id).select(".svgButton").attr("fill", dim.topBarHighlight);
+                })
+                .on("mouseout", function() {
+                    d3.select("#" + view_id).select(".svgButton").attr("fill", dim.topBarColour);
+                })
+                .on("click", function() {
+                    // download the svg
+                    downloadSVG("spacesweep_" + view_id);
+                });
 
             // PNG button
             topBarSVG.append("rect")
@@ -376,20 +397,35 @@ HTMLWidgets.widget({
                     d3.select(this).attr("fill", dim.topBarColour);
                 })
                 .on("click", function(){
-                    console.log("click");
                     // download the png
                     _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
                 });
             topBarSVG.append("text")
                 .attr("class", "pngButtonText")
-                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth - downloadButtonWidth/2)
+                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth - 10)
                 .attr("y", dim.topBarHeight/2)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", "end")
                 .attr("dy", "+0.35em")
                 .attr("font-family", "Arial")
                 .attr("fill", "white")
                 .attr("pointer-events","none")
                 .text("PNG");
+            topBarSVG.append("image")
+                .attr("xlink:href", downloadButton_base64)
+                .attr("x", dim.viewDiameter + dim.legendWidth - 2*downloadButtonWidth + 10)
+                .attr("y", 5)
+                .attr("width", downloadButtonIconWidth)
+                .attr("height", downloadButtonIconWidth)
+                .on("mouseover", function() {
+                    d3.select("#" + view_id).select(".pngButton").attr("fill", dim.topBarHighlight);
+                })
+                .on("mouseout", function() {
+                    d3.select("#" + view_id).select(".pngButton").attr("fill", dim.topBarColour);
+                })
+                .on("click", function() {
+                    // download the png
+                    _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
+                });
 
 
             // PLOT ANATOMY IMAGE IN MAIN VIEW
@@ -831,8 +867,6 @@ HTMLWidgets.widget({
                 // PLOT SITE-SPECIFIC ELEMENTS (oncoMix, tree, title, anatomic lines, anatomic marks)
                 _plotSite(curVizObj, sample, drag);            
             });
-
-
 
         }); // end when statement        
     },
