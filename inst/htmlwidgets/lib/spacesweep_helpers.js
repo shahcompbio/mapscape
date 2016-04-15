@@ -22,12 +22,6 @@ function _legendCloneHighlight(curVizObj, clone_id, showPrevalence) {
             .attr("stroke-opacity", 1);
     })
 
-    // highlight genotype on anatomic image
-    d3.select("#" + view_id)
-        .selectAll(".gtypeMark.clone_" + clone_id)
-        .attr("fill-opacity", 1)
-        .attr("stroke-opacity", 1);
-
     // highlight oncoMix cells at each sample
     curVizObj.data.genotype_samples[clone_id].forEach(function(sample) {
         d3.select("#" + view_id)
@@ -1085,6 +1079,34 @@ function _getGenotypeSites(curVizObj) {
     })
 
     curVizObj.data.genotype_samples = genotype_samples;
+}
+
+/* function to get, for each genotype, the locations expressing that genotype
+* @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
+*/
+function _getGenotypeLocations(curVizObj) {
+    // each sample (1st level property) has an array of genotypes at that sample
+    var genotype_locations = {};
+
+    curVizObj.data.treeNodes.forEach(function(gtype) {
+
+        // get samples showing the target clone
+        var samples = curVizObj.data.genotype_samples[gtype];
+
+        // get location id for each sample
+        var locations = [];
+        samples.forEach(function(sample) {
+            var cur_sample = _.findWhere(curVizObj.data.samples, {sample_id: sample});
+            // if this sample has an anatomic mark
+            if (cur_sample.location) {
+                locations.push(cur_sample.location.location_id);
+            }
+        })
+
+        genotype_locations[gtype] = _.uniq(locations);
+    });
+
+    curVizObj.data.genotype_locations = genotype_locations;
 }
 
 // VORONOI FUNCTIONS

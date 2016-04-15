@@ -148,6 +148,9 @@ HTMLWidgets.widget({
             // get samples showing each genotype
             _getGenotypeSites(curVizObj);
 
+            // get locations showing each genotype
+            _getGenotypeLocations(curVizObj);
+
             // get samples affected by each link (identified here by its target clone)
             _getSitesAffectedByLink(curVizObj);
 
@@ -453,6 +456,12 @@ HTMLWidgets.widget({
 
                         // highlight this clone
                         _legendCloneHighlight(curVizObj, d.id, true);
+
+                        // highlight genotype on anatomic image
+                        d3.select("#" + view_id)
+                            .selectAll(".gtypeMark.clone_" + d.id)
+                            .attr("fill-opacity", 1)
+                            .attr("stroke-opacity", 1);
                     }
                 })
                 .on("mouseout", function(d) {
@@ -483,8 +492,8 @@ HTMLWidgets.widget({
                         d3.select("#" + curVizObj.view_id).selectAll(".clonalPrev").remove();
                         // remove any mutation prevalence plotting from the node mouseover
                         d3.select("#" + curVizObj.view_id).selectAll(".mutationPrevalences").remove();
-                        // reset any general anatomic marks
-                        d3.select("#" + curVizObj.view_id).selectAll(".generalMark").attr("fill", "#CBCBCB");
+                        // reset any genotype marks
+                        d3.select("#" + curVizObj.view_id).selectAll(".gtypeMark").attr("fill-opacity", 0).attr("stroke-opacity", 0);
 
                         // get data for this clone
                         var filtered_muts = 
@@ -527,6 +536,15 @@ HTMLWidgets.widget({
 
                         // highlight this clone
                         _legendCloneHighlight(curVizObj, d.id, false);
+
+                        // highlight general anatomic marks for those locations showing the clone
+                        curVizObj.data.genotype_locations[d.id].forEach(function(location) {
+                            d3.select("#" + view_id)
+                                    .selectAll(".generalMark.location_" + location)
+                                    .attr("fill", dim.anatomicLineColour)
+                                    .attr("fill-opacity", 1)
+                                    .attr("stroke-opacity", 1);
+                        })
 
                         d3.event.stopPropagation();
                     }
