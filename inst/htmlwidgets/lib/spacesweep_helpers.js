@@ -1966,6 +1966,20 @@ function _initialSiteOrdering(curVizObj) {
     curVizObj.data.samples = new_samples_array;
 }
 
+/* function to sort samples based on user input sample ordering
+* @param {Object} curVizObj -- vizObj for the current view
+* @param sample_ids -- array of sample ids provided by user
+*/
+function _orderSamplesByUserInput(curVizObj, sample_ids) {
+    var samples = curVizObj.data.samples;
+    var new_samples_array = [];
+
+    sample_ids.forEach(function(id) {
+        new_samples_array.push(_.findWhere(curVizObj.data.samples, {sample_id: id}));
+    })
+    curVizObj.data.samples = new_samples_array;
+}
+
 // MUTATION FUNCTIONS
 
 /* function to get the mutations into a better format

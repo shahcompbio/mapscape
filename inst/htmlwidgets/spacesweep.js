@@ -140,6 +140,10 @@ HTMLWidgets.widget({
                 // initial ordering of samples based on their anatomic location
                 _initialSiteOrdering(curVizObj);
             }
+            // otherwise, order by user input
+            else {
+                _orderSamplesByUserInput(curVizObj, curVizObj.userConfig.sample_ids);
+            }
 
             // get cellular prevalence data in workable format, and threshold it
             _getCPData(curVizObj);
