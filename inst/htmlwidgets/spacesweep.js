@@ -37,7 +37,7 @@ HTMLWidgets.widget({
         // set configurations
         var config = $.extend(true, {}, defaults);
         config.containerWidth = width;
-        config.containerHeight = height;
+        config.containerHeight = height - config.topBarHeight;
 
         // global variable vizObj
         vizObj = {};
@@ -241,7 +241,8 @@ HTMLWidgets.widget({
                 .style("position", "relative")
                 .style("width", (dim.viewDiameter + dim.legendWidth) + "px")
                 .style("height", (dim.viewDiameter) + "px")
-                .style("float", "left");
+                .style("float", "left")
+                .style("clear", "left");
 
             curVizObj.view.mutationTableDIV = d3.select(el)
                 .append("div")
@@ -249,7 +250,8 @@ HTMLWidgets.widget({
                 .style("position", "relative")
                 .style("width", dim.mutationTableWidth + "px")
                 .style("height", dim.mutationTableHeight + "px")
-                .style("float", "left");
+                .style("float", "left")
+                .style("clear", "left");
 
             // canvas for image png output
             var canvas = d3.select(el).append("canvas")
