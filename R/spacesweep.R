@@ -73,7 +73,7 @@ spacesweep <- function(clonal_prev,
                       img_ref,
                       clone_colours = "NA",
                       mutations = "NA",
-                      sample_ids = "NA",
+                      sample_ids = c("NA"),
                       n_cells = 100,
                       width = 960, 
                       height = 960) {
@@ -378,7 +378,7 @@ spacesweep <- function(clonal_prev,
   sample_ids <- as.character(sample_ids)
 
   # if sample id array provided
-  if (is.vector(sample_ids)) {
+  if (! (length(sample_ids) == 1 && sample_ids[1] == "NA") ) {
     # check that all sample ids are present in the clonal prevalence data
     clonal_prev_sample_ids <- unique(clonal_prev$sample_id)
     sample_ids_unique <- unique(sample_ids)
