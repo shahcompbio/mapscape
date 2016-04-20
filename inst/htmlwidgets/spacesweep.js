@@ -161,6 +161,9 @@ HTMLWidgets.widget({
             // get samples affected by each link (identified here by its target clone)
             _getSitesAffectedByLink(curVizObj);
 
+            // get image scaling information
+            curVizObj.view.crop_info = _scale(curVizObj);
+
             // get mutation data in better format
             if (curVizObj.userConfig.mutations[0] != "NA") {
                 _reformatMutations(curVizObj);
@@ -433,6 +436,49 @@ HTMLWidgets.widget({
                     _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
                 });
 
+            // PLOT ANATOMY IN LEGEND
+
+            // anatomy title
+            viewSVG.append("text")
+                .attr("class", "legendTitle")
+                .attr("x", dim.legendWidth/2) 
+                .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
+                .attr("text-anchor", "middle")
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                .attr("color", dim.legendTitleColour)
+                .attr("font-family", "Arial")
+                .attr("font-size", dim.legendTitleHeight)
+                .text("Anatomy");
+
+            // anatomy image
+            viewSVG.append("image")
+                .attr("xlink:href", dim.image_ref)
+                .attr("x", dim.legend_image_top_l.x)
+                .attr("y", dim.legend_image_top_l.y)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                .attr("width", dim.legend_image_width)
+                .attr("height", dim.legend_image_height)
+
+            // anatomy region of interest
+            viewSVG.append("circle")
+                .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
+                .attr("cy", dim.legend_image_top_l.y + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_height)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                .attr("r", (curVizObj.view.crop_info.crop_width_prop/2) * dim.legend_image_width)
+                .attr("stroke-width", "2px")
+                .attr("stroke", dim.anatomicLineColour)
+                .attr("fill", "none");
+
+
+            // PLOT WHITE RECT TO FILL MAIN VIEW AREA 
+            // (covers any anatomical region circle that goes out of the legend image bounds)
+
+            viewSVG.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", dim.viewDiameter)
+                .attr("height", dim.viewDiameter)
+                .attr("fill", "white");
 
             // PLOT ANATOMY IMAGE IN MAIN VIEW
 
@@ -462,9 +508,6 @@ HTMLWidgets.widget({
                 .attr("stroke-opacity", 0.2);
 
             // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
-
-            // get scaling information
-            curVizObj.view.crop_info = _scale(curVizObj);
 
             // update the anatomy image with the new cropping
             d3.select("#" + view_id).select(".anatomyImage") 
@@ -700,38 +743,6 @@ HTMLWidgets.widget({
                     }
                 });
 
-            // PLOT ANATOMY IN LEGEND
-
-            // anatomy title
-            viewSVG.append("text")
-                .attr("class", "legendTitle")
-                .attr("x", dim.legendWidth/2) 
-                .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
-                .attr("text-anchor", "middle")
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("color", dim.legendTitleColour)
-                .attr("font-family", "Arial")
-                .attr("font-size", dim.legendTitleHeight)
-                .text("Anatomy");
-
-            // anatomy image
-            viewSVG.append("image")
-                .attr("xlink:href", dim.image_ref)
-                .attr("x", dim.legend_image_top_l.x)
-                .attr("y", dim.legend_image_top_l.y)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("width", dim.legend_image_width)
-                .attr("height", dim.legend_image_height)
-
-            // anatomy region of interest
-            viewSVG.append("circle")
-                .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
-                .attr("cy", dim.legend_image_top_l.y + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_height)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("r", (curVizObj.view.crop_info.crop_width_prop/2) * dim.legend_image_width)
-                .attr("stroke-width", "2px")
-                .attr("stroke", dim.anatomicLineColour)
-                .attr("fill", "none");
 
             // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
 
