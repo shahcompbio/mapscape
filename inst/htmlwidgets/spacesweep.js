@@ -204,7 +204,7 @@ HTMLWidgets.widget({
                     dim.dragOn = true; 
 
                     // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                    var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample); 
+                    var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample.split(' ').join('_')); 
                     curVizObj.view.startAngle = _find_angle_of_line_segment(
                         {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                         {x: dim.viewCentre.x, y: dim.viewCentre.y});
@@ -218,7 +218,7 @@ HTMLWidgets.widget({
                     dim.dragOn = false; 
 
                     // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
-                    var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample); 
+                    var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample.split(' ').join('_')); 
                     curVizObj.view.endAngle = _find_angle_of_line_segment(
                         {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
                         {x: dim.viewCentre.x, y: dim.viewCentre.y});
@@ -523,7 +523,7 @@ HTMLWidgets.widget({
                 .selectAll(".sampleG")
                 .data(curVizObj.data.samples)
                 .enter().append("g")
-                .attr("class", function(d) { return "sampleG sample_" + d.sample_id.replace(/ /g,"_")});
+                .attr("class", function(d) { return "sampleG sample_" + d.sample_id.split(' ').join('_')});
 
             // PLOT CIRCLE BORDER
 
@@ -614,7 +614,7 @@ HTMLWidgets.widget({
                 .enter()
                 .append("circle")     
                 .attr("class", function(d) {
-                    return "legendTreeNode clone_" + d.id;
+                    return "legendTreeNode clone_" + d.id.split(' ').join('_');
                 })
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; })           
@@ -636,7 +636,7 @@ HTMLWidgets.widget({
                     if (dim.nClickedNodes > 0) {
                         // highlight node in the legend
                         d3.select("#" + view_id)
-                            .select(".legendTreeNode.clone_" + d.id)
+                            .select(".legendTreeNode.clone_" + d.id.split(' ').join('_'))
                             .attr("fill-opacity", 1)
                             .attr("stroke-opacity", 1);
                     }
@@ -652,7 +652,7 @@ HTMLWidgets.widget({
 
                         // highlight genotype on anatomic image
                         d3.select("#" + view_id)
-                            .selectAll(".gtypeMark.clone_" + d.id)
+                            .selectAll(".gtypeMark.clone_" + d.id.split(' ').join('_'))
                             .attr("fill-opacity", 1)
                             .attr("stroke-opacity", 1);
                     }
@@ -662,7 +662,7 @@ HTMLWidgets.widget({
                     if ((dim.nClickedNodes > 0) && (_.uniq(dim.curCloneIDs).indexOf(d.id) == -1)) {
                         // unhighlight this node in the legend
                         d3.select("#" + view_id)
-                            .select(".legendTreeNode.clone_" + d.id)
+                            .select(".legendTreeNode.clone_" + d.id.split(' ').join('_'))
                             .attr("fill-opacity", dim.shadeAlpha)
                             .attr("stroke-opacity", dim.shadeAlpha);
                     }
@@ -853,9 +853,9 @@ HTMLWidgets.widget({
                             // highlight only those links that participate in the mixture classification
                             viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
                             participating_samples.forEach(function(participating_sample) {
-                                viewSVG.selectAll(".treeLink.sample_" + participating_sample)
+                                viewSVG.selectAll(".treeLink.sample_" + participating_sample.split(' ').join('_'))
                                     .attr("stroke-opacity", dim.shadeAlpha);
-                                viewSVG.selectAll(".mixtureClassTreeLink.sample_"+participating_sample)
+                                viewSVG.selectAll(".mixtureClassTreeLink.sample_"+participating_sample.split(' ').join('_'))
                                     .attr("stroke-opacity", 1);                        
                             });
                         }
