@@ -159,6 +159,9 @@ spacesweep <- function(clonal_prev,
 
   # print("[Progress] Processing clonal prevalence data...")
 
+  # create map of original sample ids to space-replaced sample ids
+  sample_id_map <- data.frame(original_sample_id = unique(clonal_prev$sample_id), stringsAsFactors=FALSE)
+  sample_id_map$space_replaced_sample_id <- stringr::str_replace_all(sample_id_map$original_sample_id,"\\s+","_")
 
   # ensure there is data within it
   if (nrow(clonal_prev) == 0) {
@@ -177,6 +180,7 @@ spacesweep <- function(clonal_prev,
   clonal_prev$sample_id <- as.character(clonal_prev$sample_id)
   clonal_prev$clone_id <- as.character(clonal_prev$clone_id)
   clonal_prev$clonal_prev <- as.numeric(as.character(clonal_prev$clonal_prev))
+
 
   # ensure all clone ids in clonal prevalence data have associated nodes in the tree
   tree_clone_ids <- unique(unlist(tree_edges))
@@ -390,6 +394,16 @@ spacesweep <- function(clonal_prev,
     }
   }
 
+  # replace spaces with underscores
+  clonal_prev$sample_id <- stringr::str_replace_all(clonal_prev$sample_id,"\\s+","_")
+  sample_locations$sample_id <- stringr::str_replace_all(sample_locations$sample_id,"\\s+","_")
+  if (is.data.frame(mutations)) {
+    prevs_split_small <- lapply(prevs_split_small, function(prevs) {
+      prevs$sample_id <- stringr::str_replace_all(prevs$sample_id,"\\s+","_")
+      return(prevs)
+    })
+  }
+
   # forward options using x
   x = list(
     clonal_prev = jsonlite::toJSON(clonal_prev),
@@ -400,7 +414,8 @@ spacesweep <- function(clonal_prev,
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
     sample_ids = sample_ids,
     n_cells = n_cells,
-    img_ref = img_ref_base64
+    img_ref = img_ref_base64,
+    sample_id_map = jsonlite::toJSON(sample_id_map)
   )
 
   # create widget

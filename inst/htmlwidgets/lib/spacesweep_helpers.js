@@ -1894,11 +1894,15 @@ function _plotSite(curVizObj, sample, drag) {
         .attr("fill", dim.legendTitleColour)
         .style("cursor", "pointer")
         .text(function(d) { 
+            // get original sample name (spaces may have been replaced with underscores)
+            var sample_name = 
+                _.findWhere(curVizObj.userConfig.sample_id_map, {"space_replaced_sample_id": d.sample})["original_sample_id"];
+
             // if title is too long, append "..." to the first few letters
-            if (d.sample.length > 6) {
-                return d.sample.slice(0,6) + "...";
+            if (sample_name.length > 6) {
+                return sample_name.slice(0,6) + "...";
             }
-            return d.sample; 
+            return sample_name; 
         })
         .on("mouseover", function(d) { 
             if (!dim.selectOn) {
