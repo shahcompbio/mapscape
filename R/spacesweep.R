@@ -395,6 +395,7 @@ spacesweep <- function(clonal_prev,
   }
 
   # replace spaces with underscores
+  # --> sample ids
   clonal_prev$sample_id <- stringr::str_replace_all(clonal_prev$sample_id,"\\s+","_")
   sample_locations$sample_id <- stringr::str_replace_all(sample_locations$sample_id,"\\s+","_")
   if (is.data.frame(mutations)) {
@@ -402,6 +403,16 @@ spacesweep <- function(clonal_prev,
       prevs$sample_id <- stringr::str_replace_all(prevs$sample_id,"\\s+","_")
       return(prevs)
     })
+  }
+  # --> clone ids
+  clonal_prev$clone_id <- stringr::str_replace_all(clonal_prev$clone_id,"\\s+","_")
+  tree_edges$source <- stringr::str_replace_all(tree_edges$source,"\\s+","_")
+  tree_edges$target <- stringr::str_replace_all(tree_edges$target,"\\s+","_")
+  if (is.data.frame(clone_colours)) {
+    clone_colours$clone_id <- stringr::str_replace_all(clone_colours$clone_id,"\\s+","_")
+  }
+  if (is.data.frame(mutations)) {
+    mutation_info$clone_id <- stringr::str_replace_all(mutation_info$clone_id,"\\s+","_")
   }
 
   # forward options using x
