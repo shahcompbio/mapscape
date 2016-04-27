@@ -202,7 +202,7 @@ HTMLWidgets.widget({
                 .on("dragstart", function(d) {
                     dim.dragOn = true; 
 
-                    // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
+                    // calculate angle w/the positive x-axis, formed by the line segment between the voronoi centre & view centre
                     var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample.split(' ').join('_')); 
                     curVizObj.view.startAngle = _find_angle_of_line_segment(
                         {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},
@@ -216,7 +216,7 @@ HTMLWidgets.widget({
                 .on("dragend", function(d) {
                     dim.dragOn = false; 
 
-                    // calculate angle w/the positive x-axis, formed by the line segment between the mouse & view centre
+                    // calculate angle w/the positive x-axis, formed by the line segment between the voronoi centre & view centre
                     var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+d.sample.split(' ').join('_')); 
                     curVizObj.view.endAngle = _find_angle_of_line_segment(
                         {x: voronoiCentre.attr("x1"), y: voronoiCentre.attr("y1")},

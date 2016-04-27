@@ -1650,11 +1650,13 @@ function _plotSite(curVizObj, sample, drag) {
     // create oncoMix group
     var curSiteOncoMixG = cur_sampleG
         .selectAll(".oncoMixG")
-        .data([{"x": sample_data.voronoi.centre.x, "y": sample_data.voronoi.centre.y}])
+        .data([{"x": sample_data.voronoi.centre.x, "y": sample_data.voronoi.centre.y, "sample": sample}])
         .enter()
         .append("g")
         .classed("oncoMixG", true)
-        .classed("sample_" + sample.split(' ').join('_'), true);
+        .classed("sample_" + sample.split(' ').join('_'), true)
+        .style("cursor", "pointer")
+        .call(drag);
 
     // voronoi function for this sample
     var voronoi = d3.geom.voronoi()
