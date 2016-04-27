@@ -1410,23 +1410,10 @@ function _reorderSitesData(curVizObj) {
 
     curVizObj.data.sample_ids.forEach(function(sample_id) {
 
-        // current transformation of the sample title
-        var t = d3.transform(d3.select("#" + view_id).select(".sampleTitle.sample_"+sample_id.split(' ').join('_')).attr("transform")),
-            t_x = t.translate[0],
-            t_y = t.translate[1];
-
         // current coordinates
-        var x = (t) ? 
-                    parseFloat(d3.select("#" + view_id).select(".sampleTitle.sample_"+sample_id.split(' ').join('_')).attr("x")) + t_x :
-                    parseFloat(d3.select("#" + view_id).select(".sampleTitle.sample_"+sample_id.split(' ').join('_')).attr("x"));
-        var y = (t) ? 
-                    parseFloat(d3.select("#" + view_id).select(".sampleTitle.sample_"+sample_id.split(' ').join('_')).attr("y")) + t_y :
-                    parseFloat(d3.select("#" + view_id).select(".sampleTitle.sample_"+sample_id.split(' ').join('_')).attr("y"));
-
-        // depending on placement of title, move y-coordinate up or down
-        y = (d3.select("#" + view_id).select(".sampleTitle.sample_"+sample_id.split(' ').join('_')).data()[0].position == "top") ? 
-            y + curVizObj.generalConfig.treeWidth/2 :
-            y - curVizObj.generalConfig.treeWidth/2;
+        var voronoiCentre = d3.select("#" + view_id).select(".anatomicPointer.sample_"+sample_id);
+        var x = voronoiCentre.attr("x1");
+        var y = voronoiCentre.attr("y1");
 
         // find the angle formed with the positive x-axis, by the line segment from the title to the view centre
         var angle = _find_angle_of_line_segment({x: x, 
@@ -1488,7 +1475,7 @@ function _snapSites(curVizObj) {
 
         // get the data
         var sample_data = _.findWhere(curVizObj.data.samples, {sample_id: sample}), // data for the current sample
-            cur_sampleG = d3.select("#" + view_id).select(".sampleG.sample_" + sample.split(' ').join('_')); // svg group for this sample
+            cur_sampleG = d3.select("#" + view_id).select(".sampleG.sample_" + sample); // svg group for this sample
 
         // calculate angle w/the positive x-axis, formed by the line segment between the 
         // "snapped" sample position & view centre

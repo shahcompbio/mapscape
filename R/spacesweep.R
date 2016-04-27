@@ -4,7 +4,7 @@
 #'
 #' Interactive components in main view:
 #'
-#' 1. Reorder samples by grabbing the sample name and dragging it radially. \cr
+#' 1. Reorder samples by grabbing the sample name or tumour and dragging it radially. \cr
 #' 2. Hover over anatomic location of interest to view patient data associated with that location. \cr
 #' 3. Hover over tree nodes to view cellular prevalence of that clone. 
 #'
