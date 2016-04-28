@@ -16,7 +16,7 @@ HTMLWidgets.widget({
             legendWidth: 130,
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
-            max_r: 8, // maximum radius for tree nodes
+            max_r: 7, // maximum radius for tree nodes
             sampleMark_r: 5, // sample mark radius
             dragOn: false, // whether or not drag is on
             selectOn: false, // whether or not link selection is on
@@ -191,10 +191,12 @@ HTMLWidgets.widget({
 
             // VIEW SETUP
 
-            // radii (- 8, - 6 = how much space to give between nodes)
+            // radii (- 8, - 5 = how much space to give between nodes)
             var tree_height = curVizObj.data.tree_height + 1;
-            dim.node_r = ((dim.treeWidth - 6*tree_height)/tree_height)/2; // sample tree
+            dim.node_r = ((dim.treeWidth - 5*tree_height)/tree_height)/2; // sample tree
             dim.legendNode_r = ((dim.legendTreeWidth - 8*tree_height)/tree_height)/2; // legend tree
+            dim.node_r = (dim.node_r > dim.max_r) ? dim.max_r : dim.node_r;
+            dim.legendNode_r = (dim.legendNode_r > dim.max_r) ? dim.max_r : dim.legendNode_r;
 
             // DRAG BEHAVIOUR
 
@@ -435,6 +437,15 @@ HTMLWidgets.widget({
                     _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
                 });
 
+            // tip for legend nodes
+            var nodeTip = d3.tip()
+                .attr('class', 'd3-tip')
+                .offset([-10,0])
+                .html(function(d) {
+                    return "<span>" + d + "</span>";
+                });  
+            d3.select("#" + view_id).select(".spacesweep_" + view_id).call(nodeTip);
+
             // PLOT ANATOMY IN LEGEND
 
             // anatomy title
@@ -631,6 +642,9 @@ HTMLWidgets.widget({
                 })
                 .attr("r", dim.legendNode_r)
                 .on("mouseover", function(d) {
+                    // show node genotype tooltip
+                    nodeTip.show("ID: " + d.id);
+
                     // if we're selecting nodes
                     if (dim.nClickedNodes > 0) {
                         // highlight node in the legend
@@ -657,6 +671,9 @@ HTMLWidgets.widget({
                     }
                 })
                 .on("mouseout", function(d) {
+                    // hide node genotype tooltip
+                    nodeTip.hide();
+
                     // if we're selecting nodes, but we haven't clicked this one yet
                     if ((dim.nClickedNodes > 0) && (_.uniq(dim.curCloneIDs).indexOf(d.id) == -1)) {
                         // unhighlight this node in the legend
