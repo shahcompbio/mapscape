@@ -643,7 +643,9 @@ HTMLWidgets.widget({
                 .attr("r", dim.legendNode_r)
                 .on("mouseover", function(d) {
                     // show node genotype tooltip
-                    nodeTip.show("ID: " + d.id);
+                    var clone_name = // get original sample name (spaces may have been replaced with underscores)
+                        _.findWhere(curVizObj.userConfig.clone_id_map, {"space_replaced_clone_id": d.id})["original_clone_id"];
+                    nodeTip.show("ID: " + clone_name);
 
                     // if we're selecting nodes
                     if (dim.nClickedNodes > 0) {

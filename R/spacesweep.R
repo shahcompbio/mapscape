@@ -163,6 +163,10 @@ spacesweep <- function(clonal_prev,
   sample_id_map <- data.frame(original_sample_id = unique(clonal_prev$sample_id), stringsAsFactors=FALSE)
   sample_id_map$space_replaced_sample_id <- stringr::str_replace_all(sample_id_map$original_sample_id,"\\s+","_")
 
+  # create map of original clone ids to space-replaced clone ids
+  clone_id_map <- data.frame(original_clone_id = unique(clonal_prev$clone_id), stringsAsFactors=FALSE)
+  clone_id_map$space_replaced_clone_id <- stringr::str_replace_all(clone_id_map$original_clone_id,"\\s+","_")
+
   # ensure there is data within it
   if (nrow(clonal_prev) == 0) {
     stop("Clonal prevalence data frame contains no data.")
@@ -426,7 +430,8 @@ spacesweep <- function(clonal_prev,
     sample_ids = sample_ids,
     n_cells = n_cells,
     img_ref = img_ref_base64,
-    sample_id_map = jsonlite::toJSON(sample_id_map)
+    sample_id_map = jsonlite::toJSON(sample_id_map),
+    clone_id_map = jsonlite::toJSON(clone_id_map)
   )
 
   # create widget
