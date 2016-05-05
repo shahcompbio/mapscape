@@ -30,7 +30,7 @@ HTMLWidgets.widget({
             curCloneIDs: [], // array of clone ids currently in the mutation table
             phantomRoot: "phantomRoot",
             topBarHeight: 30, // height of top panel
-            topBarColour: "#ECECEC",
+            topBarColour: "#D9D9D9",
             topBarHighlight: "#C6C6C6"
         };
 
