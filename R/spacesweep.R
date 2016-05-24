@@ -58,6 +58,9 @@
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
+#' @param show_warnings {Boolean} (Optional) Whether or not to show any warnings. Default is TRUE.
+#' @param width {Number} (Optional) Width of the plot. Minimum width is 930.
+#' @param height {Number} (Optional) Height of the plot. Minimum height is 700.
 #' @export
 #' @examples
 #' library("spacesweep")
@@ -75,6 +78,7 @@ spacesweep <- function(clonal_prev,
                       mutations = "NA",
                       sample_ids = c("NA"),
                       n_cells = 100,
+                      show_warnings = TRUE,
                       width = 960, 
                       height = 960) {
 
@@ -321,7 +325,9 @@ spacesweep <- function(clonal_prev,
 
     # keep only those mutations whose clone ids are present in the phylogeny
     mutation_prevalences <- mutation_prevalences[which(mutation_prevalences$clone_id %in% clones_in_phylo),]
-    if (nrow(mutation_prevalences) > 10000) {
+    
+    # warn if more than 10,000 rows in data that the visualization may be slow
+    if (nrow(mutation_prevalences) > 10000 && show_warnings) {
       print(paste("[WARNING] Number of rows in mutations data exceeds 10,000. ",
         "Resultantly, visualization may be slow. ",
         "It is recommended to filter the data to a smaller set of mutations.", sep=""))
