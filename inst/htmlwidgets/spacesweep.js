@@ -183,6 +183,12 @@ HTMLWidgets.widget({
                 if (curVizObj.userConfig.mutations[0].hasOwnProperty("gene_name")) {
                     dim.mutationColumns.splice(2, 0, { "data": "gene_name", "title": "Gene", "defaultContent": "" });
                 }
+                if (curVizObj.userConfig.mutations[0].hasOwnProperty("nuc_change")) {
+                    dim.mutationColumns.splice(2, 0, { "data": "nuc_change", "title": "Nucleotide Change", "defaultContent": "" });
+                } 
+                if (curVizObj.userConfig.mutations[0].hasOwnProperty("aa_change")) {
+                    dim.mutationColumns.splice(2, 0, { "data": "aa_change", "title": "Amino Acid Change", "defaultContent": "" });
+                } 
                 
             }
 

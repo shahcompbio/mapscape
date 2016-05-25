@@ -52,6 +52,8 @@
 #'                       (7) {String} (Optional) "effect" - effect of the mutation 
 #'                                                          (e.g. non-synonymous, upstream, etc.)
 #'                       (8) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
+#'                       (9) {String} (Optional) "nuc_change" - nucleotide change
+#'                       (10) {String} (Optional) "aa_change" - amino acid change.
 #' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
@@ -273,6 +275,14 @@ spacesweep <- function(clonal_prev,
     if ("impact" %in% colnames(mutations)) {
       extra_columns <- append(extra_columns, "impact")
       mutations$impact <- as.character(mutations$impact)
+    }
+    if ("nuc_change" %in% colnames(mutations)) {
+      extra_columns <- append(extra_columns, "nuc_change")
+      mutations$nuc_change <- as.character(mutations$nuc_change)
+    }
+    if ("aa_change" %in% colnames(mutations)) {
+      extra_columns <- append(extra_columns, "aa_change")
+      mutations$aa_change <- as.character(mutations$aa_change)
     }
 
     # check that all SAMPLES in the mutations data are present in the sample locations & clonal prev data
