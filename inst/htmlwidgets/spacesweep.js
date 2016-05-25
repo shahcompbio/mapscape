@@ -443,6 +443,8 @@ HTMLWidgets.widget({
                     _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
                 });
 
+            // TOOLTIPS
+
             // tip for legend nodes
             var nodeTip = d3.tip()
                 .attr('class', 'd3-tip')
@@ -451,6 +453,15 @@ HTMLWidgets.widget({
                     return "<span>" + d + "</span>";
                 });  
             d3.select("#" + view_id).select(".spacesweep_" + view_id).call(nodeTip);
+
+            // tip for anatomic sites
+            var anatomyTip = d3.tip()
+                .attr('class', 'd3-tip')
+                .offset([-10,0])
+                .html(function(d) {
+                    return "<span>" + d + "</span>";
+                });  
+            d3.select("#" + view_id).select(".spacesweep_" + view_id).call(anatomyTip);
 
             // PLOT ANATOMY IN LEGEND
 
@@ -796,11 +807,16 @@ HTMLWidgets.widget({
 
                         // highlight all samples with this location
                         _highlightSites(curVizObj.data.anatomic_locations[d].sample_ids, curVizObj);
+
+                        // display full site name 
+                        anatomyTip.show(d);
+
                     }
                 })
                 .on("mouseout", function(d) {
                     if (_checkForSelections(curVizObj)) {
                         _resetView(curVizObj);
+                        anatomyTip.hide();
                     }
                 });
 
