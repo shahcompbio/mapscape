@@ -235,6 +235,10 @@ spacesweep <- function(clonal_prev,
       "to the sample locations data frame: ", paste(samples_missing_from_locations_data, collapse=", "), ".", sep=""))
   }
 
+  # create map of original sample locations to space-replaced sample locations
+  sample_loc_map <- data.frame(original_sample_loc = unique(sample_locations$location_id), stringsAsFactors=FALSE)
+  sample_loc_map$space_replaced_sample_loc <- stringr::str_replace_all(sample_loc_map$original_sample_loc,"\\s+","_")
+
   # MUTATIONS DATA
 
   if (is.data.frame(mutations)) {
@@ -424,6 +428,8 @@ spacesweep <- function(clonal_prev,
       return(prevs)
     })
   }
+  # --> sample locations
+  sample_locations$location_id <- stringr::str_replace_all(sample_locations$location_id,"\\s+","_")
   # --> clone ids
   clonal_prev$clone_id <- stringr::str_replace_all(clonal_prev$clone_id,"\\s+","_")
   tree_edges$source <- stringr::str_replace_all(tree_edges$source,"\\s+","_")
@@ -447,7 +453,8 @@ spacesweep <- function(clonal_prev,
     n_cells = n_cells,
     img_ref = img_ref_base64,
     sample_id_map = jsonlite::toJSON(sample_id_map),
-    clone_id_map = jsonlite::toJSON(clone_id_map)
+    clone_id_map = jsonlite::toJSON(clone_id_map),
+    sample_loc_map = jsonlite::toJSON(sample_loc_map)
   )
 
   # create widget

@@ -800,7 +800,7 @@ HTMLWidgets.widget({
                     if (_checkForSelections(curVizObj)) {
                         // highlight this location
                         d3.select(this) 
-                            .attr("fill", dim.anatomicLineColour);
+                            .attr("fill", dim.anatomicLineColoura);
 
                         // shade view
                         _shadeMainView(curVizObj);
@@ -808,8 +808,10 @@ HTMLWidgets.widget({
                         // highlight all samples with this location
                         _highlightSites(curVizObj.data.anatomic_locations[d].sample_ids, curVizObj);
 
-                        // display full site name 
-                        anatomyTip.show(d);
+                        // display full site name (with spaces, if they were replaced)
+                        var location_name = // get original sample location name (spaces may have been replaced with underscores)
+                        _.findWhere(curVizObj.userConfig.sample_loc_map, {"space_replaced_sample_loc": d})["original_sample_loc"];
+                        anatomyTip.show(location_name);
 
                     }
                 })
