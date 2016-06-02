@@ -17,6 +17,7 @@ HTMLWidgets.widget({
             legendTitleHeight: 16,
             mixtureClassFontSize: 13,
             max_r: 7, // maximum radius for tree nodes
+            min_r: 1.5, // minimum radius for tree nodes
             sampleMark_r: 5, // sample mark radius
             dragOn: false, // whether or not drag is on
             selectOn: false, // whether or not link selection is on
@@ -202,7 +203,9 @@ HTMLWidgets.widget({
             dim.node_r = ((dim.treeWidth - 5*tree_height)/tree_height)/2; // sample tree
             dim.legendNode_r = ((dim.legendTreeWidth - 8*tree_height)/tree_height)/2; // legend tree
             dim.node_r = (dim.node_r > dim.max_r) ? dim.max_r : dim.node_r;
+            dim.node_r = (dim.node_r < dim.min_r) ? dim.min_r : dim.node_r;
             dim.legendNode_r = (dim.legendNode_r > dim.max_r) ? dim.max_r : dim.legendNode_r;
+            dim.legendNode_r = (dim.legendNode_r < dim.min_r) ? dim.min_r : dim.legendNode_r;
 
             // DRAG BEHAVIOUR
 
