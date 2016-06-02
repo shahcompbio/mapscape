@@ -728,7 +728,7 @@ HTMLWidgets.widget({
                             _.filter(curVizObj.data.mutations, function(mut) { return mut.clone_id == d.id; });
 
                         // if there's no data for this clone, add a row of "None"
-                        if (filtered_muts.length == 0) { 
+                        if (filtered_muts.length === 0) { 
                             filtered_muts = [{}];
                             dim.mutationColumns.forEach(function(col) {
                                 filtered_muts[0][col.data] = (col.data == "empty") ? "" : "None";
@@ -863,8 +863,8 @@ HTMLWidgets.widget({
                     .attr("class", "mixtureClass")
                     .attr("x", dim.legendWidth/2 - (mixtureClassLegendTitle_width/2)) 
                     .attr("y", function() {
-                        var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title 
-                                + phyly_idx*(dim.mixtureClassFontSize + 2);
+                        var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + 
+                            phyly_idx*(dim.mixtureClassFontSize + 2);
                         return y;
                     })
                     .attr("dy", "+0.71em")

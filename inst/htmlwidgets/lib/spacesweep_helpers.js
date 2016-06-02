@@ -434,7 +434,7 @@ function _mapSamplesToAnatomy(curVizObj) {
     // for each sample location, get its coordinates, and add it to the data
     curVizObj.userConfig.sample_locations.forEach(function(sample_location) {
         var cur_sample = {sample_id: sample_location.sample_id}
-        cur_sample["location"] = sample_location;
+        cur_sample.location = sample_location;
 
         curVizObj.data.samples.push(cur_sample);
     })
@@ -450,7 +450,7 @@ function _getParticipatingAnatomicLocations(curVizObj) {
     curVizObj.data.anatomic_locations = {};
 
     curVizObj.data.samples.forEach(function(sample) {
-        var location_id = sample["location"].location_id;
+        var location_id = sample.location.location_id;
 
         // add this sample id to the locations data
         if (curVizObj.data.anatomic_locations[location_id]) {
@@ -458,9 +458,9 @@ function _getParticipatingAnatomicLocations(curVizObj) {
         }
         else {
             curVizObj.data.anatomic_locations[location_id] = {
-                "location_id": sample["location"].location_id,
-                "x": sample["location"].x,
-                "y": sample["location"].y
+                "location_id": sample.location.location_id,
+                "x": sample.location.x,
+                "y": sample.location.y
             };
             curVizObj.data.anatomic_locations[location_id].sample_ids = [sample.sample_id];
         }
@@ -570,7 +570,7 @@ function _scale(curVizObj) {
 
     // get cropped absolute x, y coordinates for each sample location
     Object.keys(curVizObj.data.anatomic_locations).forEach(function(location) {
-        curVizObj.data.anatomic_locations[location]["cropped_coords"] = 
+        curVizObj.data.anatomic_locations[location].cropped_coords = 
             _getCroppedCoordinate(crop_info, curVizObj.data.anatomic_locations[location], dim.image_top_l);
     })
 
@@ -634,7 +634,7 @@ function _getTreeInfo(curVizObj) {
     for (var i = 0; i < curVizObj.data.treeEdges.length; i++) {
         var parent = _findNodeByName(nodesByName, curVizObj.data.treeEdges[i].source);
         var child = _findNodeByName(nodesByName, curVizObj.data.treeEdges[i].target);
-        parent["children"].push(child);
+        parent.children.push(child);
     }
     var root_tree = _findNodeByName(nodesByName, phantomRoot); 
     curVizObj.data.treeStructure = root_tree; 
@@ -737,10 +737,10 @@ function _getDirectDescendants(curNode, dir_descendants) {
 function _getDescendantIds(root, descendants) {
     var child;
 
-    if (root["children"].length > 0) {
-        for (var i = 0; i < root["children"].length; i++) {
-            child = root["children"][i];
-            descendants.push(child["id"]);
+    if (root.children.length > 0) {
+        for (var i = 0; i < root.children.length; i++) {
+            child = root.children[i];
+            descendants.push(child.id);
             _getDescendantIds(child, descendants);
         }
     }
@@ -809,7 +809,7 @@ function _elbow(d) {
 function _getLinearTreeSegments(curNode, chains, base) {
 
     // if it's a new base, create the base, with no descendants in its array yet
-    if (base == "") {
+    if (base === "") {
         base = curNode.id;
         chains[base] = [];
     }
@@ -869,7 +869,7 @@ function _phyloTraversal(curNode, nodes_ordered, cur_height) {
 
     // no children -- add to ordered nodes
     var n_children = curNode.children.length;
-    if (n_children == 0) {
+    if (n_children === 0) {
         nodes_ordered.push({"id": curNode.id,
                             "height": cur_height});
     }
@@ -902,7 +902,7 @@ function _phyloTraversal(curNode, nodes_ordered, cur_height) {
 function _hslToRgb(h, s, l){
     var r, g, b;
 
-    if(s == 0){
+    if(s === 0){
         r = g = b = l; // achromatic
     }else{
         var hue2rgb = function hue2rgb(p, q, t){
@@ -1007,9 +1007,9 @@ function _getCPData(curVizObj) {
     var cp_data = {};
     $.each(clonal_prev, function(idx, hit) { // for each hit (genotype/sample_id combination)
 
-        cp_data[hit["sample_id"]] = cp_data[hit["sample_id"]] || {};
-        cp_data[hit["sample_id"]][hit["clone_id"]] = {};
-        cp_data[hit["sample_id"]][hit["clone_id"]]["cp"] = parseFloat(hit["clonal_prev"]); 
+        cp_data[hit.sample_id] = cp_data[hit.sample_id] || {};
+        cp_data[hit.sample_id][hit.clone_id] = {};
+        cp_data[hit.sample_id][hit.clone_id].cp = parseFloat(hit.clonal_prev); 
     });
 
     curVizObj.data.cp_data = cp_data;
@@ -1045,8 +1045,8 @@ function _thresholdCPData(curVizObj) {
 
         // adjust cellular prevalence values to sum to 1
 
-        curVizObj.data["sample_genotypes"] = curVizObj.data["sample_genotypes"] || {};
-        curVizObj.data["sample_genotypes"][sample] = []; // which genotypes to show for this sample
+        curVizObj.data.sample_genotypes = curVizObj.data.sample_genotypes || {};
+        curVizObj.data.sample_genotypes[sample] = []; // which genotypes to show for this sample
         Object.keys(curVizObj.data.cp_data[sample]).forEach(function(gtype) {
 
             var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
@@ -1054,7 +1054,7 @@ function _thresholdCPData(curVizObj) {
             // only add genotypes that will be exhibited in >1 cell
             if (cur_cp > threshold) {
                 curVizObj.data.cp_data[sample][gtype].adj_cp = cur_cp/total_legit_cp;
-                curVizObj.data["sample_genotypes"][sample].push(gtype);
+                curVizObj.data.sample_genotypes[sample].push(gtype);
             }
         });
     });
@@ -1191,7 +1191,7 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
 */
 function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
 
-    var gtypes = curVizObj.data["sample_genotypes"][sample], // genotypes to plot for this sample
+    var gtypes = curVizObj.data.sample_genotypes[sample], // genotypes to plot for this sample
         cumulative_cp = curVizObj.data.cp_data[sample][gtypes[0]].adj_cp, // cumulative CP thus far
         gtype_i = 0, // index of the current genotype to show
         n_real_cells = 1; // # real cells seen
@@ -1219,7 +1219,7 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
 
     // order real vertices by distance to centre of oncoMix (farthest to closest)
     unassigned_real_vertices.forEach(function(vertex) {
-        vertex["dist_to_oncoMix_centre"] = 
+        vertex.dist_to_oncoMix_centre = 
             Math.sqrt(Math.pow(vertex.x - oncoMix_centre.x, 2) + Math.pow(vertex.y - oncoMix_centre.y, 2));
     });
     _sortByKey(unassigned_real_vertices, "dist_to_oncoMix_centre");
@@ -1228,7 +1228,7 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
     // choose cluster centres (random outskirts of oncoMix)
     var centres = unassigned_real_vertices.slice(0, gtypes.length);
     gtypes.forEach(function(gtype, gtype_i) {
-        centres[gtype_i]["clust_gtype"] = gtype;
+        centres[gtype_i].clust_gtype = gtype;
     })
 
     // order coordinates by distance for each cluster centre, and assign
@@ -1237,7 +1237,7 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
 
         // get distances to cluster centre
         unassigned_real_vertices.forEach(function(vertex) {
-            vertex["dist_to_clust_centre"] = 
+            vertex.dist_to_clust_centre = 
                 Math.sqrt(Math.pow(vertex.x - centre.x, 2) + Math.pow(vertex.y - centre.y, 2));
         });
 
@@ -1277,7 +1277,7 @@ function _getSamplePositioning(curVizObj) {
         var sample_id = cur_sample_obj.sample_id;
 
         // left divider
-        cur_sample_obj["leftDivider"] = {
+        cur_sample_obj.leftDivider = {
             x1: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, sample_idx, n_samples).x,
             y1: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.innerRadius, sample_idx, n_samples).y,
             x2: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius - 2, sample_idx, n_samples).x,
@@ -1287,42 +1287,42 @@ function _getSamplePositioning(curVizObj) {
         // VORONOI
 
         // voronoi placement
-        cur_sample_obj["voronoi"] = {};
-        cur_sample_obj["voronoi"]["centre"] = {
+        cur_sample_obj.voronoi = {};
+        cur_sample_obj.voronoi.centre = {
             x: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, sample_idx+0.5, n_samples).x,
             y: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToOncoMix, sample_idx+0.5, n_samples).y
         }
-        cur_sample_obj["voronoi"]["top_l_corner"] = {
-            x: cur_sample_obj["voronoi"]["centre"].x - dim.oncoMixWidth/2,
-            y: cur_sample_obj["voronoi"]["centre"].y - dim.oncoMixWidth/2
+        cur_sample_obj.voronoi.top_l_corner = {
+            x: cur_sample_obj.voronoi.centre.x - dim.oncoMixWidth/2,
+            y: cur_sample_obj.voronoi.centre.y - dim.oncoMixWidth/2
         }
 
         // voronoi vertices (randomly fill a rectangle, keeping all within a certain 
         // radius from the centre as "real cells", all others as "fake cells")
         var vertices = _getVoronoiVertices(
                 curVizObj, 
-                cur_sample_obj["voronoi"]["centre"].x,
-                cur_sample_obj["voronoi"]["centre"].y,
+                cur_sample_obj.voronoi.centre.x,
+                cur_sample_obj.voronoi.centre.y,
                 sample_idx + 1
             );
 
         // order vertices, add colour (genotype) information to each vertex
-        vertices_ordered = _colourOncoMix(curVizObj, vertices, sample_id, cur_sample_obj["voronoi"]["centre"]);
-        cur_sample_obj["voronoi"]["vertices"] = vertices_ordered;
+        vertices_ordered = _colourOncoMix(curVizObj, vertices, sample_id, cur_sample_obj.voronoi.centre);
+        cur_sample_obj.voronoi.vertices = vertices_ordered;
 
         // note real vertices
-        cur_sample_obj["voronoi"]["real_vertices"] = 
+        cur_sample_obj.voronoi.real_vertices = 
             $.extend([], _.filter(vertices_ordered, function(vertex) { return vertex.real_cell; }));
 
         // 2D array of x- and y- positions for vertices
-        cur_sample_obj["voronoi"]["vertex_coords"] = vertices_ordered.map(function(vertex) {
+        cur_sample_obj.voronoi.vertex_coords = vertices_ordered.map(function(vertex) {
             return [vertex.x, vertex.y];
         });
 
         // TAB 
 
         //placement
-        cur_sample_obj["tab"] = {
+        cur_sample_obj.tab = {
             startAngle: 
                 _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, sample_idx+0.05, n_samples).angle 
                 + Math.PI/2, // not sure why it's shifted by 90 degrees..
@@ -1332,34 +1332,34 @@ function _getSamplePositioning(curVizObj) {
         };
 
         // MIDDLE ANGLE
-        cur_sample_obj["angle"] = 
+        cur_sample_obj.angle = 
             (_drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, sample_idx+0.05, n_samples).angle +
             _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.outerRadius, sample_idx+0.95, n_samples).angle)/2;
 
 
         // TREE
 
-        cur_sample_obj["tree"] = {};
-        cur_sample_obj["tree"]["centre"] = {
+        cur_sample_obj.tree = {};
+        cur_sample_obj.tree.centre = {
             x: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToTree, sample_idx+0.5, n_samples).x,
             y: _drawPoint(dim.viewCentre.x, dim.viewCentre.y, dim.radiusToTree, sample_idx+0.5, n_samples).y
         }
-        cur_sample_obj["tree"]["top_l_corner"] = {
-            x: cur_sample_obj["tree"]["centre"].x - dim.treeWidth/2,
-            y: cur_sample_obj["tree"]["centre"].y - dim.treeWidth/2
+        cur_sample_obj.tree.top_l_corner = {
+            x: cur_sample_obj.tree.centre.x - dim.treeWidth/2,
+            y: cur_sample_obj.tree.centre.y - dim.treeWidth/2
         }
-        cur_sample_obj["tree"]["top_middle"] = {
-            x: cur_sample_obj["tree"]["centre"].x,
-            y: cur_sample_obj["tree"]["centre"].y - dim.treeWidth/2
+        cur_sample_obj.tree.top_middle = {
+            x: cur_sample_obj.tree.centre.x,
+            y: cur_sample_obj.tree.centre.y - dim.treeWidth/2
         }
-        cur_sample_obj["tree"]["bottom_middle"] = {
-            x: cur_sample_obj["tree"]["centre"].x,
-            y: cur_sample_obj["tree"]["centre"].y + dim.treeWidth/2
+        cur_sample_obj.tree.bottom_middle = {
+            x: cur_sample_obj.tree.centre.x,
+            y: cur_sample_obj.tree.centre.y + dim.treeWidth/2
         }
 
         // PURE, MONOPHYLETIC, OR POLYPHYLETIC SITE
         var phyly;
-        var sample_gtypes = curVizObj.data["sample_genotypes"][sample_id];
+        var sample_gtypes = curVizObj.data.sample_genotypes[sample_id];
         // pure tumour
         if (sample_gtypes.length == 1) {
             phyly = "pure";
@@ -1378,7 +1378,7 @@ function _getSamplePositioning(curVizObj) {
         if (["monophyletic","pure"].indexOf(phyly) == -1) {
             phyly = "polyphyletic";
         }
-        cur_sample_obj["phyly"] = phyly;
+        cur_sample_obj.phyly = phyly;
     })
 }
 
@@ -1496,10 +1496,10 @@ function _snapSites(curVizObj) {
                     return d.y1;
                 })
                 .attr("x2", function(d) { 
-                    return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].x;
+                    return curVizObj.data.anatomic_locations[sample_data.location.location_id].cropped_coords.x;
                 })
                 .attr("y2", function(d) { 
-                    return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].y;
+                    return curVizObj.data.anatomic_locations[sample_data.location.location_id].cropped_coords.y;
                 });  
         }
 
@@ -1594,10 +1594,10 @@ function _plotSite(curVizObj, sample, drag) {
                 return d.y1;
             })
             .attr("x2", function(d) { 
-                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].x;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id].cropped_coords.x;
             })
             .attr("y2", function(d) { 
-                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].y;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id].cropped_coords.y;
             })
             .attr("stroke", dim.anatomicLineColour)
             .attr("stroke-width", "2px");  
@@ -1619,10 +1619,10 @@ function _plotSite(curVizObj, sample, drag) {
                 return "gtypeMark clone_" + d; 
             })
             .attr("cx", function(d) { 
-                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].x;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id].cropped_coords.x;
             })
             .attr("cy", function(d) { 
-                return curVizObj.data.anatomic_locations[sample_data.location.location_id]["cropped_coords"].y;
+                return curVizObj.data.anatomic_locations[sample_data.location.location_id].cropped_coords.y;
             })
             .attr("r", dim.sampleMark_r)
             .attr("fill", function(d) { 
@@ -1807,17 +1807,17 @@ function _plotSite(curVizObj, sample, drag) {
         })
         .attr("fill", function(d) {
             // clone present at this sample or not
-            return (curVizObj.data["sample_genotypes"][sample].indexOf(d.id) != -1) ? 
+            return (curVizObj.data.sample_genotypes[sample].indexOf(d.id) != -1) ? 
                 cols[d.id] : "#FFFFFF";
         })
         .attr("stroke", function(d) {
             // clone present at this sample or not
-            return (curVizObj.data["sample_genotypes"][sample].indexOf(d.id) != -1) ? 
+            return (curVizObj.data.sample_genotypes[sample].indexOf(d.id) != -1) ? 
                 cols[d.id] : "#FFFFFF";
         })
         .attr("r", function(d) {
             // clone present at this sample or not
-            return (curVizObj.data["sample_genotypes"][sample].indexOf(d.id) != -1) ? dim.node_r : 0;
+            return (curVizObj.data.sample_genotypes[sample].indexOf(d.id) != -1) ? dim.node_r : 0;
         })
         .on('mouseover', function(d) {
             d.sample = sample;
@@ -1885,7 +1885,7 @@ function _plotSite(curVizObj, sample, drag) {
         .text(function(d) { 
             // get original sample name (spaces may have been replaced with underscores)
             var sample_name = 
-                _.findWhere(curVizObj.userConfig.sample_id_map, {"space_replaced_sample_id": d.sample})["original_sample_id"];
+                _.findWhere(curVizObj.userConfig.sample_id_map, {"space_replaced_sample_id": d.sample}).original_sample_id;
 
             // if title is too long, append "..." to the first few letters
             if (sample_name.length > 6) {
@@ -2015,19 +2015,19 @@ function _reformatMutations(curVizObj) {
             "sample_locations": sample_locations
         }
         if (mut.hasOwnProperty("gene_name")) {
-            cur_mut["gene_name"] = mut.gene_name;
+            cur_mut.gene_name = mut.gene_name;
         }
         if (mut.hasOwnProperty("effect")) {
-            cur_mut["effect"] = mut.effect;
+            cur_mut.effect = mut.effect;
         }
         if (mut.hasOwnProperty("impact")) {
-            cur_mut["impact"] = mut.impact;
+            cur_mut.impact = mut.impact;
         }
         if (mut.hasOwnProperty("nuc_change")) {
-            cur_mut["nuc_change"] = mut.nuc_change;
+            cur_mut.nuc_change = mut.nuc_change;
         }
         if (mut.hasOwnProperty("aa_change")) {
-            cur_mut["aa_change"] = mut.aa_change;
+            cur_mut.aa_change = mut.aa_change;
         }
         muts_arr.push(cur_mut);
     });
@@ -2074,10 +2074,10 @@ function _sortByKey(array, key, secondKey) {
         }
         else {
             if (typeof(a[secondKey] == "string")) {
-                return (res == 0) ? (a[secondKey] > b[secondKey]) : res;
+                return (res === 0) ? (a[secondKey] > b[secondKey]) : res;
             }
             else if (typeof(a[secondKey] == "number")) {
-                return (res == 0) ? (a[secondKey] - b[secondKey]) : res;
+                return (res === 0) ? (a[secondKey] - b[secondKey]) : res;
             }
             else {
                 return res;
