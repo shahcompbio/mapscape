@@ -32,7 +32,8 @@ HTMLWidgets.widget({
             phantomRoot: "phantomRoot",
             topBarHeight: 30, // height of top panel
             topBarColour: "#D9D9D9",
-            topBarHighlight: "#C6C6C6"
+            topBarHighlight: "#C6C6C6",
+            viewTitle: "SPACESWEEP"
         };
 
         // set configurations
@@ -289,22 +290,34 @@ HTMLWidgets.widget({
             // PLOT TOP PANEL
 
             // svg
+            var topBarWidth = (dim.viewDiameter + dim.legendWidth);
             var topBarSVG = topBarDIV.append("svg:svg")
                 .attr("class", "topBar_" + view_id)
                 .attr("x", 0)
                 .attr("y", 0)
-                .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
+                .attr("width", topBarWidth + "px")
                 .attr("height", dim.topBarHeight + "px");
 
             // background bar
             topBarSVG.append("rect")
                 .attr("x",0)
                 .attr("y",0)
-                .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
+                .attr("width", topBarWidth + "px")
                 .attr("height", dim.topBarHeight)
                 .attr("rx", 10)
                 .attr("ry", 10)
                 .attr("fill", dim.topBarColour);
+
+            // top panel title
+            topBarSVG.append("text")
+                .attr("x", topBarWidth/2)
+                .attr("y", dim.topBarHeight/2)
+                .attr("text-anchor", "middle")
+                .attr("dy", "+0.35em")
+                .attr("font-family", "Arial")
+                .attr("fill", "white")
+                .attr("pointer-events","none")
+                .text(dim.viewTitle);
 
             var downloadButtonWidth = 80; // width of the top panel download button
             var resetButtonWidth = 42; // width of the top panel reset button
