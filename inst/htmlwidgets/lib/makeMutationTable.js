@@ -27,7 +27,11 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 		    "scrollY":        table_height - 65, // - 65 for search bar, etc.
 	        "scrollCollapse": true,
 	        "paging":         false,
-	        "info": 		  false,
+	        "info": 		  true,
+	        "language": {
+	        	"info":           "Showing _TOTAL_ entries",
+	        	"infoEmpty":      "Showing 0 entries"
+	        },
        		"aaSorting": [] // disable initial sort
 	    });
 
