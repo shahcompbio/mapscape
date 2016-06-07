@@ -193,11 +193,11 @@ function _addCloneSVGsToTable(curVizObj, clone_ids) {
     var i = 0;
     var svgCircle = svgColumn
                 .append("svg")
-                .attr("width", curVizObj.generalConfig.cloneColumnWidth)
+                .attr("width", 10)
                 .attr("height", 10)
                 .attr("class","svgCloneCircle")
                 .append("circle")
-                .attr("cx", curVizObj.generalConfig.cloneColumnWidth/2)
+                .attr("cx", 5)
                 .attr("cy", 5)
                 .attr("r", 4)
                 .attr("fill", function(d) {

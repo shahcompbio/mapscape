@@ -33,8 +33,7 @@ HTMLWidgets.widget({
             topBarHeight: 30, // height of top panel
             topBarColour: "#D9D9D9",
             topBarHighlight: "#C6C6C6",
-            viewTitle: "SPACESWEEP",
-            cloneColumnWidth: 30
+            viewTitle: "SPACESWEEP"
         };
 
         // set configurations
@@ -175,7 +174,7 @@ HTMLWidgets.widget({
                 dim.mutationColumns = [
                                 { "data": "chrom", "title": "Chrom.", "defaultContent": "" },
                                 { "data": "coord", "title": "Coord.", "defaultContent": "" },
-                                { "data": "empty", "title": "Clone", "bSortable": false, "defaultContent": "", "width": dim.cloneColumnWidth + "px" }
+                                { "data": "empty", "title": "Clone", "bSortable": false, "defaultContent": "" }
                             ];
                 if (curVizObj.userConfig.mutations[0].hasOwnProperty("effect")) {
                     dim.mutationColumns.splice(2, 0, { "data": "effect", "title": "Effect", "defaultContent": "" });
