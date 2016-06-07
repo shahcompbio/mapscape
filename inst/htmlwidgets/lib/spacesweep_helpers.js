@@ -254,7 +254,7 @@ function _plotClonalPrevText(curVizObj, sample, gtype) {
         .attr("text-anchor", "middle")
         .attr("dy", "+0.35em")
         .attr("font-family", "Arial")
-        .attr("font-size", 10) 
+        .attr("font-size", 12) 
         .text(function() { 
             return (Math.round(curVizObj.data.cp_data[sample][gtype].cp * 100)/100).toFixed(2);
         });
