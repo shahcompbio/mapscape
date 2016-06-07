@@ -358,10 +358,14 @@ spacesweep <- function(clonal_prev,
 
     # MUTATION INFO 
     mutation_info <- unique(mutations[,c("chrom","coord","clone_id",extra_columns)])
+
+    # whether or not mutations are provided
+    mutations_provided <- TRUE
   }
   else {
     prevs_split_small <- "NA"
     mutation_info <- "NA"
+    mutations_provided <- FALSE
   }
 
   # NODE COLOURS
@@ -449,6 +453,7 @@ spacesweep <- function(clonal_prev,
     clone_cols = jsonlite::toJSON(clone_colours),
     mutations = jsonlite::toJSON(mutation_info),
     mutation_prevalences = jsonlite::toJSON(prevs_split_small),
+    mutations_provided = mutations_provided,
     sample_ids = sample_ids,
     n_cells = n_cells,
     img_ref = img_ref_base64,

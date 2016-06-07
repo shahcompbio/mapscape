@@ -1986,51 +1986,53 @@ function _reformatMutations(curVizObj) {
         muts_arr = [];
 
     // convert object into array
-    original_muts.forEach(function(mut) {
+    if (curVizObj.userConfig.mutations_provided) {
+        original_muts.forEach(function(mut) {
 
-        // link id where mutation occurred
-        var link_id = "treeLink_" + curVizObj.data.direct_ancestors[mut.clone_id] + "_" +  mut.clone_id;
+            // link id where mutation occurred
+            var link_id = "treeLink_" + curVizObj.data.direct_ancestors[mut.clone_id] + "_" +  mut.clone_id;
 
-        // samples affected by this mutation
-        var affected_samples = curVizObj.data.link_affected_samples[mut.clone_id];
+            // samples affected by this mutation
+            var affected_samples = curVizObj.data.link_affected_samples[mut.clone_id];
 
-        // sample locations for affected samples
-        var sample_locations = [];
-        affected_samples.forEach(function(sample) {
-            var cur_sample = _.findWhere(curVizObj.data.samples, {sample_id: sample});
-            if (cur_sample.location) {
-                sample_locations.push(cur_sample.location.location_id);
+            // sample locations for affected samples
+            var sample_locations = [];
+            affected_samples.forEach(function(sample) {
+                var cur_sample = _.findWhere(curVizObj.data.samples, {sample_id: sample});
+                if (cur_sample.location) {
+                    sample_locations.push(cur_sample.location.location_id);
+                }
+            })
+            sample_locations = _.uniq(sample_locations);
+
+            // add this gene to the array
+            var cur_mut = {
+                "chrom": mut.chrom,
+                "coord": mut.coord,
+                "empty": "", // add an empty string for an empty column (clone column) that will contain an SVG
+                "clone_id": mut.clone_id,
+                "link_id": link_id,
+                "affected_samples": affected_samples,
+                "sample_locations": sample_locations
             }
-        })
-        sample_locations = _.uniq(sample_locations);
-
-        // add this gene to the array
-        var cur_mut = {
-            "chrom": mut.chrom,
-            "coord": mut.coord,
-            "empty": "", // add an empty string for an empty column (clone column) that will contain an SVG
-            "clone_id": mut.clone_id,
-            "link_id": link_id,
-            "affected_samples": affected_samples,
-            "sample_locations": sample_locations
-        }
-        if (mut.hasOwnProperty("gene_name")) {
-            cur_mut.gene_name = mut.gene_name;
-        }
-        if (mut.hasOwnProperty("effect")) {
-            cur_mut.effect = mut.effect;
-        }
-        if (mut.hasOwnProperty("impact")) {
-            cur_mut.impact = mut.impact;
-        }
-        if (mut.hasOwnProperty("nuc_change")) {
-            cur_mut.nuc_change = mut.nuc_change;
-        }
-        if (mut.hasOwnProperty("aa_change")) {
-            cur_mut.aa_change = mut.aa_change;
-        }
-        muts_arr.push(cur_mut);
-    });
+            if (mut.hasOwnProperty("gene_name")) {
+                cur_mut.gene_name = mut.gene_name;
+            }
+            if (mut.hasOwnProperty("effect")) {
+                cur_mut.effect = mut.effect;
+            }
+            if (mut.hasOwnProperty("impact")) {
+                cur_mut.impact = mut.impact;
+            }
+            if (mut.hasOwnProperty("nuc_change")) {
+                cur_mut.nuc_change = mut.nuc_change;
+            }
+            if (mut.hasOwnProperty("aa_change")) {
+                cur_mut.aa_change = mut.aa_change;
+            }
+            muts_arr.push(cur_mut);
+        });
+    }
 
     curVizObj.data.mutations = muts_arr;
 }

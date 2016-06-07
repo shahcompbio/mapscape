@@ -167,7 +167,7 @@ HTMLWidgets.widget({
             curVizObj.view.crop_info = _scale(curVizObj);
 
             // get mutation data in better format
-            if (curVizObj.userConfig.mutations[0] != "NA") {
+            if (curVizObj.userConfig.mutations_provided) {
                 _reformatMutations(curVizObj);
 
                 // get column names (depending on the available data, which columns will be shown)
@@ -310,9 +310,9 @@ HTMLWidgets.widget({
 
             // top panel title
             topBarSVG.append("text")
-                .attr("x", topBarWidth/2)
+                .attr("x", 10)
                 .attr("y", dim.topBarHeight/2)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", "start")
                 .attr("dy", "+0.35em")
                 .attr("font-family", "Arial")
                 .attr("fill", "white")
@@ -328,47 +328,11 @@ HTMLWidgets.widget({
             var resetButtonIconWidth = dim.topBarHeight - 10; // icon size for reset button
             var downloadButtonIconWidth = dim.topBarHeight - 10; // icon size for download button
 
-            // reset button
-            topBarSVG.append("rect")
-                .attr("class", "resetButton")
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("width", resetButtonWidth)
-                .attr("height", dim.topBarHeight)
-                .attr("rx", 10)
-                .attr("ry", 10)
-                .attr("fill", dim.topBarColour)
-                .on("mouseover", function() {
-                    d3.select(this).attr("fill", dim.topBarHighlight);
-                })
-                .on("mouseout", function() {
-                    d3.select(this).attr("fill", dim.topBarColour);
-                })
-                .on("click", function() {
-                    // background click
-                    _backgroundClick(curVizObj);
-                });
-            topBarSVG.append("image")
-                .attr("xlink:href", resetButton_base64)
-                .attr("x", (resetButtonWidth/2) - (resetButtonIconWidth/2))
-                .attr("y", 5)
-                .attr("width", resetButtonIconWidth)
-                .attr("height", resetButtonIconWidth)
-                .on("mouseover", function() {
-                    d3.select("#" + view_id).select(".resetButton").attr("fill", dim.topBarHighlight);
-                })
-                .on("mouseout", function() {
-                    d3.select("#" + view_id).select(".resetButton").attr("fill", dim.topBarColour);
-                })
-                .on("click", function() {
-                    // background click
-                    _backgroundClick(curVizObj);
-                });
-
             // SVG button
+            var topBarWidth = dim.viewDiameter + dim.legendWidth;
             topBarSVG.append("rect")
                 .attr("class", "svgButton")
-                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth)
+                .attr("x", topBarWidth - downloadButtonWidth)
                 .attr("y", 0)
                 .attr("width", downloadButtonWidth)
                 .attr("height", dim.topBarHeight)
@@ -387,7 +351,7 @@ HTMLWidgets.widget({
                 });
             topBarSVG.append("text")
                 .attr("class", "svgButtonText")
-                .attr("x", dim.viewDiameter + dim.legendWidth - 10)
+                .attr("x", topBarWidth - 10)
                 .attr("y", dim.topBarHeight/2)
                 .attr("text-anchor", "end")
                 .attr("dy", "+0.35em")
@@ -397,7 +361,7 @@ HTMLWidgets.widget({
                 .text("SVG");
             topBarSVG.append("image")
                 .attr("xlink:href", downloadButton_base64)
-                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth + 10)
+                .attr("x", topBarWidth - downloadButtonWidth + 10)
                 .attr("y", 5)
                 .attr("width", downloadButtonIconWidth)
                 .attr("height", downloadButtonIconWidth)
@@ -415,7 +379,7 @@ HTMLWidgets.widget({
             // PNG button
             topBarSVG.append("rect")
                 .attr("class", "pngButton")
-                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth*2)
+                .attr("x", topBarWidth - downloadButtonWidth*2)
                 .attr("y", 0)
                 .attr("width", downloadButtonWidth)
                 .attr("height", dim.topBarHeight)
@@ -434,7 +398,7 @@ HTMLWidgets.widget({
                 });
             topBarSVG.append("text")
                 .attr("class", "pngButtonText")
-                .attr("x", dim.viewDiameter + dim.legendWidth - downloadButtonWidth - 10)
+                .attr("x", topBarWidth - downloadButtonWidth - 10)
                 .attr("y", dim.topBarHeight/2)
                 .attr("text-anchor", "end")
                 .attr("dy", "+0.35em")
@@ -444,7 +408,7 @@ HTMLWidgets.widget({
                 .text("PNG");
             topBarSVG.append("image")
                 .attr("xlink:href", downloadButton_base64)
-                .attr("x", dim.viewDiameter + dim.legendWidth - 2*downloadButtonWidth + 10)
+                .attr("x", topBarWidth - 2*downloadButtonWidth + 10)
                 .attr("y", 5)
                 .attr("width", downloadButtonIconWidth)
                 .attr("height", downloadButtonIconWidth)
@@ -458,6 +422,45 @@ HTMLWidgets.widget({
                     // download the png
                     _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
                 });
+
+            // reset button (only if mutations are provided)
+            if (curVizObj.userConfig.mutations_provided) {
+                topBarSVG.append("rect")
+                    .attr("class", "resetButton")
+                    .attr("x", topBarWidth - downloadButtonWidth*2 - resetButtonWidth)
+                    .attr("y", 0)
+                    .attr("width", resetButtonWidth)
+                    .attr("height", dim.topBarHeight)
+                    .attr("rx", 10)
+                    .attr("ry", 10)
+                    .attr("fill", dim.topBarColour)
+                    .on("mouseover", function() {
+                        d3.select(this).attr("fill", dim.topBarHighlight);
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this).attr("fill", dim.topBarColour);
+                    })
+                    .on("click", function() {
+                        // background click
+                        _backgroundClick(curVizObj);
+                    });
+                topBarSVG.append("image")
+                    .attr("xlink:href", resetButton_base64)
+                    .attr("x", topBarWidth - downloadButtonWidth*2 - resetButtonWidth + (resetButtonWidth - resetButtonIconWidth)/2)
+                    .attr("y", 5)
+                    .attr("width", resetButtonIconWidth)
+                    .attr("height", resetButtonIconWidth)
+                    .on("mouseover", function() {
+                        d3.select("#" + view_id).select(".resetButton").attr("fill", dim.topBarHighlight);
+                    })
+                    .on("mouseout", function() {
+                        d3.select("#" + view_id).select(".resetButton").attr("fill", dim.topBarColour);
+                    })
+                    .on("click", function() {
+                        // background click
+                        _backgroundClick(curVizObj);
+                    });
+            }
 
             // TOOLTIPS
 
@@ -727,7 +730,7 @@ HTMLWidgets.widget({
                 })
                 .on("click", function(d) {
                     // if there are mutations
-                    if (curVizObj.userConfig.mutations[0] != "NA") {
+                    if (curVizObj.userConfig.mutations_provided) {
 
                         dim.selectOn = true;
                         dim.nClickedNodes++; // increment the number of clicked nodes
