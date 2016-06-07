@@ -493,6 +493,7 @@ HTMLWidgets.widget({
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("color", dim.legendTitleColour)
                 .attr("font-family", "Arial")
+                .attr("font-weight", "bold")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Anatomy");
 
@@ -589,6 +590,7 @@ HTMLWidgets.widget({
                 .attr("x", dim.legendWidth/2) 
                 .attr("y", 22)
                 .attr("text-anchor", "middle")
+                .attr("font-weight", "bold")
                 .attr("font-family", "Arial")
                 .attr("font-size", dim.legendTitleHeight)
                 .attr("color", dim.legendTitleColour)
@@ -859,6 +861,7 @@ HTMLWidgets.widget({
                 .attr("text-anchor", "middle")
                 .attr("color", dim.legendTitleColour)
                 .attr("font-family", "Arial")
+                .attr("font-weight", "bold")
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
                 .text("Mixture");
@@ -869,6 +872,7 @@ HTMLWidgets.widget({
                 .attr("dy", "+0.71em")
                 .attr("text-anchor", "middle")
                 .attr("font-family", "Arial")
+                .attr("font-weight", "bold")
                 .attr("color", dim.legendTitleColour)
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
@@ -931,7 +935,20 @@ HTMLWidgets.widget({
             // MUTATION TABLE
 
             // if mutations are specified by the user
-            if (curVizObj.userConfig.mutations != "NA") {
+            if (curVizObj.userConfig.mutations_provided) {
+
+                // plot mutation table title
+                viewSVG.append("text")
+                    .attr("class", "legendTitle")
+                    .attr("x", dim.legendWidth/2) 
+                    .attr("y", dim.viewDiameter - dim.legendTitleHeight)
+                    .attr("text-anchor", "middle")
+                    .attr("color", dim.legendTitleColour)
+                    .attr("font-family", "Arial")
+                    .attr("font-weight", "bold")
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                    .attr("font-size", dim.legendTitleHeight)
+                    .text("Mutation Table");
 
                 // make the table
                 _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, curVizObj.data.mutations,
