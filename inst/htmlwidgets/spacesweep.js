@@ -937,19 +937,6 @@ HTMLWidgets.widget({
             // if mutations are specified by the user
             if (curVizObj.userConfig.mutations_provided) {
 
-                // plot mutation table title
-                viewSVG.append("text")
-                    .attr("class", "legendTitle")
-                    .attr("x", dim.legendWidth/2) 
-                    .attr("y", dim.viewDiameter - dim.legendTitleHeight)
-                    .attr("text-anchor", "middle")
-                    .attr("color", dim.legendTitleColour)
-                    .attr("font-family", "Arial")
-                    .attr("font-weight", "bold")
-                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                    .attr("font-size", dim.legendTitleHeight)
-                    .text("Mutation Table");
-
                 // make the table
                 _makeMutationTable(curVizObj, curVizObj.view.mutationTableDIV, curVizObj.data.mutations,
                     dim.mutationTableHeight);
