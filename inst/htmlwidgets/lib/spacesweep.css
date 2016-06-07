@@ -61,3 +61,10 @@ table {
 td {
     word-wrap: break-word
 }
+
+/* to left-align column header text
+*/
+/*
+.sorting {
+  text-align: left
+}*/
