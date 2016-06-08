@@ -173,13 +173,17 @@ HTMLWidgets.widget({
                 _reformatMutations(curVizObj);
 
                 // get column names (depending on the available data, which columns will be shown)
-                dim.mutationColumns = [
-                                { "data": "empty", "title": "Clone", "bSortable": false, "defaultContent": "" }
-                            ];
+                dim.mutationColumns = [ { "data": "empty", "title": "Clone", "bSortable": false, "defaultContent": "" } ];
                 var columnNames = [];
                 Object.keys(curVizObj.userConfig.mutations[0]).forEach(function(key) {
                     var title = toTitleCase(key.replace(/_/g, ' ')).replace(/ Id$/g, ' ID'); // capitalize the whole word "ID"
-                    dim.mutationColumns.push({ "data": key, "title": title, "defaultContent": "" });
+                    var newColumn = { "data": key, "title": title, "defaultContent": "" };
+                    if (key == "clone_id") { // make sure clone_id is inserted next to "empty", which will become the clone svg circle
+                        dim.mutationColumns.splice(1, 0, newColumn);
+                    }
+                    else {
+                        dim.mutationColumns.push(newColumn);
+                    }
                 });
             }
 
