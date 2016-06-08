@@ -339,6 +339,9 @@ function _resetView(curVizObj) {
     d3.select("#" + view_id).selectAll(".sampleTitle").attr("fill-opacity", 1);
     d3.select("#" + view_id).selectAll(".anatomicPointer").attr("stroke-opacity", 1);
     d3.select("#" + view_id).selectAll(".mixtureClassTreeLink").attr("stroke-opacity", 0);
+
+    // reset phyly bubbles
+    d3.select("#" + view_id).selectAll(".mixtureClassBubble").attr("fill", dim.phylyBubbleOff);
 }
 
 /* function to highlight certain samples in the view
@@ -359,6 +362,41 @@ function _highlightSites(sample_ids, curVizObj) {
         d3.select("#" + view_id).selectAll(".sampleTitle.sample_" + sample).attr("fill-opacity", 1);
         d3.select("#" + view_id).selectAll(".anatomicPointer.sample_" + sample).attr("stroke-opacity", 1)
     })
+}
+
+/* function to for phylogenetic classification mouseover
+* @param {Object} mixture_classes -- mixture classes and their associated sample ids & locations
+* @param {String} phyly -- phylogenetic class being moused over
+*/
+function _mouseoverPhyly(curVizObj, mixture_classes, phyly) {
+    var dim = curVizObj.generalConfig;
+    var viewSVG = d3.select("#" + curVizObj.view_id);
+    var participating_samples = _.pluck(mixture_classes[phyly], "sample_id");
+
+    // highlight this phyly's bubble
+    viewSVG.select(".mixtureClassBubble.phyly_"+phyly).attr("fill", dim.phylyBubbleOn);
+
+    // shade view
+    _shadeMainView(curVizObj);
+
+    // highlight samples
+    _highlightSites(participating_samples, curVizObj);
+
+    // highlight general anatomic marks
+    var locations = _.uniq(_.pluck(mixture_classes[phyly], "sample_location"));
+    locations.forEach(function(location) {
+        d3.select("#" + curVizObj.view_id).select(".generalMark.location_"+location)
+            .attr("fill", dim.anatomicLineColour);
+    });
+
+    // highlight only those links that participate in the mixture classification
+    viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
+    participating_samples.forEach(function(participating_sample) {
+        viewSVG.selectAll(".treeLink.sample_" + participating_sample)
+            .attr("stroke-opacity", dim.shadeAlpha);
+        viewSVG.selectAll(".mixtureClassTreeLink.sample_"+participating_sample)
+            .attr("stroke-opacity", 1);                        
+    });
 }
 
 /* function during drag event

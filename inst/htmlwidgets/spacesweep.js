@@ -33,7 +33,9 @@ HTMLWidgets.widget({
             topBarHeight: 30, // height of top panel
             topBarColour: "#D9D9D9",
             topBarHighlight: "#C6C6C6",
-            viewTitle: "SPACESWEEP"
+            viewTitle: "SPACESWEEP",
+            phylyBubbleOff: "#EFEFEF",
+            phylyBubbleOn: "#CECECE"
         };
 
         // set configurations
@@ -845,7 +847,11 @@ HTMLWidgets.widget({
 
             // PLOT MIXTURE CLASSIFICATION
 
-            var mixture_classes = {};
+            var mixture_classes = {
+                "pure": [],
+                "monophyletic": [],
+                "polyphyletic": []
+            };
             curVizObj.data.samples.forEach(function(sample) {
                 mixture_classes[sample.phyly] = mixture_classes[sample.phyly] || [];
                 mixture_classes[sample.phyly].push({"sample_id": sample.sample_id, 
@@ -881,10 +887,41 @@ HTMLWidgets.widget({
             var mixtureClassLegendTitle_width = 
                 d3.select("#" + view_id).select(".ClassificationLegendTitle").node().getBBox().width;
             var spacing_below_title = 5;
+            var mixtureClassRectWidth = 90;
             Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
+                // boxes
+                viewSVG.append("rect")
+                    .attr("class", function() {
+                        return "mixtureClassBubble phyly_" + phyly;
+                    })
+                    .attr("x", (dim.legendWidth - mixtureClassRectWidth)/2)
+                    .attr("y", function() {
+                        var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + 
+                            phyly_idx*(dim.mixtureClassFontSize + 2);
+                        return y;
+                    })
+                    .attr("width", mixtureClassRectWidth)
+                    .attr("height", dim.mixtureClassFontSize)
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                    .attr("rx", 5)
+                    .attr("ry", 5)
+                    .attr("fill", dim.phylyBubbleOff)
+                    .attr("stroke", "#BEBEBE")
+                    .on("mouseover", function() {
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
+                            _mouseoverPhyly(curVizObj, mixture_classes, phyly);
+                        }
+                    })
+                    .on("mouseout", function() {
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
+                            _resetView(curVizObj);
+                        }
+                    });
+
+                // text
                 viewSVG.append("text")
                     .attr("class", "mixtureClass")
-                    .attr("x", dim.legendWidth/2 - (mixtureClassLegendTitle_width/2)) 
+                    .attr("x", dim.legendWidth/2) 
                     .attr("y", function() {
                         var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + 
                             phyly_idx*(dim.mixtureClassFontSize + 2);
@@ -892,41 +929,19 @@ HTMLWidgets.widget({
                     })
                     .attr("dy", "+0.71em")
                     .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                    .attr("fill", dim.neutralGrey)
+                    .attr("fill", "black")
                     .attr("font-family", "Arial")
+                    .attr("text-anchor", "middle")
                     .attr("font-size", dim.mixtureClassFontSize)
-                    .text(function() { return " - " + phyly; })
+                    .text(function() { return phyly; })
                     .style("cursor", "default")
                     .on("mouseover", function() {
-                        if (_checkForSelections(curVizObj)) {
-                            var viewSVG = d3.select("#" + view_id);
-                            var participating_samples = _.pluck(mixture_classes[phyly], "sample_id");
-
-                            // shade view
-                            _shadeMainView(curVizObj);
-
-                            // highlight samples
-                            _highlightSites(participating_samples, curVizObj);
-
-                            // highlight general anatomic marks
-                            var locations = _.uniq(_.pluck(mixture_classes[phyly], "sample_location"));
-                            locations.forEach(function(location) {
-                                d3.select("#" + view_id).select(".generalMark.location_"+location)
-                                    .attr("fill", dim.anatomicLineColour);
-                            });
-
-                            // highlight only those links that participate in the mixture classification
-                            viewSVG.selectAll(".treeLink").attr("stroke-opacty", 0);
-                            participating_samples.forEach(function(participating_sample) {
-                                viewSVG.selectAll(".treeLink.sample_" + participating_sample)
-                                    .attr("stroke-opacity", dim.shadeAlpha);
-                                viewSVG.selectAll(".mixtureClassTreeLink.sample_"+participating_sample)
-                                    .attr("stroke-opacity", 1);                        
-                            });
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
+                            _mouseoverPhyly(curVizObj, mixture_classes, phyly);
                         }
                     })
-                    .on("mouseout", function(d) {
-                        if (_checkForSelections(curVizObj)) {
+                    .on("mouseout", function() {
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
                             _resetView(curVizObj);
                         }
                     });
