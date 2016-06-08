@@ -929,7 +929,9 @@ HTMLWidgets.widget({
                     })
                     .attr("dy", "+0.71em")
                     .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                    .attr("fill", "black")
+                    .attr("fill", function() {
+                        return (mixture_classes[phyly].length > 0) ? "black" : "#BEBEBE";
+                    })
                     .attr("font-family", "Arial")
                     .attr("text-anchor", "middle")
                     .attr("font-size", dim.mixtureClassFontSize)
