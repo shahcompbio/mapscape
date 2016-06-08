@@ -174,26 +174,12 @@ HTMLWidgets.widget({
 
                 // get column names (depending on the available data, which columns will be shown)
                 dim.mutationColumns = [
-                                { "data": "chrom", "title": "Chrom.", "defaultContent": "" },
-                                { "data": "coord", "title": "Coord.", "defaultContent": "" },
                                 { "data": "empty", "title": "Clone", "bSortable": false, "defaultContent": "" }
                             ];
-                if (curVizObj.userConfig.mutations[0].hasOwnProperty("effect")) {
-                    dim.mutationColumns.splice(2, 0, { "data": "effect", "title": "Effect", "defaultContent": "" });
-                }
-                if (curVizObj.userConfig.mutations[0].hasOwnProperty("impact")) {
-                    dim.mutationColumns.splice(2, 0, { "data": "impact", "title": "Impact", "defaultContent": "" });
-                }
-                if (curVizObj.userConfig.mutations[0].hasOwnProperty("gene_name")) {
-                    dim.mutationColumns.splice(2, 0, { "data": "gene_name", "title": "Gene", "defaultContent": "" });
-                }
-                if (curVizObj.userConfig.mutations[0].hasOwnProperty("nuc_change")) {
-                    dim.mutationColumns.splice(2, 0, { "data": "nuc_change", "title": "Nucleotide Change", "defaultContent": "" });
-                } 
-                if (curVizObj.userConfig.mutations[0].hasOwnProperty("aa_change")) {
-                    dim.mutationColumns.splice(2, 0, { "data": "aa_change", "title": "Amino Acid Change", "defaultContent": "" });
-                } 
-                
+                var columnNames = [];
+                Object.keys(curVizObj.userConfig.mutations[0]).forEach(function(key) {
+                    dim.mutationColumns.push({ "data": key, "title": toTitleCase(key.replace(/_/g, ' ')), "defaultContent": "" });
+                });
             }
 
             console.log("curVizObj");

@@ -2045,29 +2045,14 @@ function _reformatMutations(curVizObj) {
 
             // add this gene to the array
             var cur_mut = {
-                "chrom": mut.chrom,
-                "coord": mut.coord,
                 "empty": "", // add an empty string for an empty column (clone column) that will contain an SVG
-                "clone_id": mut.clone_id,
-                "link_id": link_id,
-                "affected_samples": affected_samples,
-                "sample_locations": sample_locations
+                "link_id": link_id, // link id where mutation occurred
+                "affected_samples": affected_samples, // samples affected by this mutation
+                "sample_locations": sample_locations // locations for affected samples
             }
-            if (mut.hasOwnProperty("gene_name")) {
-                cur_mut.gene_name = mut.gene_name;
-            }
-            if (mut.hasOwnProperty("effect")) {
-                cur_mut.effect = mut.effect;
-            }
-            if (mut.hasOwnProperty("impact")) {
-                cur_mut.impact = mut.impact;
-            }
-            if (mut.hasOwnProperty("nuc_change")) {
-                cur_mut.nuc_change = mut.nuc_change;
-            }
-            if (mut.hasOwnProperty("aa_change")) {
-                cur_mut.aa_change = mut.aa_change;
-            }
+            Object.keys(mut).forEach(function(key) {
+                cur_mut[key] = mut[key];
+            })
             muts_arr.push(cur_mut);
         });
     }
@@ -2077,6 +2062,14 @@ function _reformatMutations(curVizObj) {
 
 
 // GENERAL FUNCTIONS
+
+/* function to capitalize each word in a string
+* From: http://stackoverflow.com/questions/4878756/javascript-how-to-capitalize-first-letter-of-each-word-like-a-2-word-city
+*/
+function toTitleCase(str)
+{
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
 
 /**
  * Returns a random number between min (inclusive) and max (exclusive)

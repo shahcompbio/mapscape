@@ -42,18 +42,12 @@
 #'                         either a URL to an image hosted online 
 #'                         or a path to the image in local file system. 
 #'                         If unspecified, will use default generic male and female images.
-#' @param mutations {Data Frame} (Optional) Mutations occurring at each clone.
+#' @param mutations {Data Frame} (Optional) Mutations occurring at each clone. Any additional field will be shown in the mutation table.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
 #'                       (3) {String} "clone_id" - clone id
 #'                       (4) {String} "sample_id" - id for the tumour sample 
-#'                       (5) {Number} "VAF" - variant allele frequency of the mutation in the corresponding sample
-#'                       (6) {String} (Optional) "gene_name" - name of the affected gene (can be "" if none affected).
-#'                       (7) {String} (Optional) "effect" - effect of the mutation 
-#'                                                          (e.g. non-synonymous, upstream, etc.)
-#'                       (8) {String} (Optional) "impact" - impact of the mutation (e.g. low, moderate, high).
-#'                       (9) {String} (Optional) "nuc_change" - nucleotide change
-#'                       (10) {String} (Optional) "aa_change" - amino acid change.
+#'                       (5) {Number} "VAF" - variant allele frequency of the mutation in the corresponding sample.
 #' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 #'   Format: columns are (1) {String} "clone_id" - the clone ids
 #'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
@@ -131,7 +125,7 @@ spacesweep <- function(clonal_prev,
   # ensure column names are correct
   if (!("source" %in% colnames(tree_edges)) ||
       !("target" %in% colnames(tree_edges))) {
-    stop(paste("Tree edges data frame must have the following column names: ", 
+    stop(paste("Tree edges data frame must contain the following column names: ", 
         "\"source\", \"target\".", sep=""))
   }
 
@@ -182,7 +176,7 @@ spacesweep <- function(clonal_prev,
   if (!("sample_id" %in% colnames(clonal_prev)) ||
       !("clone_id" %in% colnames(clonal_prev)) ||
       !("clonal_prev" %in% colnames(clonal_prev))) {
-    stop(paste("Clonal prevalence data frame must have the following column names: ", 
+    stop(paste("Clonal prevalence data frame must contain the following column names: ", 
         "\"sample_id\", \"clone_id\", \"clonal_prev\".", sep=""))
   }
 
@@ -216,7 +210,7 @@ spacesweep <- function(clonal_prev,
       !("location_id" %in% colnames(sample_locations)) ||
       !("x" %in% colnames(sample_locations)) ||
       !("y" %in% colnames(sample_locations))) {
-    stop(paste("Sample locations data frame must have the following column names: ", 
+    stop(paste("Sample locations data frame must contain the following column names: ", 
         "\"sample_id\", \"location_id\", \"x\", \"y\".", sep=""))
   }
 
@@ -255,7 +249,7 @@ spacesweep <- function(clonal_prev,
         !("clone_id" %in% colnames(mutations)) ||
         !("sample_id" %in% colnames(mutations)) ||
         !("VAF" %in% colnames(mutations))) {
-      stop(paste("Mutations data frame must have the following column names: ", 
+      stop(paste("Mutations data frame must contain the following column names: ", 
           "\"chrom\", \"coord\", \"clone_id\", \"sample_id\", \"VAF\".", sep=""))
     }
 
@@ -267,27 +261,7 @@ spacesweep <- function(clonal_prev,
     mutations$VAF <- as.numeric(as.character(mutations$VAF))
 
     # check for optional info, and ensure data of correct type
-    extra_columns <- vector()
-    if ("gene_name" %in% colnames(mutations)) {
-      extra_columns <- append(extra_columns, "gene_name")
-      mutations$gene_name <- as.character(mutations$gene_name)
-    }
-    if ("effect" %in% colnames(mutations)) {
-      extra_columns <- append(extra_columns, "effect")
-      mutations$effect <- as.character(mutations$effect)
-    }
-    if ("impact" %in% colnames(mutations)) {
-      extra_columns <- append(extra_columns, "impact")
-      mutations$impact <- as.character(mutations$impact)
-    }
-    if ("nuc_change" %in% colnames(mutations)) {
-      extra_columns <- append(extra_columns, "nuc_change")
-      mutations$nuc_change <- as.character(mutations$nuc_change)
-    }
-    if ("aa_change" %in% colnames(mutations)) {
-      extra_columns <- append(extra_columns, "aa_change")
-      mutations$aa_change <- as.character(mutations$aa_change)
-    }
+    extra_columns <- colnames(mutations)[which(!(colnames(mutations) %in% c("chrom", "coord", "clone_id", "sample_id", "VAF")))]
 
     # check that all SAMPLES in the mutations data are present in the sample locations & clonal prev data
     mutations_sample_ids <- unique(mutations$sample_id)
@@ -374,7 +348,7 @@ spacesweep <- function(clonal_prev,
     # ensure column names are correct
     if (!("clone_id" %in% colnames(clone_colours)) ||
         !("colour" %in% colnames(clone_colours))) {
-      stop(paste("Node colour data frame must have the following column names: ", 
+      stop(paste("Node colour data frame must contain the following column names: ", 
           "\"clone_id\", \"colour\".", sep=""))
     }  
 
