@@ -864,7 +864,7 @@ HTMLWidgets.widget({
                 .attr("font-weight", "bold")
                 .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("font-size", dim.legendTitleHeight)
-                .text("Mixture");
+                .text("Phylogenetic");
             viewSVG.append("text")
                 .attr("class", "ClassificationLegendTitle legendTitle")
                 .attr("x", dim.legendWidth/2) 
