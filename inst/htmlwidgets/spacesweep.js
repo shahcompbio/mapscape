@@ -178,7 +178,8 @@ HTMLWidgets.widget({
                             ];
                 var columnNames = [];
                 Object.keys(curVizObj.userConfig.mutations[0]).forEach(function(key) {
-                    dim.mutationColumns.push({ "data": key, "title": toTitleCase(key.replace(/_/g, ' ')), "defaultContent": "" });
+                    var title = toTitleCase(key.replace(/_/g, ' ')).replace(/ Id$/g, ' ID'); // capitalize the whole word "ID"
+                    dim.mutationColumns.push({ "data": key, "title": title, "defaultContent": "" });
                 });
             }
 
