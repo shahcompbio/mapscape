@@ -23,7 +23,6 @@ HTMLWidgets.widget({
             selectOn: false, // whether or not link selection is on
             mutSelectOn: false, // whether or not the mutation selection is on
             startLocation: Math.PI/2, // starting location [0, 2*Math.PI] of sample ordering
-            legendSpacing: 15, // spacing between legend items
             shadeAlpha: 0.08, // alpha value for shading
             neutralGrey: "#9E9A9A", // grey used for font colour, anatomic lines, etc.
             legendTitleColour: "#000000", // colour used for legend titles
@@ -34,6 +33,10 @@ HTMLWidgets.widget({
             topBarColour: "#D9D9D9",
             topBarHighlight: "#C6C6C6",
             viewTitle: "SPACESWEEP",
+            legendTitleSpacing: 2, // spacing (px) between legend title lines (for titles that are >1 word)
+            legendSpacing: 15, // spacing between legend items
+            spacingUnderLegendTitle: 5, // spacing under a legend title, before its info
+            phyloTitle_top: 22, // top y-coordinate for phylogeny title
             phylyBubbleOff: "#EFEFEF",
             phylyBubbleOn: "#CECECE"
         };
@@ -94,7 +97,7 @@ HTMLWidgets.widget({
         dim.legendHeight = dim.viewDiameter;
         dim.legendTreeWidth = dim.legendWidth - 2; // width of the tree in the legend
         dim.legend_image_plot_diameter = dim.legendWidth; // width of the plot space for the image
-        dim.legend_image_top_l = {x: 0, y: dim.legendTreeWidth + dim.legendTitleHeight*2 + dim.legendSpacing};
+        dim.legend_image_top_l = {x: 0};
 
         // anatomical image configurations
         dim.image_plot_diameter = dim.innerRadius*2; // width of the plot space for the image
@@ -111,9 +114,6 @@ HTMLWidgets.widget({
             // get legend image dimensions
             dim.legend_image_width = dim.legend_image_plot_diameter;
             dim.legend_image_height = dim.legend_image_width/curVizObj.view.aspect_ratio;
-
-            // legend mixture classification configurations
-            dim.legend_mixture_top = dim.legend_image_top_l.y + dim.legend_image_height + dim.legendSpacing;
 
             // map each sample to its anatomic location (including coordinates)
             _mapSamplesToAnatomy(curVizObj);
@@ -475,41 +475,6 @@ HTMLWidgets.widget({
                 });  
             d3.select("#" + view_id).select(".spacesweep_" + view_id).call(anatomyTip);
 
-            // PLOT ANATOMY IN LEGEND
-
-            // anatomy title
-            viewSVG.append("text")
-                .attr("class", "legendTitle")
-                .attr("x", dim.legendWidth/2) 
-                .attr("y", dim.legend_image_top_l.y - dim.legendTitleHeight)
-                .attr("text-anchor", "middle")
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("color", dim.legendTitleColour)
-                .attr("font-family", "Arial")
-                .attr("font-weight", "bold")
-                .attr("font-size", dim.legendTitleHeight)
-                .text("Anatomy");
-
-            // anatomy image
-            viewSVG.append("image")
-                .attr("xlink:href", dim.image_ref)
-                .attr("x", dim.legend_image_top_l.x)
-                .attr("y", dim.legend_image_top_l.y)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("width", dim.legend_image_width)
-                .attr("height", dim.legend_image_height)
-
-            // anatomy region of interest
-            viewSVG.append("circle")
-                .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
-                .attr("cy", dim.legend_image_top_l.y + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_height)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("r", (curVizObj.view.crop_info.crop_width_prop/2) * dim.legend_image_width)
-                .attr("stroke-width", "2px")
-                .attr("stroke", dim.anatomicLineColour)
-                .attr("fill", "none");
-
-
             // PLOT WHITE RECT TO FILL MAIN VIEW AREA 
             // (covers any anatomical region circle that goes out of the legend image bounds)
 
@@ -578,22 +543,38 @@ HTMLWidgets.widget({
             // PLOT LEGEND GENOTYPE TREE
 
             // tree title
-            viewSVG.append("text")
-                .attr("class", "legendTitle")
-                .attr("x", dim.legendWidth/2) 
-                .attr("y", 22)
-                .attr("text-anchor", "middle")
-                .attr("font-weight", "bold")
-                .attr("font-family", "Arial")
-                .attr("font-size", dim.legendTitleHeight)
-                .attr("color", dim.legendTitleColour)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .text("Phylogeny");
+            var phyloTitle = curVizObj.userConfig.phylogeny_title.split(" ");
+            phyloTitle.forEach(function(word, word_i) {
+                viewSVG.append("text")
+                    .attr("class", "legendTitle")
+                    .attr("x", dim.legendWidth/2) 
+                    .attr("y", dim.phyloTitle_top + word_i*(dim.legendTitleHeight + dim.legendTitleSpacing))
+                    .attr("dy", "+0.71em")
+                    .attr("text-anchor", "middle")
+                    .attr("font-weight", "bold")
+                    .attr("font-family", "Arial")
+                    .attr("font-size", dim.legendTitleHeight)
+                    .attr("color", dim.legendTitleColour)
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                    .text(word);                
+            });
+            var tree_top = dim.phyloTitle_top + 
+                           (phyloTitle.length * (dim.legendTitleHeight + dim.legendTitleSpacing)) + 
+                           dim.spacingUnderLegendTitle;
+
+            viewSVG.append("rect")
+                .attr("x", dim.viewDiameter)
+                .attr("y", tree_top)
+                .attr("width", dim.legendTreeWidth)
+                .attr("height", dim.legendTreeWidth)
+                .attr("stroke", "#F4F3F3")
+                .attr("stroke-width", "5px")
+                .attr("fill-opacity", 0);
 
             // d3 tree layout
             var treeLayout = d3.layout.tree()           
-                    .size([dim.legendTreeWidth - dim.legendNode_r*2, 
-                        dim.legendTreeWidth - dim.legendNode_r*2]);
+                    .size([dim.legendTreeWidth - dim.legendNode_r*4, 
+                        dim.legendTreeWidth - dim.legendNode_r*3]);
 
             // get nodes and links
             var root = $.extend({}, curVizObj.data.treeStructure), // copy tree into new variable
@@ -603,7 +584,7 @@ HTMLWidgets.widget({
             // swap x and y direction
             nodes.forEach(function(node) {
                 node.tmp = node.y;
-                node.y = node.x + dim.legendNode_r + dim.legendTitleHeight; 
+                node.y = node.x + dim.legendNode_r*2 + tree_top; 
                 node.x = node.tmp + dim.legendNode_r; 
                 delete node.tmp; 
             });
@@ -793,6 +774,145 @@ HTMLWidgets.widget({
                 });
 
 
+            // PLOT ANATOMY IN LEGEND
+
+            // anatomy title
+            var anatomyTitle_top = tree_top + dim.legendTreeWidth + dim.legendSpacing;
+            var anatomyTitle = curVizObj.userConfig.anatomy_title.split(" ");
+            anatomyTitle.forEach(function(word, word_i) {
+                viewSVG.append("text")
+                    .attr("class", "legendTitle")
+                    .attr("x", dim.legendWidth/2) 
+                    .attr("y", anatomyTitle_top + word_i*(dim.legendTitleHeight + dim.legendTitleSpacing))
+                    .attr("dy", "+0.71em")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                    .attr("color", dim.legendTitleColour)
+                    .attr("font-family", "Arial")
+                    .attr("font-weight", "bold")
+                    .attr("font-size", dim.legendTitleHeight)
+                    .text(word);                
+            });
+
+            // anatomy image
+            var anatomyImage_top = anatomyTitle_top + 
+                                   anatomyTitle.length*(dim.legendTitleHeight + dim.legendTitleSpacing) + 
+                                   dim.spacingUnderLegendTitle;
+            viewSVG.append("image")
+                .attr("xlink:href", dim.image_ref)
+                .attr("x", dim.legend_image_top_l.x)
+                .attr("y", anatomyImage_top)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                .attr("width", dim.legend_image_width)
+                .attr("height", dim.legend_image_height)
+
+            // anatomy region of interest
+            viewSVG.append("circle")
+                .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
+                .attr("cy", anatomyImage_top + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_height)
+                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                .attr("r", (curVizObj.view.crop_info.crop_width_prop/2) * dim.legend_image_width)
+                .attr("stroke-width", "2px")
+                .attr("stroke", dim.anatomicLineColour)
+                .attr("fill", "none");
+
+            // PLOT MIXTURE CLASSIFICATION
+
+            var mixture_classes = {
+                "pure": [],
+                "monophyletic": [],
+                "polyphyletic": []
+            };
+            curVizObj.data.samples.forEach(function(sample) {
+                mixture_classes[sample.phyly] = mixture_classes[sample.phyly] || [];
+                mixture_classes[sample.phyly].push({"sample_id": sample.sample_id, 
+                                                    "sample_location": (sample.location)? sample.location.location_id : null});
+            })
+
+            // plot mixture classification title
+            var mixtureClassTitle = curVizObj.userConfig.classification_title.split(" ");
+            var mixtureClassTitle_top = anatomyImage_top + dim.legend_image_height + dim.legendSpacing;
+            mixtureClassTitle.forEach(function(word, word_i) {
+                viewSVG.append("text")
+                    .attr("class", "MixtureLegendTitle legendTitle")
+                    .attr("x", dim.legendWidth/2) 
+                    .attr("y", mixtureClassTitle_top + word_i*(dim.legendTitleSpacing + dim.legendTitleHeight))
+                    .attr("dy", "+0.71em")
+                    .attr("text-anchor", "middle")
+                    .attr("color", dim.legendTitleColour)
+                    .attr("font-family", "Arial")
+                    .attr("font-weight", "bold")
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                    .attr("font-size", dim.legendTitleHeight)
+                    .text(word);
+            })
+
+            // plot mixture classification info
+            var mixtureClasses_top = mixtureClassTitle_top + 
+                                   mixtureClassTitle.length*(dim.legendTitleHeight + dim.legendTitleSpacing) + 
+                                   dim.spacingUnderLegendTitle;
+            var spacing_below_title = 5;
+            var mixtureClassRectWidth = 90;
+            Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
+                // boxes
+                viewSVG.append("rect")
+                    .attr("class", function() {
+                        return "mixtureClassBubble phyly_" + phyly;
+                    })
+                    .attr("x", (dim.legendWidth - mixtureClassRectWidth)/2)
+                    .attr("y", function() {
+                        var y = mixtureClasses_top + phyly_idx*(dim.mixtureClassFontSize + 2);
+                        return y;
+                    })
+                    .attr("width", mixtureClassRectWidth)
+                    .attr("height", dim.mixtureClassFontSize)
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                    .attr("rx", 5)
+                    .attr("ry", 5)
+                    .attr("fill", dim.phylyBubbleOff)
+                    .attr("stroke", "#BEBEBE")
+                    .on("mouseover", function() {
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
+                            _mouseoverPhyly(curVizObj, mixture_classes, phyly);
+                        }
+                    })
+                    .on("mouseout", function() {
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
+                            _resetView(curVizObj);
+                        }
+                    });
+
+                // text
+                viewSVG.append("text")
+                    .attr("class", "mixtureClass")
+                    .attr("x", dim.legendWidth/2) 
+                    .attr("y", function() {
+                        var y = mixtureClasses_top + phyly_idx*(dim.mixtureClassFontSize + 2);
+                        return y;
+                    })
+                    .attr("dy", "+0.71em")
+                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
+                    .attr("fill", function() {
+                        return (mixture_classes[phyly].length > 0) ? "black" : "#BEBEBE";
+                    })
+                    .attr("font-family", "Arial")
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", dim.mixtureClassFontSize)
+                    .text(function() { return phyly; })
+                    .style("cursor", "default")
+                    .on("mouseover", function() {
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
+                            _mouseoverPhyly(curVizObj, mixture_classes, phyly);
+                        }
+                    })
+                    .on("mouseout", function() {
+                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
+                            _resetView(curVizObj);
+                        }
+                    });
+            });
+
+
             // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
 
             viewSVG.append("g")
@@ -835,110 +955,6 @@ HTMLWidgets.widget({
                         anatomyTip.hide();
                     }
                 });
-
-            // PLOT MIXTURE CLASSIFICATION
-
-            var mixture_classes = {
-                "pure": [],
-                "monophyletic": [],
-                "polyphyletic": []
-            };
-            curVizObj.data.samples.forEach(function(sample) {
-                mixture_classes[sample.phyly] = mixture_classes[sample.phyly] || [];
-                mixture_classes[sample.phyly].push({"sample_id": sample.sample_id, 
-                                                    "sample_location": (sample.location)? sample.location.location_id : null});
-            })
-
-            // plot mixture classification title
-            viewSVG.append("text")
-                .attr("class", "MixtureLegendTitle legendTitle")
-                .attr("x", dim.legendWidth/2) 
-                .attr("y", dim.legend_mixture_top)
-                .attr("dy", "+0.71em")
-                .attr("text-anchor", "middle")
-                .attr("color", dim.legendTitleColour)
-                .attr("font-family", "Arial")
-                .attr("font-weight", "bold")
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("font-size", dim.legendTitleHeight)
-                .text("Phylogenetic");
-            viewSVG.append("text")
-                .attr("class", "ClassificationLegendTitle legendTitle")
-                .attr("x", dim.legendWidth/2) 
-                .attr("y", dim.legend_mixture_top + dim.legendTitleHeight)
-                .attr("dy", "+0.71em")
-                .attr("text-anchor", "middle")
-                .attr("font-family", "Arial")
-                .attr("font-weight", "bold")
-                .attr("color", dim.legendTitleColour)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                .attr("font-size", dim.legendTitleHeight)
-                .text("Classification");
-
-            var mixtureClassLegendTitle_width = 
-                d3.select("#" + view_id).select(".ClassificationLegendTitle").node().getBBox().width;
-            var spacing_below_title = 5;
-            var mixtureClassRectWidth = 90;
-            Object.keys(mixture_classes).forEach(function(phyly, phyly_idx) {
-                // boxes
-                viewSVG.append("rect")
-                    .attr("class", function() {
-                        return "mixtureClassBubble phyly_" + phyly;
-                    })
-                    .attr("x", (dim.legendWidth - mixtureClassRectWidth)/2)
-                    .attr("y", function() {
-                        var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + 
-                            phyly_idx*(dim.mixtureClassFontSize + 2);
-                        return y;
-                    })
-                    .attr("width", mixtureClassRectWidth)
-                    .attr("height", dim.mixtureClassFontSize)
-                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                    .attr("rx", 5)
-                    .attr("ry", 5)
-                    .attr("fill", dim.phylyBubbleOff)
-                    .attr("stroke", "#BEBEBE")
-                    .on("mouseover", function() {
-                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
-                            _mouseoverPhyly(curVizObj, mixture_classes, phyly);
-                        }
-                    })
-                    .on("mouseout", function() {
-                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
-                            _resetView(curVizObj);
-                        }
-                    });
-
-                // text
-                viewSVG.append("text")
-                    .attr("class", "mixtureClass")
-                    .attr("x", dim.legendWidth/2) 
-                    .attr("y", function() {
-                        var y = dim.legend_mixture_top + dim.legendTitleHeight*2 + spacing_below_title + 
-                            phyly_idx*(dim.mixtureClassFontSize + 2);
-                        return y;
-                    })
-                    .attr("dy", "+0.71em")
-                    .attr("transform", "translate(" + dim.viewDiameter + ",0)")
-                    .attr("fill", function() {
-                        return (mixture_classes[phyly].length > 0) ? "black" : "#BEBEBE";
-                    })
-                    .attr("font-family", "Arial")
-                    .attr("text-anchor", "middle")
-                    .attr("font-size", dim.mixtureClassFontSize)
-                    .text(function() { return phyly; })
-                    .style("cursor", "default")
-                    .on("mouseover", function() {
-                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
-                            _mouseoverPhyly(curVizObj, mixture_classes, phyly);
-                        }
-                    })
-                    .on("mouseout", function() {
-                        if (_checkForSelections(curVizObj) && mixture_classes[phyly].length > 0) {
-                            _resetView(curVizObj);
-                        }
-                    });
-            });
 
             // MUTATION TABLE
 

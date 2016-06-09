@@ -54,6 +54,10 @@
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
+#' @param phylogeny_title {String} (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".
+#' @param anatomy_title {String} (Optional) Legend title for the anatomy. Default is "Anatomy".
+#' @param classification_title {String} (Optional) Legend title for the phylogenetic classification. 
+#'                                                 Default is "Phylogenetic Classification".
 #' @param show_warnings {Boolean} (Optional) Whether or not to show any warnings. Default is TRUE.
 #' @param width {Number} (Optional) Width of the plot. Minimum width is 930.
 #' @param height {Number} (Optional) Height of the plot. Minimum height is 700.
@@ -74,6 +78,9 @@ spacesweep <- function(clonal_prev,
                       mutations = "NA",
                       sample_ids = c("NA"),
                       n_cells = 100,
+                      phylogeny_title = "Clonal Phylogeny",
+                      anatomy_title = "Anatomy",
+                      classification_title = "Phylogenetic Classification",
                       show_warnings = TRUE,
                       width = 960, 
                       height = 960) {
@@ -430,6 +437,9 @@ spacesweep <- function(clonal_prev,
     mutations_provided = mutations_provided,
     sample_ids = sample_ids,
     n_cells = n_cells,
+    phylogeny_title = as.character(phylogeny_title),
+    anatomy_title = as.character(anatomy_title),
+    classification_title = as.character(classification_title),
     img_ref = img_ref_base64,
     sample_id_map = jsonlite::toJSON(sample_id_map),
     clone_id_map = jsonlite::toJSON(clone_id_map),
