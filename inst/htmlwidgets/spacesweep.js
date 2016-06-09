@@ -34,7 +34,7 @@ HTMLWidgets.widget({
             topBarHighlight: "#C6C6C6",
             viewTitle: "SPACESWEEP",
             legendTitleSpacing: 2, // spacing (px) between legend title lines (for titles that are >1 word)
-            legendSpacing: 15, // spacing between legend items
+            legendSpacing: 23, // spacing between legend items
             spacingUnderLegendTitle: 5, // spacing under a legend title, before its info
             phyloTitle_top: 22, // top y-coordinate for phylogeny title
             phylyBubbleOff: "#EFEFEF",
