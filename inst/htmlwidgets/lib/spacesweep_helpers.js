@@ -677,8 +677,10 @@ function _getTreeInfo(curVizObj) {
     var root_tree = _findNodeByName(nodesByName, phantomRoot); 
     curVizObj.data.treeStructure = root_tree; 
 
-    // get in-order traversal node order of tree
-    curVizObj.data.nodesColourOrder = _phyloTraversal(curVizObj.data.treeStructure, [], 0);
+    // get linear chains
+    curVizObj.data.treeChainRoots = []; // keep track of linear chain segment roots
+    curVizObj.data.treeChains = 
+        _getLinearTreeSegments(curVizObj, curVizObj.data.treeStructure, {}, "");
 
     // get descendants for each node
     curVizObj.data.treeDescendantsArr = {};
@@ -842,14 +844,15 @@ function _elbow(d) {
 * @param {Object} curNode -- current key in the tree
 * @param {Object} chains -- originally empty object of the segments 
 *                           (key is segment start key, value is array of descendants in this chain)
-* @param {Object} base -- the base key of this chain
+* @param {Object} base -- the base key of this chain (originally "")
 */
-function _getLinearTreeSegments(curNode, chains, base) {
+function _getLinearTreeSegments(curVizObj, curNode, chains, base) {
 
     // if it's a new base, create the base, with no descendants in its array yet
     if (base === "") {
         base = curNode.id;
         chains[base] = [];
+        curVizObj.data.treeChainRoots.push(curNode.id);
     }
     // if it's a linear descendant, append the current key to the chain
     else {
@@ -858,13 +861,13 @@ function _getLinearTreeSegments(curNode, chains, base) {
 
     // if the current key has 1 child to search through
     if (curNode.children.length == 1) { 
-        _getLinearTreeSegments(curNode.children[0], chains, base);
+        _getLinearTreeSegments(curVizObj, curNode.children[0], chains, base);
     }
 
     // otherwise for each child, create a blank base (will become that child)
     else {
         for (var i = 0; i < curNode.children.length; i++) {
-            _getLinearTreeSegments(curNode.children[i], chains, "");
+            _getLinearTreeSegments(curVizObj, curNode.children[i], chains, "");
         }
     }
 
@@ -896,32 +899,6 @@ function _getSitesAffectedByLink(curVizObj) {
     })
 
     curVizObj.data.link_affected_samples = affected_samples;
-}
-
-/* traversal of tree for phylogenetic colouring
-* @param {Object} curNode -- current node object
-* @param {Array} nodes_ordered -- originally empty array of ordered nodes
-* @param {Number} cur_height -- originally 0, the height of the current node
-*/
-function _phyloTraversal(curNode, nodes_ordered, cur_height) {
-
-    // no children -- add to ordered nodes
-    var n_children = curNode.children.length;
-    if (n_children === 0) {
-        nodes_ordered.push({"id": curNode.id,
-                            "height": cur_height});
-    }
-
-    // children -- add to ordered nodes, then search children
-    else {
-        nodes_ordered.push({"id": curNode.id,
-                            "height": cur_height});
-        // search children
-        for (var i = 0; i < n_children; i++) {
-            _phyloTraversal(curNode.children[i], nodes_ordered, cur_height+1);
-        }
-    }
-    return nodes_ordered;
 }
 
 // COLOUR FUNCTIONS
@@ -1004,17 +981,38 @@ function _getPhyloColours(curVizObj) {
     // clone colours not specified
     else {
         var s = 0.95, // saturation
-            l = 0.7; // lightness
+            l = 0.73; // lightness
 
         // number of nodes
-        var n_nodes = curVizObj.data.nodesColourOrder.length;
+        var n_nodes = curVizObj.data.treeChainRoots.length; 
 
         for (var i = 0; i < n_nodes; i++) {
+            var cur_node = curVizObj.data.treeChainRoots[i];
             var h = i/n_nodes;
             var rgb = _hslToRgb(h, s, l); // hsl to rgb
             var col = _rgb2hex("rgb(" + rgb[0] + "," + rgb[1] + "," + rgb[2] + ")"); // rgb to hex
 
-            colour_assignment[curVizObj.data.nodesColourOrder[i].id] = col;
+            colour_assignment[cur_node] = col;
+
+            // for each of the chain's descendants
+            var prev_colour = col;
+            curVizObj.data.treeChains[cur_node].forEach(function(desc, desc_i) {
+                // if we're on the phantom root's branch and it's the first descendant
+                if (cur_node == curVizObj.generalConfig.phantomRoot && desc_i === 0) {
+
+                    // do not decrease the brightness
+                    colour_assignment[desc] = prev_colour;
+                }
+                // we're not on the phantom root branch's first descendant
+                else {
+                    // colour the descendant a lighter version of the previous colour in the chain
+                    colour_assignment[desc] = 
+                        _decrease_brightness(prev_colour, 20);
+
+                    // set the previous colour to the lightened colour
+                    prev_colour = colour_assignment[desc]; 
+                }
+            })
         }
     }
     curVizObj.view.colour_assignment = colour_assignment;  
