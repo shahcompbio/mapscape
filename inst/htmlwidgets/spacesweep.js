@@ -475,71 +475,6 @@ HTMLWidgets.widget({
                 });  
             d3.select("#" + view_id).select(".spacesweep_" + view_id).call(anatomyTip);
 
-            // PLOT WHITE RECT TO FILL MAIN VIEW AREA 
-            // (covers any anatomical region circle that goes out of the legend image bounds)
-
-            viewSVG.append("rect")
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("width", dim.viewDiameter)
-                .attr("height", dim.viewDiameter)
-                .attr("fill", "white");
-
-            // PLOT ANATOMY IMAGE IN MAIN VIEW
-
-            var defs = viewSVG.append("defs").attr("id", "imgdefs")
-
-            var anatomyPattern = defs.append("pattern")
-                                    .attr("id", "anatomyPattern")
-                                    .attr("height", 1)
-                                    .attr("width", 1)
-
-            anatomyPattern.append("image")
-                .attr("class", "anatomyImage")
-                .attr("x", 0)
-                .attr("y", 0)
-                .attr("height", dim.image_plot_diameter)
-                .attr("width", dim.image_plot_diameter)
-                .attr("xlink:href", dim.image_ref);
-
-            viewSVG.append("circle")
-                .attr("class", "anatomyDiagram")
-                .attr("r", dim.innerRadius)
-                .attr("cy", dim.viewDiameter/2)
-                .attr("cx", dim.viewDiameter/2)
-                .attr("fill", "url(#anatomyPattern)")
-                .attr("stroke", "#CBCBCB")
-                .attr("stroke-width", "3px")
-                .attr("stroke-opacity", 0.2);
-
-            // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
-
-            // update the anatomy image with the new cropping
-            d3.select("#" + view_id).select(".anatomyImage") 
-                .attr("height", curVizObj.view.crop_info.scaled_image_height)
-                .attr("width", curVizObj.view.crop_info.scaled_image_width)
-                .attr("x", -curVizObj.view.crop_info.left_shift)
-                .attr("y", -curVizObj.view.crop_info.up_shift);          
-
-            // SITE SVG GROUPS
-
-            var sampleGs = viewSVG.append("g")
-                .attr("class", "sampleGs")
-                .selectAll(".sampleG")
-                .data(curVizObj.data.samples)
-                .enter().append("g")
-                .attr("class", function(d) { return "sampleG sample_" + d.sample_id});
-
-            // PLOT CIRCLE BORDER
-
-            viewSVG.append("circle")
-                .attr("cx", dim.viewDiameter/2)
-                .attr("cy", dim.viewDiameter/2)
-                .attr("r", dim.viewDiameter/2 - 4)
-                .attr("fill", "none")
-                .attr("stroke", "#F4F3F3")
-                .attr("stroke-width", "5px");
-
             // PLOT LEGEND GENOTYPE TREE
 
             // tree title
@@ -912,6 +847,71 @@ HTMLWidgets.widget({
                     });
             });
 
+
+            // PLOT WHITE RECT TO FILL MAIN VIEW AREA 
+            // (covers any anatomical region circle that goes out of the legend image bounds)
+
+            viewSVG.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", dim.viewDiameter)
+                .attr("height", dim.viewDiameter)
+                .attr("fill", "white");
+
+            // PLOT ANATOMY IMAGE IN MAIN VIEW
+
+            var defs = viewSVG.append("defs").attr("id", "imgdefs")
+
+            var anatomyPattern = defs.append("pattern")
+                                    .attr("id", "anatomyPattern")
+                                    .attr("height", 1)
+                                    .attr("width", 1)
+
+            anatomyPattern.append("image")
+                .attr("class", "anatomyImage")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("height", dim.image_plot_diameter)
+                .attr("width", dim.image_plot_diameter)
+                .attr("xlink:href", dim.image_ref);
+
+            viewSVG.append("circle")
+                .attr("class", "anatomyDiagram")
+                .attr("r", dim.innerRadius)
+                .attr("cy", dim.viewDiameter/2)
+                .attr("cx", dim.viewDiameter/2)
+                .attr("fill", "url(#anatomyPattern)")
+                .attr("stroke", "#CBCBCB")
+                .attr("stroke-width", "3px")
+                .attr("stroke-opacity", 0.2);
+
+            // ZOOM INTO SELECT REGION ON ANATOMICAL IMAGE
+
+            // update the anatomy image with the new cropping
+            d3.select("#" + view_id).select(".anatomyImage") 
+                .attr("height", curVizObj.view.crop_info.scaled_image_height)
+                .attr("width", curVizObj.view.crop_info.scaled_image_width)
+                .attr("x", -curVizObj.view.crop_info.left_shift)
+                .attr("y", -curVizObj.view.crop_info.up_shift);          
+
+            // SITE SVG GROUPS
+
+            var sampleGs = viewSVG.append("g")
+                .attr("class", "sampleGs")
+                .selectAll(".sampleG")
+                .data(curVizObj.data.samples)
+                .enter().append("g")
+                .attr("class", function(d) { return "sampleG sample_" + d.sample_id});
+
+            // PLOT CIRCLE BORDER
+
+            viewSVG.append("circle")
+                .attr("cx", dim.viewDiameter/2)
+                .attr("cy", dim.viewDiameter/2)
+                .attr("r", dim.viewDiameter/2 - 4)
+                .attr("fill", "none")
+                .attr("stroke", "#F4F3F3")
+                .attr("stroke-width", "5px");
 
             // PLOT ANATOMIC MARKS FOR EACH SITE STEM (e.g. "Om", "ROv")
 
