@@ -565,18 +565,21 @@ function _getImageBounds(curVizObj) {
 function _scale(curVizObj) {
 
     var dim = curVizObj.generalConfig;
-    // 15 pixels of padding before edgemost anatomic mark in the main view
-    var anatomy_padding = (curVizObj.view.image_width/dim.image_plot_diameter)*15;  
 
     // get the width & height of the cropped section
     var bounds = curVizObj.view.sampleBounds;
 
-    // diameter of the cropped region on the SAMPLE image
-    var crop_diameter = (bounds.max_r + anatomy_padding) * 2;
-    var crop_width_prop = crop_diameter/curVizObj.view.image_width; // (crop_diameter : original_width) ratio
+    // 15 pixels of padding before edgemost anatomic mark in the main view
+    var px_space_in_main_view = 15;
+    // pixel space on the original image in order that we have 15px of padding in the main view
+    var px_space_on_original = ((bounds.max_r*2)/(dim.main_image_plot_diameter - 2*px_space_in_main_view))*px_space_in_main_view;  
+
+    // diameter of the cropped region on the user provided image
+    var crop_diameter = (bounds.max_r + px_space_on_original) * 2;
+    var crop_width_prop = crop_diameter/curVizObj.view.image_width; // TODO ??? (crop_diameter : original_width) ratio
 
     // scale image such that region of interest is as big as the image plot diameter
-    var scaling_factor = dim.image_plot_diameter/crop_diameter;
+    var scaling_factor = dim.main_image_plot_diameter/crop_diameter; // scaling original image to appropriate size for main view
     var scaled_image_width = scaling_factor * curVizObj.view.image_width;
     var scaled_image_height = scaling_factor * curVizObj.view.image_height;
 
@@ -593,8 +596,8 @@ function _scale(curVizObj) {
     };
 
     // to centre the image, we need to move it left and up by how much
-    var left_shift = (scaled_centre.x - dim.image_plot_diameter/2);
-    var up_shift = (scaled_centre.y - dim.image_plot_diameter/2);
+    var left_shift = (scaled_centre.x - dim.main_image_plot_diameter/2);
+    var up_shift = (scaled_centre.y - dim.main_image_plot_diameter/2);
 
     var crop_info = {
         crop_width_prop: crop_width_prop,

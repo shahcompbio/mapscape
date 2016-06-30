@@ -100,9 +100,9 @@ HTMLWidgets.widget({
         dim.legend_image_top_l = {x: 0};
 
         // anatomical image configurations
-        dim.image_plot_diameter = dim.innerRadius*2; // width of the plot space for the image
-        dim.image_top_l = {x: dim.viewDiameter/2 - dim.image_plot_diameter/2, 
-                                y: dim.viewDiameter/2 - dim.image_plot_diameter/2};
+        dim.main_image_plot_diameter = dim.innerRadius*2; // width of the plot space for the image
+        dim.image_top_l = {x: dim.viewDiameter/2 - dim.main_image_plot_diameter/2, 
+                                y: dim.viewDiameter/2 - dim.main_image_plot_diameter/2};
 
         // get image width & height (in pixels)
         curVizObj.imgDimDeferred = new $.Deferred();
@@ -735,17 +735,15 @@ HTMLWidgets.widget({
                                    dim.spacingUnderLegendTitle;
             viewSVG.append("image")
                 .attr("xlink:href", dim.image_ref)
-                .attr("x", dim.legend_image_top_l.x)
+                .attr("x", dim.viewDiameter + dim.legend_image_top_l.x)
                 .attr("y", anatomyImage_top)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("width", dim.legend_image_width)
                 .attr("height", dim.legend_image_height)
 
             // anatomy region of interest
             viewSVG.append("circle")
-                .attr("cx", dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
+                .attr("cx", dim.viewDiameter + dim.legend_image_top_l.x + curVizObj.view.crop_info.centre_prop.x*dim.legend_image_width)
                 .attr("cy", anatomyImage_top + curVizObj.view.crop_info.centre_prop.y*dim.legend_image_height)
-                .attr("transform", "translate(" + dim.viewDiameter + ",0)")
                 .attr("r", (curVizObj.view.crop_info.crop_width_prop/2) * dim.legend_image_width)
                 .attr("stroke-width", "2px")
                 .attr("stroke", dim.anatomicLineColour)
@@ -871,8 +869,8 @@ HTMLWidgets.widget({
                 .attr("class", "anatomyImage")
                 .attr("x", 0)
                 .attr("y", 0)
-                .attr("height", dim.image_plot_diameter)
-                .attr("width", dim.image_plot_diameter)
+                .attr("height", dim.main_image_plot_diameter)
+                .attr("width", dim.main_image_plot_diameter)
                 .attr("xlink:href", dim.image_ref);
 
             viewSVG.append("circle")
