@@ -565,7 +565,8 @@ function _getImageBounds(curVizObj) {
 function _scale(curVizObj) {
 
     var dim = curVizObj.generalConfig;
-    var anatomy_padding = 15; // in pixels
+    // 15 pixels of padding before edgemost anatomic mark in the main view
+    var anatomy_padding = (curVizObj.view.image_width/dim.image_plot_diameter)*15;  
 
     // get the width & height of the cropped section
     var bounds = curVizObj.view.sampleBounds;
