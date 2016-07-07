@@ -32,7 +32,7 @@ HTMLWidgets.widget({
             topBarHeight: 30, // height of top panel
             topBarColour: "#D9D9D9",
             topBarHighlight: "#C6C6C6",
-            viewTitle: "SPACESWEEP",
+            viewTitle: "MAPSCAPE",
             legendTitleSpacing: 2, // spacing (px) between legend title lines (for titles that are >1 word)
             legendSpacing: 23, // spacing between legend items
             spacingUnderLegendTitle: 5, // spacing under a legend title, before its info
