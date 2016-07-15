@@ -88,11 +88,18 @@ Note: Click on the view background to exit a selection.
 }
 \examples{
 library("mapscape")
+
+# clonal prevalences
 clonal_prev <- read.csv(system.file("extdata", "exampleData_clonal_prev.csv", package = "mapscape"))
+# mutations
 mutations <- read.csv(system.file("extdata", "exampleData_mutations.csv", package = "mapscape"))
+# locations of each tumour sample on user-provided image
 sample_locations <- read.csv(system.file("extdata", "exampleData_sample_locations.csv", package = "mapscape"))
+# genotype tree edges
 tree_edges <- read.csv(system.file("extdata", "exampleData_tree.csv", package = "mapscape"))
+# image reference
 img_ref <- system.file("extdata", "exampleData_anatomical_image.png", package = "mapscape")
+# run mapscape
 mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, img_ref = img_ref)
 }
 
