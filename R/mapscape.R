@@ -1,6 +1,6 @@
-#' SpaceSweep 
+#' MapScape 
 #'
-#' Generates patient clonal SpaceSweeps.
+#' Generates patient clonal MapScapes.
 #'
 #' Interactive components in main view:
 #'
@@ -63,14 +63,14 @@
 #' @param height {Number} (Optional) Height of the plot. Minimum height is 700.
 #' @export
 #' @examples
-#' library("spacesweep")
-#' clonal_prev <- read.csv(system.file("extdata", "exampleData_clonal_prev.csv", package = "spacesweep"))
-#' mutations <- read.csv(system.file("extdata", "exampleData_mutations.csv", package = "spacesweep"))
-#' sample_locations <- read.csv(system.file("extdata", "exampleData_sample_locations.csv", package = "spacesweep"))
-#' tree_edges <- read.csv(system.file("extdata", "exampleData_tree.csv", package = "spacesweep"))
-#' img_ref <- system.file("extdata", "exampleData_anatomical_image.png", package = "spacesweep")
-#' spacesweep(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, img_ref = img_ref)
-spacesweep <- function(clonal_prev, 
+#' library("mapscape")
+#' clonal_prev <- read.csv(system.file("extdata", "exampleData_clonal_prev.csv", package = "mapscape"))
+#' mutations <- read.csv(system.file("extdata", "exampleData_mutations.csv", package = "mapscape"))
+#' sample_locations <- read.csv(system.file("extdata", "exampleData_sample_locations.csv", package = "mapscape"))
+#' tree_edges <- read.csv(system.file("extdata", "exampleData_tree.csv", package = "mapscape"))
+#' img_ref <- system.file("extdata", "exampleData_anatomical_image.png", package = "mapscape")
+#' mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, img_ref = img_ref)
+mapscape <- function(clonal_prev, 
                       tree_edges,
                       sample_locations,
                       img_ref,
@@ -448,25 +448,25 @@ spacesweep <- function(clonal_prev,
 
   # create widget
   htmlwidgets::createWidget(
-    name = 'spacesweep',
+    name = 'mapscape',
     x,
     width = width,
     height = height,
-    package = 'spacesweep'
+    package = 'mapscape'
   )
 }
 
 #' Widget output function for use in Shiny
 #'
 #' @export
-spacesweepOutput <- function(outputId, width = '100%', height = '400px'){
-  shinyWidgetOutput(outputId, 'spacesweep', width, height, package = 'spacesweep')
+mapscapeOutput <- function(outputId, width = '100%', height = '400px'){
+  shinyWidgetOutput(outputId, 'mapscape', width, height, package = 'mapscape')
 }
 
 #' Widget render function for use in Shiny
 #'
 #' @export
-renderSpacesweep <- function(expr, env = parent.frame(), quoted = FALSE) {
+renderMapscape <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) { expr <- substitute(expr) } # force quoted
-  shinyRenderWidget(expr, spacesweepOutput, env, quoted = TRUE)
+  shinyRenderWidget(expr, mapscapeOutput, env, quoted = TRUE)
 }

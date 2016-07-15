@@ -1,8 +1,8 @@
-Package: spacesweep
-Title: spacesweep
+Package: mapscape
+Title: mapscape
 Version: 0.0.2.9196
 Authors@R: person("Maia", "Smith", email = "maiaannesmith@gmail.com", role = c("aut", "cre"))
-Description: Generates patient clonal SpaceSweeps.
+Description: Generates patient clonal mapscapes.
 Depends:
     R (>= 3.2.2)
 Imports:

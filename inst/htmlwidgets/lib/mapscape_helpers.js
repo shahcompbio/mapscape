@@ -227,7 +227,7 @@ function _plotClonalPrevText(curVizObj, sample, gtype) {
     var dim = curVizObj.generalConfig;
 
     // plot clonal prevalence text
-    d3.select("#" + curVizObj.view_id).select(".spacesweep_" + curVizObj.view_id).append("text")
+    d3.select("#" + curVizObj.view_id).select(".mapscape_" + curVizObj.view_id).append("text")
         .attr("class", "clonalPrev")
         .attr("x", function() {
 
@@ -1615,7 +1615,7 @@ function _plotSite(curVizObj, sample, drag) {
             return "<span style='color:white; font-family: Arial; font-weight:normal'>" +
                 "Site: " + d.sample + "</span>";
         });
-    d3.select("#" + view_id).select(".spacesweep_" + view_id).call(sampleTitleTip);
+    d3.select("#" + view_id).select(".mapscape_" + view_id).call(sampleTitleTip);
 
     // PLOT ANATOMIC LINES
 

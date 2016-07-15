@@ -1,6 +1,6 @@
 HTMLWidgets.widget({
 
-    name: 'spacesweep',
+    name: 'mapscape',
 
     type: 'output',
 
@@ -273,7 +273,7 @@ HTMLWidgets.widget({
             // SVGS
 
             var viewSVG = canvasDIV.append("svg:svg")
-                .attr("class", "spacesweep_" + view_id)
+                .attr("class", "mapscape_" + view_id)
                 .attr("x", 0)
                 .attr("y", 0)
                 .attr("width", (dim.viewDiameter + dim.legendWidth) + "px")
@@ -340,7 +340,7 @@ HTMLWidgets.widget({
                 })
                 .on("click", function() {
                     // download the svg
-                    downloadSVG("spacesweep_" + view_id);
+                    downloadSVG("mapscape_" + view_id);
                 });
             topBarSVG.append("text")
                 .attr("class", "svgButtonText")
@@ -366,7 +366,7 @@ HTMLWidgets.widget({
                 })
                 .on("click", function() {
                     // download the svg
-                    downloadSVG("spacesweep_" + view_id);
+                    downloadSVG("mapscape_" + view_id);
                 });
 
             // PNG button
@@ -387,7 +387,7 @@ HTMLWidgets.widget({
                 })
                 .on("click", function(){
                     // download the png
-                    _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
+                    _downloadPNG("mapscape_" + view_id, "mapscape_" + view_id + ".png");
                 });
             topBarSVG.append("text")
                 .attr("class", "pngButtonText")
@@ -413,7 +413,7 @@ HTMLWidgets.widget({
                 })
                 .on("click", function() {
                     // download the png
-                    _downloadPNG("spacesweep_" + view_id, "spacesweep_" + view_id + ".png");
+                    _downloadPNG("mapscape_" + view_id, "mapscape_" + view_id + ".png");
                 });
 
             // reset button (only if mutations are provided)
@@ -464,7 +464,7 @@ HTMLWidgets.widget({
                 .html(function(d) {
                     return "<span>" + d + "</span>";
                 });  
-            d3.select("#" + view_id).select(".spacesweep_" + view_id).call(nodeTip);
+            d3.select("#" + view_id).select(".mapscape_" + view_id).call(nodeTip);
 
             // tip for anatomic sites
             var anatomyTip = d3.tip()
@@ -473,7 +473,7 @@ HTMLWidgets.widget({
                 .html(function(d) {
                     return "<span>" + d + "</span>";
                 });  
-            d3.select("#" + view_id).select(".spacesweep_" + view_id).call(anatomyTip);
+            d3.select("#" + view_id).select(".mapscape_" + view_id).call(anatomyTip);
 
             // PLOT LEGEND GENOTYPE TREE
 
