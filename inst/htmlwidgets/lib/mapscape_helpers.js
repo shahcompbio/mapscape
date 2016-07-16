@@ -1237,67 +1237,95 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
         n_real_cells = 1; // # real cells seen
 
     // separate out real cells and fake cells
-    var real_vertices = $.extend([], _.filter(vertices, function(v) { return v.real_cell; }));
-    var fake_vertices = $.extend([], _.filter(vertices, function(v) { return !v.real_cell; }));
+    var real_vertices = $.extend([], _.filter(vertices, function(v) { return v.real_cell; })),
+        fake_vertices = $.extend([], _.filter(vertices, function(v) { return !v.real_cell; })),
+        assigned_real_vertices = []; // real cells that have a cluster assignment
 
     // get genotypes and corresponding number of cells
     var gtypes_and_ncells = {};
-    var n_cells = 0;
+    var n_cells = 0; // total number of cells
     gtypes.forEach(function(gtype) {
         gtypes_and_ncells[gtype] = 
             Math.round(curVizObj.data.cp_data[sample][gtype].adj_cp * curVizObj.userConfig.n_cells);
-        n_cells += (curVizObj.data.cp_data[sample][gtype].adj_cp * curVizObj.userConfig.n_cells);
+        n_cells += gtypes_and_ncells[gtype];
     })
-
-    // order genotypes from smallest cellular prevalence to largest cellular prevalence
-    // so smallest groups are placed first, and guaranteed a spot, despite rounding function
-    gtypes.sort(function(a, b) {return gtypes_and_ncells[a] - gtypes_and_ncells[b]; });
-
-    // copy real vertices (vertices will be removed as they're used)
-    var unassigned_real_vertices = $.extend([], real_vertices); 
-    var assigned_real_vertices = []; // to fill with vertices that have a cluster assignment
+    // make sure # cells does not surpass the number of available vertices
+    n_cells = (n_cells > real_vertices.length) ? real_vertices.length : n_cells; 
 
     // order real vertices by distance to centre of oncoMix (farthest to closest)
-    unassigned_real_vertices.forEach(function(vertex) {
+    real_vertices.forEach(function(vertex) {
         vertex.dist_to_oncoMix_centre = 
             Math.sqrt(Math.pow(vertex.x - oncoMix_centre.x, 2) + Math.pow(vertex.y - oncoMix_centre.y, 2));
     });
-    _sortByKey(unassigned_real_vertices, "dist_to_oncoMix_centre");
-    unassigned_real_vertices.reverse();
+    _sortByKey(real_vertices, "dist_to_oncoMix_centre");
+    real_vertices.reverse();
 
     // choose cluster centres (random outskirts of oncoMix)
-    var centres = unassigned_real_vertices.slice(0, gtypes.length);
+    var centres = real_vertices.slice(0, gtypes.length);
     gtypes.forEach(function(gtype, gtype_i) {
         centres[gtype_i].clust_gtype = gtype;
     })
 
-    // order coordinates by distance for each cluster centre, and assign
+    // sort each cluster's coordinates by their distance to the cluster centre
+    var dists_to_centres = {}; 
     centres.forEach(function(centre) {
-        var cur_gtype = centre.clust_gtype;
 
         // get distances to cluster centre
-        unassigned_real_vertices.forEach(function(vertex) {
-            vertex.dist_to_clust_centre = 
-                Math.sqrt(Math.pow(vertex.x - centre.x, 2) + Math.pow(vertex.y - centre.y, 2));
+        dists_to_centres[centre.clust_gtype] = $.extend([], real_vertices);
+        dists_to_centres[centre.clust_gtype].forEach(function(vertex, vertex_i) {
+            vertex.dist_to_clust_centre = Math.sqrt(Math.pow(vertex.x - centre.x, 2) + Math.pow(vertex.y - centre.y, 2));
+            vertex.original_index = vertex_i; // index of this vertex in the original real_vertices array
         });
 
-        // order vertices by distance to cluster centre
-        _sortByKey(unassigned_real_vertices, "dist_to_clust_centre");
-
-        // for each cell in this cluster, assign the cluster to a vertex & place vertex in assigned array
-        for (var i = 0; i < gtypes_and_ncells[cur_gtype]; i++) {
-            if (unassigned_real_vertices.length > 0) { // we haven't exceeded our cell count
-
-                // note colour for this vertex, based on appropriate genotype
-                unassigned_real_vertices[0].col = curVizObj.view.colour_assignment[cur_gtype];
-
-                // note the genotype for this vertex
-                unassigned_real_vertices[0].gtype = cur_gtype;
-
-                assigned_real_vertices.push(unassigned_real_vertices.shift());
-            }
-        }
+        // sort by distance to the cluster centre
+        _sortByKey(dists_to_centres[centre.clust_gtype], "dist_to_clust_centre")
     })
+
+    // in round-robin fashion, attach clonal membership to vertices
+    var roundrobin_gtypes = [],
+        gtype_i = 0,
+        ncells_remaining = $.extend({}, gtypes_and_ncells);
+    for (var i = 0; i < n_cells; i++) {
+        var cur_gtype = Object.keys(ncells_remaining)[gtype_i];
+
+        // add genotype to round robin
+        roundrobin_gtypes.push(cur_gtype);
+
+        // remove one cell from this genotype
+        ncells_remaining[cur_gtype]--;
+
+        // if the current genotype has no remaining cells, remove it from the ncells_remaining list
+        if (ncells_remaining[cur_gtype] == 0) {
+            delete ncells_remaining[cur_gtype];
+            gtype_i = gtype_i-1; // reduce genotype index by one
+        }
+        gtype_i = (gtype_i == Object.keys(ncells_remaining).length - 1) ? 0 : gtype_i + 1;
+    }
+
+    // assign vertices
+    var assigned_vertex_indices = [];
+    for (var i = 0; i < roundrobin_gtypes.length; i++) {
+
+        // current genotype and its sorted vertex coordinates
+        var cur_gtype = roundrobin_gtypes[i];
+        var cur_coords = dists_to_centres[cur_gtype];
+
+        // current coordinate
+        var cur_coord = cur_coords.shift();
+
+        // if this coordinate has already been assigned by another genotype, keep looking
+        while(assigned_vertex_indices.indexOf(cur_coord.original_index) != -1) {
+            cur_coord = cur_coords.shift();
+        }
+
+        // note colour and genotype for this vertex
+        cur_coord.col = curVizObj.view.colour_assignment[cur_gtype];
+        cur_coord.gtype = cur_gtype;
+
+        // add this vertex to list of assigned vertices, and note the index of this vertex
+        assigned_real_vertices.push(cur_coord);
+        assigned_vertex_indices.push(cur_coord.original_index);
+    }
 
     // append fake cells onto the end of the real cells
     var all_vertices = assigned_real_vertices.concat(fake_vertices);
