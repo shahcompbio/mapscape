@@ -1160,13 +1160,12 @@ function _polygon(d) {
 * @param {Object} curVizObj -- vizObj for the current view 
 * @param {Number} cx -- x-coordinate at centre of oncoMix
 * @param {Number} cy -- y-coordinate at centre of oncoMix
-* @param {Number} seed -- seed for random generator TODO !!!!!!!!!!!!!!!!!!!! works when seed is set to 20, but not when it's the sample index
 */
-function _getVoronoiVertices(curVizObj, cx, cy, seed) {
+function _getVoronoiVertices(curVizObj, cx, cy) {
     var dim = curVizObj.generalConfig;
 
     // set seed in curVizObj
-    curVizObj.seed = seed;
+    curVizObj.seed = 1; 
 
     // voronoi vertices 
     var circleRadius = dim.oncoMixWidth*1/3;
@@ -1228,8 +1227,9 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
 * @param {Array} vertices -- array of voronoi vertices objects (properties: x, y, real_cell) for this sample 
 * @param {String} sample -- current anatomic sample of interest
 * @param {Object} oncoMix_centre -- centre of oncoMix
+* @param {Object} clust_centres -- cluster centres for each genotype
 */
-function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
+function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre, clust_centres) {
 
     var gtypes = curVizObj.data.sample_genotypes[sample], // genotypes to plot for this sample
         cumulative_cp = curVizObj.data.cp_data[sample][gtypes[0]].adj_cp, // cumulative CP thus far
@@ -1252,26 +1252,19 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
     // make sure # cells does not surpass the number of available vertices
     n_cells = (n_cells > real_vertices.length) ? real_vertices.length : n_cells; 
 
-    // order real vertices by distance to centre of oncoMix (farthest to closest)
-    real_vertices.forEach(function(vertex) {
-        vertex.dist_to_oncoMix_centre = 
-            Math.sqrt(Math.pow(vertex.x - oncoMix_centre.x, 2) + Math.pow(vertex.y - oncoMix_centre.y, 2));
-    });
-    _sortByKey(real_vertices, "dist_to_oncoMix_centre");
-    real_vertices.reverse();
-
-    // choose cluster centres (random outskirts of oncoMix)
-    var centres = real_vertices.slice(0, gtypes.length);
-    gtypes.forEach(function(gtype, gtype_i) {
-        centres[gtype_i].clust_gtype = gtype;
-    })
+    // filter centres for only the genoptyes present in this sample
+    var cur_clust_centres = $.extend(true, [], _.filter(clust_centres, function(c) { return (gtypes.indexOf(c.clust_gtype) != -1); }));
 
     // sort each cluster's coordinates by their distance to the cluster centre
     var dists_to_centres = {}; 
-    centres.forEach(function(centre) {
+    cur_clust_centres.forEach(function(centre) {
+
+        // move cluster centres into place for this sample
+        centre.x += oncoMix_centre.x;
+        centre.y += oncoMix_centre.y;
 
         // get distances to cluster centre
-        dists_to_centres[centre.clust_gtype] = $.extend([], real_vertices);
+        dists_to_centres[centre.clust_gtype] = $.extend(true, [], real_vertices);
         dists_to_centres[centre.clust_gtype].forEach(function(vertex, vertex_i) {
             vertex.dist_to_clust_centre = Math.sqrt(Math.pow(vertex.x - centre.x, 2) + Math.pow(vertex.y - centre.y, 2));
             vertex.original_index = vertex_i; // index of this vertex in the original real_vertices array
@@ -1333,12 +1326,49 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre) {
 
 }
 
+/* function to get cluster centres for each genotype
+* @param {Array} gtypes -- array of genotypes to place in the vertex
+* @param {Array} real_vertices -- real vertices from which to chose cluster centres
+* @param {Number} cx -- oncomix centre x coordinate
+* @param {Number} cy -- oncomix centre y coordinate
+*/
+function _getClusterCentres(gtypes, real_vertices, cx, cy) {
+    var cluster_centres = {};
+
+    // order real vertices by distance to centre of oncoMix (farthest to closest)
+    real_vertices.forEach(function(v) {
+        v.dist_to_oncoMix_centre = Math.sqrt(Math.pow(v.x - cx, 2) + Math.pow(v.y - cy, 2));
+    });
+    _sortByKey(real_vertices, "dist_to_oncoMix_centre");
+    real_vertices.reverse();
+
+    // choose cluster centres (random outskirts of oncoMix)
+    var centres = real_vertices.slice(0, gtypes.length);
+    gtypes.forEach(function(gtype, gtype_i) {
+        centres[gtype_i].clust_gtype = gtype;
+    });
+
+    return centres;
+}
+
 /* function to get positions of sample tab, dividers, voronoi tesselation centre, tree centre for each sample
 * @param {Object} curVizObj -- vizObj for the current view
 */
 function _getSamplePositioning(curVizObj) {
     var dim = curVizObj.generalConfig,
-        n_samples = curVizObj.data.sample_ids.length; // number of samples
+        n_samples = curVizObj.data.sample_ids.length, // number of samples
+        zero = {x: 0, y: 0}; // centre of cartesian coordinate system
+
+    // voronoi vertices (randomly fill a rectangle, keeping all within a certain 
+    // radius from the centre as "real cells", all others as "fake cells")
+    var general_vertices = _getVoronoiVertices(curVizObj, zero.x, zero.y);
+
+    // get cluster centres so they're stable in each oncoMix
+    var real_vertices_no_gtype_info = $.extend([], _.filter(general_vertices, function(v) { return v.real_cell; }));
+    var nodes_no_phantom = $.extend([], curVizObj.data.treeNodes); // nodes w/o "phantomRoot"
+    var index = nodes_no_phantom.indexOf(curVizObj.generalConfig.phantomRoot);
+    nodes_no_phantom.splice(index, 1);
+    var clust_centres = _getClusterCentres(nodes_no_phantom, real_vertices_no_gtype_info, zero.x, zero.y); 
 
     // for each sample
     curVizObj.data.samples.forEach(function(cur_sample_obj, sample_idx) {
@@ -1365,22 +1395,16 @@ function _getSamplePositioning(curVizObj) {
             y: cur_sample_obj.voronoi.centre.y - dim.oncoMixWidth/2
         }
 
-        // voronoi vertices (randomly fill a rectangle, keeping all within a certain 
-        // radius from the centre as "real cells", all others as "fake cells")
-        var vertices = _getVoronoiVertices(
-                curVizObj, 
-                cur_sample_obj.voronoi.centre.x,
-                cur_sample_obj.voronoi.centre.y,
-                sample_idx + 1
-            );
+        // place vertices in correct sample location
+        var cur_vertices = $.extend(true, [], general_vertices);
+        cur_vertices.forEach(function(v) {
+            v.x += cur_sample_obj.voronoi.centre.x;
+            v.y += cur_sample_obj.voronoi.centre.y;
+        });
 
         // order vertices, add colour (genotype) information to each vertex
-        vertices_ordered = _colourOncoMix(curVizObj, vertices, sample_id, cur_sample_obj.voronoi.centre);
+        vertices_ordered = _colourOncoMix(curVizObj, cur_vertices, sample_id, cur_sample_obj.voronoi.centre, clust_centres);
         cur_sample_obj.voronoi.vertices = vertices_ordered;
-
-        // note real vertices
-        cur_sample_obj.voronoi.real_vertices = 
-            $.extend([], _.filter(vertices_ordered, function(vertex) { return vertex.real_cell; }));
 
         // 2D array of x- and y- positions for vertices
         cur_sample_obj.voronoi.vertex_coords = vertices_ordered.map(function(vertex) {
