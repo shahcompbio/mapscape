@@ -634,6 +634,24 @@ function _getCroppedCoordinate(crop_info, original_coords, top_l) {
 
 // TREE FUNCTIONS
 
+/* depth first sesarch of tree
+* @param {Object} tree -- tree structure
+* @param {Array} nodes -- nodes of the tree in a depth-first search order (originally empty)
+*/
+function _dfs(tree, nodes) {
+    // add current node to list of nodes
+    nodes.push(tree.id);
+
+    // search children
+    if (tree.children.length > 0) {
+        tree.children.forEach(function(child) {
+            nodes = _dfs(child, nodes);
+        })
+    }
+
+    return nodes;
+}
+
 /* extract all info from tree about nodes, edges, ancestors, descendants
 * @param {Object} curVizObj -- vizObj for the current view -- curVizObj for this view
 */
@@ -680,6 +698,9 @@ function _getTreeInfo(curVizObj) {
     }
     var root_tree = _findNodeByName(nodesByName, phantomRoot); 
     curVizObj.data.treeStructure = root_tree; 
+
+    // get depth first search order of tree nodes
+    curVizObj.data.treeNodesDFS = _dfs(curVizObj.data.treeStructure, []);
 
     // get linear chains
     curVizObj.data.treeChainRoots = []; // keep track of linear chain segment roots
@@ -1221,6 +1242,33 @@ function _drawPointGivenAngle(cx, cy, r, angle) {
     return {x: x, y: y};
 }
 
+/* function to draw points around a circle
+* @param {Number} n_points -- number of points to draw
+* @param {Number} r -- radius of the circle
+*/
+function _drawPointsAroundCircle(n_points, r) {
+    var points = [];
+    for (var i = 1; i <= n_points  ; i++) {
+        points.push(_drawPointsAroundCircle_helper(r, i, n_points));
+    }
+
+    return points;
+}
+
+/* helper function to for _drawPointsAroundCircle function
+*/
+function _drawPointsAroundCircle_helper(r, currentPoint, totalPoints) {  
+    var cur_point = {};
+
+    var theta = ((Math.PI*2) / totalPoints);
+    var angle = (theta * currentPoint);
+
+    cur_point.x = (r * Math.cos(angle));
+    cur_point.y = (r * Math.sin(angle));
+
+    return cur_point;
+}
+
 /* function to order oncoMix vertices such that genotypes are clustered, 
 * & add colour (genotype) information to each vertex for this anatomic sample
 * @param {Object} curVizObj -- vizObj for the current view
@@ -1329,26 +1377,34 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre, clust_centr
 /* function to get cluster centres for each genotype
 * @param {Array} gtypes -- array of genotypes to place in the vertex
 * @param {Array} real_vertices -- real vertices from which to chose cluster centres
-* @param {Number} cx -- oncomix centre x coordinate
-* @param {Number} cy -- oncomix centre y coordinate
+* @param {Number} oncoMixWidth -- width of oncoMix
 */
-function _getClusterCentres(gtypes, real_vertices, cx, cy) {
-    var cluster_centres = {};
+function _getClusterCentres(gtypes, real_vertices, oncoMixWidth) {
+    var cluster_centres = [],
+        vertices = $.extend(true, [], real_vertices),
+        cur_dist = -1; // distance from vertex to point on circle
 
-    // order real vertices by distance to centre of oncoMix (farthest to closest)
-    real_vertices.forEach(function(v) {
-        v.dist_to_oncoMix_centre = Math.sqrt(Math.pow(v.x - cx, 2) + Math.pow(v.y - cy, 2));
-    });
-    _sortByKey(real_vertices, "dist_to_oncoMix_centre");
-    real_vertices.reverse();
+    // get points (one for each genotype) evenly distributed around the oncoMix 
+    var pointsAroundCircle = _drawPointsAroundCircle(gtypes.length, oncoMixWidth);
 
-    // choose cluster centres (random outskirts of oncoMix)
-    var centres = real_vertices.slice(0, gtypes.length);
+    // for each point, get the closest vertex to it -- these will be the cluster centres
+    pointsAroundCircle.forEach(function(point) {
+        vertices.forEach(function(v) {
+            v.dist = Math.sqrt(Math.pow(v.x - point.x, 2) + Math.pow(v.y - point.y, 2));
+        });
+
+        // order real vertices by distance to centre of oncoMix (farthest to closest)
+        _sortByKey(vertices, "dist");
+
+        cluster_centres.push(vertices.pop());
+    })
+
+    // assign genotypes to centres
     gtypes.forEach(function(gtype, gtype_i) {
-        centres[gtype_i].clust_gtype = gtype;
+        cluster_centres[gtype_i].clust_gtype = gtype;
     });
 
-    return centres;
+    return cluster_centres;
 }
 
 /* function to get positions of sample tab, dividers, voronoi tesselation centre, tree centre for each sample
@@ -1365,10 +1421,10 @@ function _getSamplePositioning(curVizObj) {
 
     // get cluster centres so they're stable in each oncoMix
     var real_vertices_no_gtype_info = $.extend([], _.filter(general_vertices, function(v) { return v.real_cell; }));
-    var nodes_no_phantom = $.extend([], curVizObj.data.treeNodes); // nodes w/o "phantomRoot"
+    var nodes_no_phantom = $.extend([], curVizObj.data.treeNodesDFS); // nodes w/o "phantomRoot"
     var index = nodes_no_phantom.indexOf(curVizObj.generalConfig.phantomRoot);
     nodes_no_phantom.splice(index, 1);
-    var clust_centres = _getClusterCentres(nodes_no_phantom, real_vertices_no_gtype_info, zero.x, zero.y); 
+    var clust_centres = _getClusterCentres(nodes_no_phantom, real_vertices_no_gtype_info, dim.oncoMixWidth); 
 
     // for each sample
     curVizObj.data.samples.forEach(function(cur_sample_obj, sample_idx) {

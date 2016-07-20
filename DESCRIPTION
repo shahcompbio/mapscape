@@ -1,6 +1,6 @@
 Package: mapscape
 Title: mapscape
-Version: 0.0.2.9199
+Version: 0.0.3.9000
 Authors@R: person("Maia", "Smith", email = "maiaannesmith@gmail.com", role = c("aut", "cre"))
 Description: Generates patient clonal mapscapes.
 Depends:
