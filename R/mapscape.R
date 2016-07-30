@@ -54,6 +54,7 @@
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
+#' @param show_low_prev_gtypes {Boolean} (Optional) Whether or not to show low-prevalence (< 1%) clones in the view. Default is FALSE.
 #' @param phylogeny_title {String} (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".
 #' @param anatomy_title {String} (Optional) Legend title for the anatomy. Default is "Anatomy".
 #' @param classification_title {String} (Optional) Legend title for the phylogenetic classification. 
@@ -85,6 +86,7 @@ mapscape <- function(clonal_prev,
                       mutations = "NA",
                       sample_ids = c("NA"),
                       n_cells = 100,
+                      show_low_prev_gtypes = FALSE,
                       phylogeny_title = "Clonal Phylogeny",
                       anatomy_title = "Anatomy",
                       classification_title = "Phylogenetic Classification",
@@ -433,6 +435,11 @@ mapscape <- function(clonal_prev,
     mutation_info$clone_id <- stringr::str_replace_all(mutation_info$clone_id,"\\s+","_")
   }
 
+  if (show_warnings && !show_low_prev_gtypes) {
+    print(paste("[WARNING] Low prevalence genotypes will not be shown in the view. ",
+      "To show them, set show_low_prev_gtypes parameter to TRUE.", sep=""))
+  }
+
   # forward options using x
   x = list(
     clonal_prev = jsonlite::toJSON(clonal_prev),
@@ -444,6 +451,7 @@ mapscape <- function(clonal_prev,
     mutations_provided = mutations_provided,
     sample_ids = sample_ids,
     n_cells = n_cells,
+    show_low_prev_gtypes = show_low_prev_gtypes,
     phylogeny_title = as.character(phylogeny_title),
     anatomy_title = as.character(anatomy_title),
     classification_title = as.character(classification_title),

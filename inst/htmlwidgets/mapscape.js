@@ -69,6 +69,14 @@ HTMLWidgets.widget({
         // get params from R
         curVizObj.userConfig = x;
 
+        // threshold for clonal prevalence required to show genotype in voronoi tesellation
+        curVizObj.data.oncoMix_cp_threshold = 1/curVizObj.userConfig.n_cells;
+
+        // threshold for clonal prevalence required to show clonal prevalence text and 
+        // for showing empty nodes on sample trees
+        curVizObj.data.general_cp_threshold = 0.01;
+
+
         // SET CONFIGURATIONS FOR THIS VIEW
 
         // image for use 

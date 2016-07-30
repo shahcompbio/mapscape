@@ -256,7 +256,8 @@ function _plotClonalPrevText(curVizObj, sample, gtype) {
         .attr("font-family", "Arial")
         .attr("font-size", 12) 
         .text(function() { 
-            return (Math.round(curVizObj.data.cp_data[sample][gtype].cp * 100)/100).toFixed(2);
+            var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
+            return (cur_cp < 0.01) ? "<0.01" : ((cur_cp * 100)/100).toFixed(2);
         });
 }
 
@@ -1083,28 +1084,36 @@ function _getCPData(curVizObj) {
 */
 function _thresholdCPData(curVizObj) {
 
+    // for each sample
     curVizObj.data.sample_ids.forEach(function(sample) {
 
-        // threshold the cellular prevalence 
+        // FOR ONCOMIX -- find the total cellular prevalence for all genotypes that will be exhibited in the oncoMix
+        // (filtering out those below threshold)
 
-        var threshold = 0.01;
-        var total_legit_cp = 0; // the total sum of cellular prevalence after filtering out those below threshold
+        var total_legit_cp = 0; 
         Object.keys(curVizObj.data.cp_data[sample]).forEach(function(gtype) {
 
             var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
 
-            // only add genotypes that will be exhibited in >1 cell
-            if (cur_cp > threshold) {
+            // calculate cp for all genotypes that will be exhibited in >= 1 cell of oncoMix
+            if (cur_cp >= curVizObj.data.oncoMix_cp_threshold) {
                 total_legit_cp += curVizObj.data.cp_data[sample][gtype].cp;
-            }
-            // warn if this genotype will not be shown
-            else {
-                console.warn("At anatomic sample " + sample + ", genotype " + gtype + " has cellular prevalence " +
-                    "less than the minimum for this view, and will not be shown.");
             }
         });
 
-        // adjust cellular prevalence values to sum to 1
+        // FOR ONCOMIX -- adjust cellular prevalence values to sum to 1, just for oncoMix
+
+        Object.keys(curVizObj.data.cp_data[sample]).forEach(function(gtype) {
+
+            var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
+
+            // adjust cellular prevalence values to sum to 1
+            if (cur_cp >= curVizObj.data.oncoMix_cp_threshold) {
+                curVizObj.data.cp_data[sample][gtype].adj_cp = cur_cp/total_legit_cp;
+            }
+        });
+
+        // mark which genotypes should appear in which samples
 
         curVizObj.data.sample_genotypes = curVizObj.data.sample_genotypes || {};
         curVizObj.data.sample_genotypes[sample] = []; // which genotypes to show for this sample
@@ -1112,12 +1121,26 @@ function _thresholdCPData(curVizObj) {
 
             var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
 
-            // only add genotypes that will be exhibited in >1 cell
-            if (cur_cp > threshold) {
-                curVizObj.data.cp_data[sample][gtype].adj_cp = cur_cp/total_legit_cp;
+            if (cur_cp >= curVizObj.data.general_cp_threshold || curVizObj.userConfig.show_low_prev_gtypes) {
                 curVizObj.data.sample_genotypes[sample].push(gtype);
             }
         });
+
+        // mark samples as below or above threshold
+        Object.keys(curVizObj.data.cp_data[sample]).forEach(function(gtype) {
+
+            var cur_cp = curVizObj.data.cp_data[sample][gtype].cp;
+
+            if (cur_cp >= curVizObj.data.general_cp_threshold) {
+                // mark as above threshold
+                curVizObj.data.cp_data[sample][gtype].above_thresh = true;
+            }
+            else {
+                // mark as below threshold
+                curVizObj.data.cp_data[sample][gtype].above_thresh = false;  
+            }
+        });
+
     });
 }
 
@@ -1292,10 +1315,13 @@ function _colourOncoMix(curVizObj, vertices, sample, oncoMix_centre, clust_centr
     // get genotypes and corresponding number of cells
     var gtypes_and_ncells = {};
     var n_cells = 0; // total number of cells
+    var threshold = curVizObj.data.oncoMix_cp_threshold;
     gtypes.forEach(function(gtype) {
-        gtypes_and_ncells[gtype] = 
-            Math.round(curVizObj.data.cp_data[sample][gtype].adj_cp * curVizObj.userConfig.n_cells);
-        n_cells += gtypes_and_ncells[gtype];
+        if (curVizObj.data.cp_data[sample][gtype].adj_cp >= threshold) {
+            gtypes_and_ncells[gtype] = 
+                Math.round(curVizObj.data.cp_data[sample][gtype].adj_cp * curVizObj.userConfig.n_cells);
+            n_cells += gtypes_and_ncells[gtype];
+        }
     })
     // make sure # cells does not surpass the number of available vertices
     n_cells = (n_cells > real_vertices.length) ? real_vertices.length : n_cells; 
@@ -1954,9 +1980,16 @@ function _plotSite(curVizObj, sample, drag) {
             return "treeNode sample_" + sample + " clone_" + d.id;
         })
         .attr("fill", function(d) {
-            // clone present at this sample or not
-            return (curVizObj.data.sample_genotypes[sample].indexOf(d.id) != -1) ? 
-                cols[d.id] : "#FFFFFF";
+            // if clone is present in the sample
+            if (curVizObj.data.sample_genotypes[sample].indexOf(d.id) != -1) {
+
+                // if clone is above threshold
+                if (curVizObj.data.cp_data[sample][d.id].above_thresh) {
+                    return cols[d.id];
+                }
+            }
+            // clone is not present in this sample and/or not above threshold -- return white
+            return "#FFFFFF";
         })
         .attr("stroke", function(d) {
             // clone present at this sample or not
@@ -1964,8 +1997,21 @@ function _plotSite(curVizObj, sample, drag) {
                 cols[d.id] : "#FFFFFF";
         })
         .attr("r", function(d) {
-            // clone present at this sample or not
-            return (curVizObj.data.sample_genotypes[sample].indexOf(d.id) != -1) ? dim.node_r : 0;
+            // if clone is present in this sample
+            if (curVizObj.data.sample_genotypes[sample].indexOf(d.id) != -1) {
+                
+                // if clone is above threshold
+                if (curVizObj.data.cp_data[sample][d.id].above_thresh) {
+                    return dim.node_r; // show clone
+                }
+                // if clone is below threshold but user wants to desplay low-prev clones
+                else if (!curVizObj.data.cp_data[sample][d.id].above_thresh && 
+                    curVizObj.userConfig.show_low_prev_gtypes) {
+                    return dim.node_r; // show clone
+                }
+            }
+            // clone is absent in sample, or below threshold and user doesn't want to display low-prev clones
+            return 0; 
         })
         .on('mouseover', function(d) {
             d.sample = sample;
