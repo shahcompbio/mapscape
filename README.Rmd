@@ -18,5 +18,7 @@ And the following visualization of metastatic prostate cancer data published in 
 
 ![](mapscape_htmlwidget-6977.png)
 
+MapScape was developed at the Shah Lab for Computational Cancer Biology at the BC Cancer Research Centre.
+ 
 References:  
 Gundem, Gunes, et al. "The evolutionary history of lethal metastatic prostate cancer." Nature 520.7547 (2015): 353-357.
