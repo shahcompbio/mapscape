@@ -6,8 +6,8 @@
 \usage{
 mapscape(clonal_prev, tree_edges, sample_locations, img_ref,
   clone_colours = "NA", mutations = "NA", sample_ids = c("NA"),
-  n_cells = 100, phylogeny_title = "Clonal Phylogeny",
-  anatomy_title = "Anatomy",
+  n_cells = 100, show_low_prev_gtypes = FALSE,
+  phylogeny_title = "Clonal Phylogeny", anatomy_title = "Anatomy",
   classification_title = "Phylogenetic Classification",
   show_warnings = TRUE, width = 960, height = 960)
 }
@@ -47,6 +47,8 @@ Format: columns are (1) {String} "chrom" - chromosome number
 (clockwise from positive x-axis).}
 
 \item{n_cells}{{Number} (Optional) The number of cells to plot (for voronoi tessellation).}
+
+\item{show_low_prev_gtypes}{{Boolean} (Optional) Whether or not to show low-prevalence (< 0.01) clones in the view. Default is FALSE.}
 
 \item{phylogeny_title}{{String} (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".}
 

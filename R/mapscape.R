@@ -54,7 +54,7 @@
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
 #' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
-#' @param show_low_prev_gtypes {Boolean} (Optional) Whether or not to show low-prevalence (< 1%) clones in the view. Default is FALSE.
+#' @param show_low_prev_gtypes {Boolean} (Optional) Whether or not to show low-prevalence (< 0.01) clones in the view. Default is FALSE.
 #' @param phylogeny_title {String} (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".
 #' @param anatomy_title {String} (Optional) Legend title for the anatomy. Default is "Anatomy".
 #' @param classification_title {String} (Optional) Legend title for the phylogenetic classification. 
