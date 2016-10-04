@@ -89,22 +89,47 @@ Interactive components in mutation table:
 Note: Click on the view background to exit a selection.
 }
 \examples{
+
 library("mapscape")
 
+# EXAMPLE 1 - Patient A21, Gundem et al., 2015
+
 # clonal prevalences
-clonal_prev <- read.csv(system.file("extdata", "exampleData_clonal_prev.csv", package = "mapscape"))
+clonal_prev <- read.csv(system.file("extdata", "A21_clonal_prev.csv", package = "mapscape"))
 # mutations
-mutations <- read.csv(system.file("extdata", "exampleData_mutations.csv", package = "mapscape"))
+mutations <- read.csv(system.file("extdata", "A21_mutations.csv", package = "mapscape"))
 # locations of each tumour sample on user-provided image
-sample_locations <- read.csv(system.file("extdata", "exampleData_sample_locations.csv", package = "mapscape"))
+sample_locations <- read.csv(system.file("extdata", "A21_sample_locations.csv", package = "mapscape"))
 # genotype tree edges
-tree_edges <- read.csv(system.file("extdata", "exampleData_tree.csv", package = "mapscape"))
+tree_edges <- read.csv(system.file("extdata", "A21_tree.csv", package = "mapscape"))
 # image reference
-img_ref <- system.file("extdata", "exampleData_anatomical_image.png", package = "mapscape")
+img_ref <- system.file("extdata", "A21_anatomical_image.png", package = "mapscape")
 # radial order of samples
 sample_ids <- c("H","F","J","D","A","I","C","E","G")
 # run mapscape
 mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, 
 img_ref = img_ref, sample_ids = sample_ids)
+
+# EXAMPLE 2 - Patient 1, McPherson and Roth et al., 2016
+
+# clonal prevalences
+clonal_prev <- read.csv(system.file("extdata", "px1_clonal_prev.csv", package = "mapscape"))
+# mutations
+mutations <- read.csv(system.file("extdata", "px1_mutations.csv", package = "mapscape"))
+# locations of each tumour sample on user-provided image
+sample_locations <- read.csv(system.file("extdata", "px1_sample_locations.csv", package = "mapscape"))
+# genotype tree edges
+tree_edges <- read.csv(system.file("extdata", "px1_tree.csv", package = "mapscape"))
+# image reference
+img_ref <- system.file("extdata", "px1_anatomical_image.png", package = "mapscape")
+# colours for each clone
+clone_colours <- data.frame( clone_id = c("A","B","C","D","E","F","G","H","I"), 
+                             colour = c("d0ced0", "2CD0AB", "7FE9D1", "FFD94B", "FD8EE5", "F8766D", 
+                             "4FD8FF", "B09AF5", "D4C7FC"))
+# radial order of samples
+sample_ids <- c("LFTB4", "LOvB2", "ApC1", "ROvA4", "ROv4", "ROv3", "ROv2", "ROv1", "RFTA16", "Om1", "SBwl", "SBwlE4")
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, 
+img_ref = img_ref, clone_colours = clone_colours, sample_ids = sample_ids)
 }
 
