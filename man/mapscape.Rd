@@ -101,7 +101,10 @@ sample_locations <- read.csv(system.file("extdata", "exampleData_sample_location
 tree_edges <- read.csv(system.file("extdata", "exampleData_tree.csv", package = "mapscape"))
 # image reference
 img_ref <- system.file("extdata", "exampleData_anatomical_image.png", package = "mapscape")
+# radial order of samples
+sample_ids <- c("H","F","J","D","A","I","C","E","G")
 # run mapscape
-mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, img_ref = img_ref)
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, 
+img_ref = img_ref, sample_ids = sample_ids)
 }
 
