@@ -63,7 +63,7 @@ function _makeMutationTable(curVizObj, mutationTableDIV, data, table_height) {
 
 		        	// data for the row on mouseover
 		        	var cur_data = table.rows(this).data()[0];
-		        	if (!dim.selectOn && !dim.dragOn) {
+		        	if (!dim.dragOn) {
 
 		        		// if a different row was previously selected
 		        		if (d3.select("#" + curVizObj.view_id).selectAll(".selected")[0].length == 1) {
