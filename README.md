@@ -20,6 +20,10 @@ The second and third visualizations are of metastatic ovarian cancer patients 1 
 ![](px1_mcpherson_roth_mapscape.png)
 ![](px7_mcpherson_roth_mapscape.png)
 
+To view the documentation for MapScape, type the following command in R:
+
+?mapscape
+
 MapScape was developed at the Shah Lab for Computational Cancer Biology at the BC Cancer Research Centre.
  
 References:  
