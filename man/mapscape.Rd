@@ -70,12 +70,12 @@ Generates patient clonal MapScapes.
 Interactive components in main view:
 
 1. Reorder samples by grabbing the sample name or tumour and dragging it radially. \cr
-2. Hover over anatomic location of interest to view patient data associated with that location. \cr
-3. Hover over tree nodes to view cellular prevalence of that clone.
+2. Hover over anatomic location of interest to view the anatomic location name and the patient data associated with that location. \cr
+3. Hover over a tree node of a particular sample to view cellular prevalence of that clone in that particular sample.
 
 Interactive components in legend:
 
-1. Hover over legend tree node to the clonal prevalence at each tumour sample. Any anatomic locations expressing that clone will be highlighted. \cr
+1. Hover over legend tree node to view the clone ID as well as the clone's prevalence at each tumour sample. Any anatomic locations expressing that clone will be highlighted. \cr
 2. Hover over legend tree branch to view tumour samples expressing all descendant clones. \cr
 3. Click on legend tree node(s) to view (a) updated mutations table showing novel mutations at that clone(s), and (b) tumour samples expressing the novel mutations at that clone(s). \cr
 4. Hover over a mixture class (e.g. "pure", "polyphyletic", "monophyletic") to view corresponding tumour samples, and the participating phylogeny in each tumour sample.
@@ -86,7 +86,7 @@ Interactive components in mutation table:
 2. Click on a row in the table, and the view will update to show the tumour samples with that mutation, and the variant allele frequency for that mutation in each tumour sample. \cr
 3. Sort the table by a column (all columns sortable except the Clone column).
 
-Note: Click on the view background to exit a selection.
+Note: Click on the reset button to exit a selection.
 }
 \examples{
 
