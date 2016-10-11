@@ -86,7 +86,7 @@ Interactive components in mutation table:
 2. Click on a row in the table, and the view will update to show the tumour samples with that mutation, and the variant allele frequency for that mutation in each tumour sample. \cr
 3. Sort the table by a column (all columns sortable except the Clone column).
 
-Note: Click on the reset button to exit a selection.
+Note: Click on the reset button to exit a selection. Click the download buttons to download a PNG or SVG of the view. \cr
 }
 \examples{
 
