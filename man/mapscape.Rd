@@ -29,8 +29,7 @@ Format: columns are (1) {String} "sample_id" - id for the tumour sample
 
 \item{img_ref}{{String} A reference for the custom anatomical image to use, *** in PNG format ***,
 either a URL to an image hosted online 
-or a path to the image in local file system. 
-If unspecified, will use default generic male and female images.}
+or a path to the image in local file system.}
 
 \item{clone_colours}{{Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
 Format: columns are (1) {String} "clone_id" - the clone ids

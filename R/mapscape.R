@@ -41,7 +41,6 @@
 #' @param img_ref {String} A reference for the custom anatomical image to use, *** in PNG format ***,
 #'                         either a URL to an image hosted online 
 #'                         or a path to the image in local file system. 
-#'                         If unspecified, will use default generic male and female images.
 #' @param mutations {Data Frame} (Optional) Mutations occurring at each clone. Any additional field will be shown in the mutation table.
 #'   Format: columns are (1) {String} "chrom" - chromosome number
 #'                       (2) {Number} "coord" - coordinate of mutation on chromosome
