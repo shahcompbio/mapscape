@@ -521,6 +521,12 @@ mapscape <- function(clonal_prev,
 
 #' Widget output function for use in Shiny
 #'
+#' @param outputId -- id of output
+#' @param width -- width of output
+#' @param height -- height of output
+#' @examples
+#' mapscapeOutput(1, '100%', '300px')
+#' mapscapeOutput(1, '80%', '300px')
 #' @export
 mapscapeOutput <- function(outputId, width = '100%', height = '400px'){
   shinyWidgetOutput(outputId, 'mapscape', width, height, package = 'mapscape')
@@ -528,6 +534,12 @@ mapscapeOutput <- function(outputId, width = '100%', height = '400px'){
 
 #' Widget render function for use in Shiny
 #'
+#' @param expr -- expression for Shiny
+#' @param env -- environment for Shiny
+#' @param quoted -- default is FALSE 
+#' @examples
+#' mapscapeOutput("hi")
+#' mapscapeOutput("hello")
 #' @export
 renderMapscape <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) { expr <- substitute(expr) } # force quoted

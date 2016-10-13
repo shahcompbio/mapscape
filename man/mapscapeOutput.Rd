@@ -6,7 +6,18 @@
 \usage{
 mapscapeOutput(outputId, width = "100\%", height = "400px")
 }
+\arguments{
+\item{outputId}{-- id of output}
+
+\item{width}{-- width of output}
+
+\item{height}{-- height of output}
+}
 \description{
 Widget output function for use in Shiny
+}
+\examples{
+mapscapeOutput(1, '100\%', '300px')
+mapscapeOutput(1, '80\%', '300px')
 }
 
