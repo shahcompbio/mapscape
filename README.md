@@ -3,11 +3,14 @@ MapScape is a visualization tool for spatial clonal evolution.
 
 To run MapScape, type the following commands in R:
 
+
+```r
 install.packages("devtools") # if not already installed  
 library(devtools)  
 install_bitbucket("MO_BCCRC/mapscape")  
 library(mapscape)  
 example(mapscape) # to run examples
+```
 
 Three visualizations will appear in your browser (optimized for Chrome).
 
@@ -22,7 +25,10 @@ The second and third visualizations are of metastatic ovarian cancer patients 1 
 
 To view the documentation for MapScape, type the following command in R:
 
+
+```r
 ?mapscape
+```
 
 MapScape was developed at the Shah Lab for Computational Cancer Biology at the BC Cancer Research Centre.
  
