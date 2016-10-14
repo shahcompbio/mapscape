@@ -6,6 +6,9 @@
 #  example(mapscape) # to run examples
 
 ## ---- echo=FALSE---------------------------------------------------------
+library(devtools)  
+install_bitbucket("MO_BCCRC/mapscape")  
+library(mapscape)  
 # EXAMPLE 1 - Patient A21, Gundem et al., 2015
 
 # clonal prevalences

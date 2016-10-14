@@ -24,6 +24,9 @@ Three visualizations will appear in your browser (optimized for Chrome).
 The first is of metastatic prostate cancer data published in Gundem et al. (2015):
 
 ```{r, echo=FALSE}
+library(devtools)  
+install_bitbucket("MO_BCCRC/mapscape")  
+library(mapscape)  
 # EXAMPLE 1 - Patient A21, Gundem et al., 2015
 
 # clonal prevalences
