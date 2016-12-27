@@ -26,41 +26,41 @@
 #'
 #' @import htmlwidgets
 #'
-#' @param clonal_prev {Data Frame} Clonal prevalence.
-#'   Format: columns are (1) {String} "sample_id" - id for the tumour sample
-#'                       (2) {String} "clone_id" - clone id
-#'                       (3) {Number} "clonal_prev" - clonal prevalence.
-#' @param tree_edges {Data Frame} Tree edges for a rooted tree. 
-#'   Format: columns are (1) {String} "source" - source clone id
-#'                       (2) {String} "target" - target clone id.
-#' @param sample_locations {Data Frame} Anatomic locations for each tumour sample.
-#'   Format: columns are (1) {String} "sample_id" - id for the tumour sample
-#'                       (2) {String} "location_id" - name of anatomic location for this tumour sample
-#'                       (3) {Number} (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
-#'                       (4) {Number} (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image
-#' @param img_ref {String} A reference for the custom anatomical image to use, *** in PNG format ***,
+#' @param clonal_prev (data frame) Clonal prevalence.
+#'   Format: columns are (1) character() "sample_id" - id for the tumour sample
+#'                       (2) character() "clone_id" - clone id
+#'                       (3) numeric() "clonal_prev" - clonal prevalence.
+#' @param tree_edges (data frame) Tree edges for a rooted tree. 
+#'   Format: columns are (1) character() "source" - source clone id
+#'                       (2) character() "target" - target clone id.
+#' @param sample_locations (data frame) Anatomic locations for each tumour sample.
+#'   Format: columns are (1) character() "sample_id" - id for the tumour sample
+#'                       (2) character() "location_id" - name of anatomic location for this tumour sample
+#'                       (3) numeric() (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
+#'                       (4) numeric() (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image
+#' @param img_ref character() A reference for the custom anatomical image to use, *** in PNG format ***,
 #'                         either a URL to an image hosted online 
 #'                         or a path to the image in local file system. 
-#' @param mutations {Data Frame} (Optional) Mutations occurring at each clone. Any additional field will be shown in the mutation table.
-#'   Format: columns are (1) {String} "chrom" - chromosome number
-#'                       (2) {Number} "coord" - coordinate of mutation on chromosome
-#'                       (3) {String} "clone_id" - clone id
-#'                       (4) {String} "sample_id" - id for the tumour sample 
-#'                       (5) {Number} "VAF" - variant allele frequency of the mutation in the corresponding sample.
-#' @param clone_colours {Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
-#'   Format: columns are (1) {String} "clone_id" - the clone ids
-#'                       (2) {String} "colour" - the corresponding Hex colour for each clone id.
+#' @param mutations (data frame) (Optional) Mutations occurring at each clone. Any additional field will be shown in the mutation table.
+#'   Format: columns are (1) character() "chrom" - chromosome number
+#'                       (2) numeric() "coord" - coordinate of mutation on chromosome
+#'                       (3) character() "clone_id" - clone id
+#'                       (4) character() "sample_id" - id for the tumour sample 
+#'                       (5) numeric() "VAF" - variant allele frequency of the mutation in the corresponding sample.
+#' @param clone_colours (data frame) (Optional) Clone ids and their corresponding colours (in hex format)
+#'   Format: columns are (1) character() "clone_id" - the clone ids
+#'                       (2) character() "colour" - the corresponding Hex colour for each clone id.
 #' @param sample_ids {Vector} (Optional) Ids of the samples in the order your wish to display them 
 #'                      (clockwise from positive x-axis).
-#' @param n_cells {Number} (Optional) The number of cells to plot (for voronoi tessellation).
-#' @param show_low_prev_gtypes {Boolean} (Optional) Whether or not to show low-prevalence (< 0.01) clones in the view. Default is FALSE.
-#' @param phylogeny_title {String} (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".
-#' @param anatomy_title {String} (Optional) Legend title for the anatomy. Default is "Anatomy".
-#' @param classification_title {String} (Optional) Legend title for the phylogenetic classification. 
+#' @param n_cells numeric() (Optional) The number of cells to plot (for voronoi tessellation).
+#' @param show_low_prev_gtypes logical() (Optional) Whether or not to show low-prevalence (< 0.01) clones in the view. Default is FALSE.
+#' @param phylogeny_title character() (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".
+#' @param anatomy_title character() (Optional) Legend title for the anatomy. Default is "Anatomy".
+#' @param classification_title character() (Optional) Legend title for the phylogenetic classification. 
 #'                                                 Default is "Phylogenetic Classification".
-#' @param show_warnings {Boolean} (Optional) Whether or not to show any warnings. Default is TRUE.
-#' @param width {Number} (Optional) Width of the plot. Minimum width is 930.
-#' @param height {Number} (Optional) Height of the plot. Minimum height is 700.
+#' @param show_warnings logical() (Optional) Whether or not to show any warnings. Default is TRUE.
+#' @param width numeric() (Optional) Width of the plot. Minimum width is 930.
+#' @param height numeric() (Optional) Height of the plot. Minimum height is 700.
 #' @export
 #' @examples
 #'
@@ -147,10 +147,10 @@ mapscape <- function(clonal_prev,
   min_height = 700
   min_width = 930
   if (height < min_height) {
-    stop(paste("Height must be greater than or equal to ", min_height, "px.", sep=""))
+    stop("Height must be greater than or equal to ", min_height, "px.")
   }
   if (width < min_width) {
-    stop(paste("Width must be greater than or equal to ", min_width, "px.", sep=""))
+    stop("Width must be greater than or equal to ", min_width, "px.")
   }
 
   # CHECK REQUIRED INPUTS ARE PRESENT 
@@ -189,8 +189,8 @@ mapscape <- function(clonal_prev,
   # ensure column names are correct
   if (!("source" %in% colnames(tree_edges)) ||
       !("target" %in% colnames(tree_edges))) {
-    stop(paste("Tree edges data frame must contain the following column names: ", 
-        "\"source\", \"target\".", sep=""))
+    stop("Tree edges data frame must contain the following column names: ", 
+        "\"source\", \"target\".")
   }
 
   # ensure data is of the correct type
@@ -240,8 +240,8 @@ mapscape <- function(clonal_prev,
   if (!("sample_id" %in% colnames(clonal_prev)) ||
       !("clone_id" %in% colnames(clonal_prev)) ||
       !("clonal_prev" %in% colnames(clonal_prev))) {
-    stop(paste("Clonal prevalence data frame must contain the following column names: ", 
-        "\"sample_id\", \"clone_id\", \"clonal_prev\".", sep=""))
+    stop("Clonal prevalence data frame must contain the following column names: ", 
+        "\"sample_id\", \"clone_id\", \"clonal_prev\".")
   }
 
   # ensure data is of the correct type
@@ -255,9 +255,9 @@ mapscape <- function(clonal_prev,
   clonal_prev_clone_ids <- unique(clonal_prev$clone_id)
   clone_ids_not_in_tree_data <- setdiff(clonal_prev_clone_ids, tree_clone_ids) 
   if (length(clone_ids_not_in_tree_data) > 0) {
-    stop(paste("All clone IDs in the clonal prevalence data must have associated tree nodes. ",
+    stop("All clone IDs in the clonal prevalence data must have associated tree nodes. ",
       "The following clone ID(s) are present in the clonal prevalences data, but not in the tree edges data: ",
-      paste(clone_ids_not_in_tree_data, collapse=", "), ".", sep=""))
+      paste(clone_ids_not_in_tree_data, collapse=", "), ".")
   }
 
   # SAMPLE LOCATIONS DATA
@@ -274,8 +274,8 @@ mapscape <- function(clonal_prev,
       !("location_id" %in% colnames(sample_locations)) ||
       !("x" %in% colnames(sample_locations)) ||
       !("y" %in% colnames(sample_locations))) {
-    stop(paste("Sample locations data frame must contain the following column names: ", 
-        "\"sample_id\", \"location_id\", \"x\", \"y\".", sep=""))
+    stop("Sample locations data frame must contain the following column names: ", 
+        "\"sample_id\", \"location_id\", \"x\", \"y\".")
   }
 
   # ensure data is of the correct type
@@ -289,8 +289,8 @@ mapscape <- function(clonal_prev,
   sample_locations_sample_ids <- unique(sample_locations$sample_id)
   samples_missing_from_locations_data <- setdiff(clonal_prev_sample_ids, sample_locations_sample_ids)
   if (length(samples_missing_from_locations_data) > 0) {
-    stop(paste("All samples in the clonal prevalence data must have associated locations. The following sample(s) must be added ",
-      "to the sample locations data frame: ", paste(samples_missing_from_locations_data, collapse=", "), ".", sep=""))
+    stop("All samples in the clonal prevalence data must have associated locations. The following sample(s) must be added ",
+      "to the sample locations data frame: ", paste(samples_missing_from_locations_data, collapse=", "), ".")
   }
 
   # create map of original sample locations to space-replaced sample locations
@@ -313,8 +313,8 @@ mapscape <- function(clonal_prev,
         !("clone_id" %in% colnames(mutations)) ||
         !("sample_id" %in% colnames(mutations)) ||
         !("VAF" %in% colnames(mutations))) {
-      stop(paste("Mutations data frame must contain the following column names: ", 
-          "\"chrom\", \"coord\", \"clone_id\", \"sample_id\", \"VAF\".", sep=""))
+      stop("Mutations data frame must contain the following column names: ", 
+          "\"chrom\", \"coord\", \"clone_id\", \"sample_id\", \"VAF\".")
     }
 
     # ensure data is of the correct type
@@ -334,14 +334,14 @@ mapscape <- function(clonal_prev,
     samples_missing_from_locations_data <- setdiff(mutations_sample_ids, sample_locations_sample_ids)
     samples_missing_from_clonal_prev_data <- setdiff(mutations_sample_ids, clonal_prev_sample_ids)
     if (length(samples_missing_from_locations_data) > 0) {
-      stop(paste("The following sample(s) are present in the mutations data but ",
+      stop("The following sample(s) are present in the mutations data but ",
         "are missing from the sample locations data: ",
-        paste(samples_missing_from_locations_data, collapse=", "), ".", sep=""))
+        paste(samples_missing_from_locations_data, collapse=", "), ".")
     }
     if (length(samples_missing_from_clonal_prev_data) > 0) {
-      stop(paste("The following sample(s) are present in the mutations data but ",
+      stop("The following sample(s) are present in the mutations data but ",
         "are missing from the clonal prevalence data: ",
-        paste(samples_missing_from_clonal_prev_data, collapse=", "), ".", sep=""))
+        paste(samples_missing_from_clonal_prev_data, collapse=", "), ".")
     }
 
     # check that all CLONE IDS in the mutations data are present in the tree data
@@ -349,9 +349,9 @@ mapscape <- function(clonal_prev,
     tree_edges_clone_ids <- c(unique(tree_edges$source), unique(tree_edges$target))
     clone_ids_missing_from_tree_edges_data <- setdiff(mutations_clone_ids, tree_edges_clone_ids)
     if (length(clone_ids_missing_from_tree_edges_data) > 0) {
-      stop(paste("The following clone ID(s) are present in the mutations data but ",
+      stop("The following clone ID(s) are present in the mutations data but ",
         "are missing from the tree edges data: ",
-        paste(clone_ids_missing_from_tree_edges_data, collapse=", "), ".", sep=""))
+        paste(clone_ids_missing_from_tree_edges_data, collapse=", "), ".")
     }
 
     # create a location column, combining the chromosome and the coordinate
@@ -363,8 +363,8 @@ mapscape <- function(clonal_prev,
     # check X & Y chromosomes are labelled "X" and "Y", not "23", "24"
     num_23 <- mutations[which(mutations$chrom == "23"),]
     if (nrow(num_23) > 0) {
-      stop(paste("Chromosome numbered \"23\" was detected in mutations data frame - X and Y chromosomes ",
-        "must be labelled \"X\" and \"Y\".", sep=""))
+      stop("Chromosome numbered \"23\" was detected in mutations data frame - X and Y chromosomes ",
+        "must be labelled \"X\" and \"Y\".")
     }
 
     # keep only those mutations whose clone ids are present in the phylogeny
@@ -380,9 +380,9 @@ mapscape <- function(clonal_prev,
     
     # warn if more than 10,000 rows in data that the visualization may be slow
     if (nrow(mutation_prevalences) > 10000 && show_warnings) {
-      print(paste("[WARNING] Number of rows in mutations data exceeds 10,000. ",
+      print("[WARNING] Number of rows in mutations data exceeds 10,000. ",
         "Resultantly, visualization may be slow. ",
-        "It is recommended to filter the data to a smaller set of mutations.", sep=""))
+        "It is recommended to filter the data to a smaller set of mutations.")
     }
 
     # compress results
@@ -412,8 +412,8 @@ mapscape <- function(clonal_prev,
     # ensure column names are correct
     if (!("clone_id" %in% colnames(clone_colours)) ||
         !("colour" %in% colnames(clone_colours))) {
-      stop(paste("Node colour data frame must contain the following column names: ", 
-          "\"clone_id\", \"colour\".", sep=""))
+      stop("Node colour data frame must contain the following column names: ", 
+          "\"clone_id\", \"colour\".")
     }  
 
     # convert to character
@@ -423,8 +423,8 @@ mapscape <- function(clonal_prev,
     # ensure node colours are specified in HEX
     for (i in 1:length(clone_colours$colour)) {
       if (!(nchar(clone_colours$colour[i]) %in% c(6,7))) {
-        stop(paste("All colours must be specified in HEX. \"", clone_colours$colour[i], 
-          "\" is not a HEX colour.", sep=""))
+        stop("All colours must be specified in HEX. \"", clone_colours$colour[i], 
+          "\" is not a HEX colour.")
       }
     }
 
@@ -433,8 +433,8 @@ mapscape <- function(clonal_prev,
     colour_clone_ids <- clone_colours$clone_id
     clone_ids_not_in_colour_data <- setdiff(tree_clone_ids, colour_clone_ids) # clone ids that are in the tree df but not colour df
     if (length(clone_ids_not_in_colour_data) > 0) {
-      stop(paste("All clones in the tree must have associated colours. The following clone(s) must be added ",
-        "to the clone colour data frame: ", paste(clone_ids_not_in_colour_data, collapse=", "), ".", sep=""))
+      stop("All clones in the tree must have associated colours. The following clone(s) must be added ",
+        "to the clone colour data frame: ", paste(clone_ids_not_in_colour_data, collapse=", "), ".")
     }
   }
 
@@ -454,9 +454,9 @@ mapscape <- function(clonal_prev,
     sample_ids_unique <- unique(sample_ids)
     sample_ids_to_remove <- setdiff(sample_ids_unique, clonal_prev_sample_ids) # clone ids that are in the sample list but not clonal prevalence data
     if (length(sample_ids_to_remove) > 0) {
-      stop(paste("All sample ids in the sample_ids array must have clonal prevalence data. ",
+      stop("All sample ids in the sample_ids array must have clonal prevalence data. ",
         "The following samples do not have associated clonal prevalence data: ", 
-        paste(sample_ids_to_remove, collapse=", "), ". ", sep=""))
+        paste(sample_ids_to_remove, collapse=", "), ". ")
     }
   }
 
@@ -527,6 +527,7 @@ mapscape <- function(clonal_prev,
 #' @examples
 #' mapscapeOutput(1, '100%', '300px')
 #' mapscapeOutput(1, '80%', '300px')
+#' @rdname helpers
 #' @export
 mapscapeOutput <- function(outputId, width = '100%', height = '400px'){
   shinyWidgetOutput(outputId, 'mapscape', width, height, package = 'mapscape')
@@ -540,6 +541,7 @@ mapscapeOutput <- function(outputId, width = '100%', height = '400px'){
 #' @examples
 #' mapscapeOutput("hi")
 #' mapscapeOutput("hello")
+#' @rdname helpers
 #' @export
 renderMapscape <- function(expr, env = parent.frame(), quoted = FALSE) {
   if (!quoted) { expr <- substitute(expr) } # force quoted

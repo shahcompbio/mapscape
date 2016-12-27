@@ -12,55 +12,55 @@ mapscape(clonal_prev, tree_edges, sample_locations, img_ref,
   show_warnings = TRUE, width = 960, height = 960)
 }
 \arguments{
-\item{clonal_prev}{{Data Frame} Clonal prevalence.
-Format: columns are (1) {String} "sample_id" - id for the tumour sample
-                    (2) {String} "clone_id" - clone id
-                    (3) {Number} "clonal_prev" - clonal prevalence.}
+\item{clonal_prev}{(data frame) Clonal prevalence.
+Format: columns are (1) character() "sample_id" - id for the tumour sample
+                    (2) character() "clone_id" - clone id
+                    (3) numeric() "clonal_prev" - clonal prevalence.}
 
-\item{tree_edges}{{Data Frame} Tree edges for a rooted tree. 
-Format: columns are (1) {String} "source" - source clone id
-                    (2) {String} "target" - target clone id.}
+\item{tree_edges}{(data frame) Tree edges for a rooted tree. 
+Format: columns are (1) character() "source" - source clone id
+                    (2) character() "target" - target clone id.}
 
-\item{sample_locations}{{Data Frame} Anatomic locations for each tumour sample.
-Format: columns are (1) {String} "sample_id" - id for the tumour sample
-                    (2) {String} "location_id" - name of anatomic location for this tumour sample
-                    (3) {Number} (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
-                    (4) {Number} (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image}
+\item{sample_locations}{(data frame) Anatomic locations for each tumour sample.
+Format: columns are (1) character() "sample_id" - id for the tumour sample
+                    (2) character() "location_id" - name of anatomic location for this tumour sample
+                    (3) numeric() (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
+                    (4) numeric() (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image}
 
-\item{img_ref}{{String} A reference for the custom anatomical image to use, *** in PNG format ***,
+\item{img_ref}{character() A reference for the custom anatomical image to use, *** in PNG format ***,
 either a URL to an image hosted online 
 or a path to the image in local file system.}
 
-\item{clone_colours}{{Data Frame} (Optional) Clone ids and their corresponding colours (in hex format)
-Format: columns are (1) {String} "clone_id" - the clone ids
-                    (2) {String} "colour" - the corresponding Hex colour for each clone id.}
+\item{clone_colours}{(data frame) (Optional) Clone ids and their corresponding colours (in hex format)
+Format: columns are (1) character() "clone_id" - the clone ids
+                    (2) character() "colour" - the corresponding Hex colour for each clone id.}
 
-\item{mutations}{{Data Frame} (Optional) Mutations occurring at each clone. Any additional field will be shown in the mutation table.
-Format: columns are (1) {String} "chrom" - chromosome number
-                    (2) {Number} "coord" - coordinate of mutation on chromosome
-                    (3) {String} "clone_id" - clone id
-                    (4) {String} "sample_id" - id for the tumour sample 
-                    (5) {Number} "VAF" - variant allele frequency of the mutation in the corresponding sample.}
+\item{mutations}{(data frame) (Optional) Mutations occurring at each clone. Any additional field will be shown in the mutation table.
+Format: columns are (1) character() "chrom" - chromosome number
+                    (2) numeric() "coord" - coordinate of mutation on chromosome
+                    (3) character() "clone_id" - clone id
+                    (4) character() "sample_id" - id for the tumour sample 
+                    (5) numeric() "VAF" - variant allele frequency of the mutation in the corresponding sample.}
 
 \item{sample_ids}{{Vector} (Optional) Ids of the samples in the order your wish to display them 
 (clockwise from positive x-axis).}
 
-\item{n_cells}{{Number} (Optional) The number of cells to plot (for voronoi tessellation).}
+\item{n_cells}{numeric() (Optional) The number of cells to plot (for voronoi tessellation).}
 
-\item{show_low_prev_gtypes}{{Boolean} (Optional) Whether or not to show low-prevalence (< 0.01) clones in the view. Default is FALSE.}
+\item{show_low_prev_gtypes}{logical() (Optional) Whether or not to show low-prevalence (< 0.01) clones in the view. Default is FALSE.}
 
-\item{phylogeny_title}{{String} (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".}
+\item{phylogeny_title}{character() (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".}
 
-\item{anatomy_title}{{String} (Optional) Legend title for the anatomy. Default is "Anatomy".}
+\item{anatomy_title}{character() (Optional) Legend title for the anatomy. Default is "Anatomy".}
 
-\item{classification_title}{{String} (Optional) Legend title for the phylogenetic classification. 
+\item{classification_title}{character() (Optional) Legend title for the phylogenetic classification. 
 Default is "Phylogenetic Classification".}
 
-\item{show_warnings}{{Boolean} (Optional) Whether or not to show any warnings. Default is TRUE.}
+\item{show_warnings}{logical() (Optional) Whether or not to show any warnings. Default is TRUE.}
 
-\item{width}{{Number} (Optional) Width of the plot. Minimum width is 930.}
+\item{width}{numeric() (Optional) Width of the plot. Minimum width is 930.}
 
-\item{height}{{Number} (Optional) Height of the plot. Minimum height is 700.}
+\item{height}{numeric() (Optional) Height of the plot. Minimum height is 700.}
 }
 \description{
 Generates patient clonal MapScapes.

@@ -2,9 +2,12 @@
 % Please edit documentation in R/mapscape.R
 \name{mapscapeOutput}
 \alias{mapscapeOutput}
+\alias{renderMapscape}
 \title{Widget output function for use in Shiny}
 \usage{
 mapscapeOutput(outputId, width = "100\%", height = "400px")
+
+renderMapscape(expr, env = parent.frame(), quoted = FALSE)
 }
 \arguments{
 \item{outputId}{-- id of output}
@@ -12,12 +15,22 @@ mapscapeOutput(outputId, width = "100\%", height = "400px")
 \item{width}{-- width of output}
 
 \item{height}{-- height of output}
+
+\item{expr}{-- expression for Shiny}
+
+\item{env}{-- environment for Shiny}
+
+\item{quoted}{-- default is FALSE}
 }
 \description{
 Widget output function for use in Shiny
+
+Widget render function for use in Shiny
 }
 \examples{
 mapscapeOutput(1, '100\%', '300px')
 mapscapeOutput(1, '80\%', '300px')
+mapscapeOutput("hi")
+mapscapeOutput("hello")
 }
 
