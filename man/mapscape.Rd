@@ -12,80 +12,165 @@ mapscape(clonal_prev, tree_edges, sample_locations, img_ref,
   show_warnings = TRUE, width = 960, height = 960)
 }
 \arguments{
-\item{clonal_prev}{(data frame) Clonal prevalence.
-Format: columns are (1) character() "sample_id" - id for the tumour sample
-                    (2) character() "clone_id" - clone id
-                    (3) numeric() "clonal_prev" - clonal prevalence.}
+\item{clonal_prev}{\code{data.frame} Clonal prevalence. 
+    Required columns are:
+    \describe{
 
-\item{tree_edges}{(data frame) Tree edges for a rooted tree. 
-Format: columns are (1) character() "source" - source clone id
-                    (2) character() "target" - target clone id.}
+      \item{sample_id:}{\code{character()} id for the tumour sample.}
 
-\item{sample_locations}{(data frame) Anatomic locations for each tumour sample.
-Format: columns are (1) character() "sample_id" - id for the tumour sample
-                    (2) character() "location_id" - name of anatomic location for this tumour sample
-                    (3) numeric() (Optional) "x" - x-coordinate (in pixels) for anatomic location on anatomic image
-                    (4) numeric() (Optional) "y" - y-coordinate (in pixels) for anatomic location on anatomic image}
+      \item{clone_id:}{\code{character()} clone id.}
 
-\item{img_ref}{character() A reference for the custom anatomical image to use, *** in PNG format ***,
-either a URL to an image hosted online 
-or a path to the image in local file system.}
+      \item{clonal_prev:}{\code{numeric()} clonal prevalence.}
 
-\item{clone_colours}{(data frame) (Optional) Clone ids and their corresponding colours (in hex format)
-Format: columns are (1) character() "clone_id" - the clone ids
-                    (2) character() "colour" - the corresponding Hex colour for each clone id.}
+    }}
 
-\item{mutations}{(data frame) (Optional) Mutations occurring at each clone. Any additional field will be shown in the mutation table.
-Format: columns are (1) character() "chrom" - chromosome number
-                    (2) numeric() "coord" - coordinate of mutation on chromosome
-                    (3) character() "clone_id" - clone id
-                    (4) character() "sample_id" - id for the tumour sample 
-                    (5) numeric() "VAF" - variant allele frequency of the mutation in the corresponding sample.}
+\item{tree_edges}{\code{data.frame} Tree edges of a rooted tree. 
+    Required columns are:
+    \describe{
 
-\item{sample_ids}{{Vector} (Optional) Ids of the samples in the order your wish to display them 
-(clockwise from positive x-axis).}
+      \item{source:}{\code{character()} source node id.}
 
-\item{n_cells}{numeric() (Optional) The number of cells to plot (for voronoi tessellation).}
+      \item{target:}{\code{character()} target node id.}
 
-\item{show_low_prev_gtypes}{logical() (Optional) Whether or not to show low-prevalence (< 0.01) clones in the view. Default is FALSE.}
+    }}
 
-\item{phylogeny_title}{character() (Optional) Legend title for the phylogeny. Default is "Clonal Phylogeny".}
+\item{sample_locations}{\code{data.frame} Anatomic locations for 
+    each tumour sample. Required columns are:
+    \describe{
 
-\item{anatomy_title}{character() (Optional) Legend title for the anatomy. Default is "Anatomy".}
+      \item{sample_id:}{\code{character()} id for the tumour 
+         sample.}
 
-\item{classification_title}{character() (Optional) Legend title for the phylogenetic classification. 
-Default is "Phylogenetic Classification".}
+      \item{location_id:}{\code{character()} name of anatomic 
+         location for this tumour sample.}
 
-\item{show_warnings}{logical() (Optional) Whether or not to show any warnings. Default is TRUE.}
+      \item{x:}{\code{numeric()} x-coordinate (in pixels) for 
+         anatomic location on anatomic image.}
 
-\item{width}{numeric() (Optional) Width of the plot. Minimum width is 930.}
+      \item{y:}{\code{numeric()} y-coordinate (in pixels) for 
+         anatomic location on anatomic image.}
 
-\item{height}{numeric() (Optional) Height of the plot. Minimum height is 700.}
+    }}
+
+\item{img_ref}{\code{character()} A reference for the custom 
+anatomical image to use, *** in PNG format ***, either a URL 
+to an image hosted online or a path to the image in local 
+file system.}
+
+\item{clone_colours}{\code{data.frame} (Optional) Clone ids and their 
+    corresponding colours (in hex format). Required columns are:
+    \describe{
+
+      \item{clone_id:}{\code{character()} clone id.}
+
+      \item{colour:}{\code{character()} the corresponding Hex colour 
+         for each clone id.}
+
+    }}
+
+\item{mutations}{\code{data.frame} (Optional) Mutations occurring 
+    at each clone. Any additional field will be shown in the 
+    mutation table. Required columns are:
+    \describe{
+
+      \item{chrom:}{\code{character()} chromosome number.}
+
+      \item{coord:}{\code{numeric()} coordinate of mutation on 
+         chromosome.}
+
+      \item{clone_id:}{\code{character()} clone id.}
+
+      \item{sample_id:}{\code{character()} id for the tumour sample.}
+
+      \item{VAF:}{\code{numeric()} ariant allele frequency of the 
+         mutation in the corresponding sample.}
+
+    }}
+
+\item{sample_ids}{\code{vector} (Optional) Ids of the samples in the 
+order your wish to display them (clockwise from positive x-axis).}
+
+\item{n_cells}{\code{numeric()} (Optional) The number of cells to 
+plot (for voronoi tessellation).}
+
+\item{show_low_prev_gtypes}{\code{logical()} (Optional) Whether or 
+not to show low-prevalence (< 0.01) clones in the view. Default 
+is FALSE.}
+
+\item{phylogeny_title}{\code{character()} (Optional) Legend title 
+for the phylogeny. Default is "Clonal Phylogeny".}
+
+\item{anatomy_title}{\code{character()} (Optional) Legend title for 
+the anatomy. Default is "Anatomy".}
+
+\item{classification_title}{\code{character()} (Optional) Legend title 
+for the phylogenetic classification. Default is "Phylogenetic 
+Classification".}
+
+\item{show_warnings}{\code{logical()} (Optional) Whether or not to 
+show any warnings. Default is TRUE.}
+
+\item{width}{\code{numeric()} (Optional) Width of the plot. Minimum 
+width is 930.}
+
+\item{height}{\code{numeric()} (Optional) Height of the plot. Minimum 
+height is 700.}
 }
 \description{
 Generates patient clonal MapScapes.
 }
 \details{
 Interactive components in main view:
+  \enumerate{
 
-1. Reorder samples by grabbing the sample name or tumour and dragging it radially. \cr
-2. Hover over anatomic location of interest to view the anatomic location name and the patient data associated with that location. \cr
-3. Hover over a tree node of a particular sample to view cellular prevalence of that clone in that particular sample.
+\item Reorder samples by grabbing the sample name or tumour and 
+       dragging it radially.
+
+\item Hover over anatomic location of interest to view the 
+       anatomic location name and the patient data associated with 
+       that location.
+
+\item Hover over a tree node of a particular sample to view 
+       cellular prevalence of that clone in that particular sample.
+
+}
 
 Interactive components in legend:
+  \enumerate{
 
-1. Hover over legend tree node to view the clone ID as well as the clone's prevalence at each tumour sample. Any anatomic locations expressing that clone will be highlighted. \cr
-2. Hover over legend tree branch to view tumour samples expressing all descendant clones. \cr
-3. Click on legend tree node(s) to view (a) updated mutations table showing novel mutations at that clone(s), and (b) tumour samples expressing the novel mutations at that clone(s). \cr
-4. Hover over a mixture class (e.g. "pure", "polyphyletic", "monophyletic") to view corresponding tumour samples, and the participating phylogeny in each tumour sample.
+\item Hover over legend tree node to view the clone ID as well 
+       as the clone's prevalence at each tumour sample. Any anatomic 
+       locations expressing that clone will be highlighted.
+
+\item Hover over legend tree branch to view tumour samples 
+       expressing all descendant clones.
+
+\item Click on legend tree node(s) to view (a) updated mutations 
+       table showing novel mutations at that clone(s), and (b) tumour 
+       samples expressing the novel mutations at that clone(s).
+
+\item Hover over a mixture class (e.g. "pure", "polyphyletic", 
+       "monophyletic") to view corresponding tumour samples, and the 
+       participating phylogeny in each tumour sample.
+
+}
 
 Interactive components in mutation table:
+  \enumerate{
 
-1. Search for any chromosome, coordinate, gene, etc. \cr
-2. Click on a row in the table, and the view will update to show the tumour samples with that mutation, and the variant allele frequency for that mutation in each tumour sample. \cr
-3. Sort the table by a column (all columns sortable except the Clone column).
+\item Search for any chromosome, coordinate, gene, etc.
 
-Note: Click on the reset button to exit a selection. Click the download buttons to download a PNG or SVG of the view. \cr
+\item Click on a row in the table, and the view will update to show 
+        the tumour samples with that mutation, and the variant 
+        allele frequency for that mutation in each tumour sample.
+
+\item Sort the table by a column (all columns sortable except 
+        the Clone column).
+
+}
+
+Note: Click on the reset button to exit a selection. Click the download 
+    buttons to download a PNG or SVG of the view. \cr
 }
 \examples{
 
@@ -94,62 +179,105 @@ library("mapscape")
 # EXAMPLE 1 - Patient A21, Gundem et al., 2015
 
 # clonal prevalences
-clonal_prev <- read.csv(system.file("extdata", "A21_clonal_prev.csv", package = "mapscape"))
+clonal_prev <- read.csv(system.file("extdata", "A21_clonal_prev.csv", 
+    package = "mapscape"))
+
 # mutations
-mutations <- read.csv(system.file("extdata", "A21_mutations.csv", package = "mapscape"))
+mutations <- read.csv(system.file("extdata", "A21_mutations.csv", 
+    package = "mapscape"))
+
 # locations of each tumour sample on user-provided image
-sample_locations <- read.csv(system.file("extdata", "A21_sample_locations.csv", package = "mapscape"))
+sample_locations <- read.csv(system.file("extdata", 
+    "A21_sample_locations.csv", package = "mapscape"))
+
 # genotype tree edges
-tree_edges <- read.csv(system.file("extdata", "A21_tree.csv", package = "mapscape"))
+tree_edges <- read.csv(system.file("extdata", "A21_tree.csv", package 
+    = "mapscape"))
+
 # image reference
-img_ref <- system.file("extdata", "A21_anatomical_image.png", package = "mapscape")
+img_ref <- system.file("extdata", "A21_anatomical_image.png", package 
+    = "mapscape")
+
 # radial order of samples
 sample_ids <- c("H","F","J","D","A","I","C","E","G")
+
 # run mapscape
-mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, 
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, 
+    sample_locations = sample_locations, mutations = mutations, 
 img_ref = img_ref, sample_ids = sample_ids)
 
 # EXAMPLE 2 - Patient 1, McPherson and Roth et al., 2016
 
 # clonal prevalences
-clonal_prev <- read.csv(system.file("extdata", "px1_clonal_prev.csv", package = "mapscape"))
+clonal_prev <- read.csv(system.file("extdata", "px1_clonal_prev.csv", 
+    package = "mapscape"))
+
 # mutations
-mutations <- read.csv(system.file("extdata", "px1_mutations.csv", package = "mapscape"))
+mutations <- read.csv(system.file("extdata", "px1_mutations.csv", 
+    package = "mapscape"))
+
 # locations of each tumour sample on user-provided image
-sample_locations <- read.csv(system.file("extdata", "px1_sample_locations.csv", package = "mapscape"))
+sample_locations <- read.csv(system.file("extdata", 
+    "px1_sample_locations.csv", package = "mapscape"))
+
 # genotype tree edges
-tree_edges <- read.csv(system.file("extdata", "px1_tree.csv", package = "mapscape"))
+tree_edges <- read.csv(system.file("extdata", "px1_tree.csv", 
+    package = "mapscape"))
+
 # image reference
-img_ref <- system.file("extdata", "px1_anatomical_image.png", package = "mapscape")
+img_ref <- system.file("extdata", "px1_anatomical_image.png", 
+    package = "mapscape")
+
 # colours for each clone
-clone_colours <- data.frame( clone_id = c("A","B","C","D","E","F","G","H","I"), 
-                             colour = c("d0ced0", "2CD0AB", "7FE9D1", "FFD94B", "FD8EE5", "F8766D", 
-                             "4FD8FF", "B09AF5", "D4C7FC"))
+clone_colours <- data.frame( 
+    clone_id = c("A","B","C","D","E","F","G","H","I"), 
+    colour = c("d0ced0", "2CD0AB", "7FE9D1", "FFD94B", "FD8EE5", 
+    "F8766D", "4FD8FF", "B09AF5", "D4C7FC"))
+
 # radial order of samples
-sample_ids <- c("LFTB4", "LOvB2", "ApC1", "ROvA4", "ROv4", "ROv3", "ROv2", "ROv1", "RFTA16", "Om1", "SBwl", "SBwlE4")
+sample_ids <- c("LFTB4", "LOvB2", "ApC1", "ROvA4", "ROv4", "ROv3", 
+    "ROv2", "ROv1", "RFTA16", "Om1", "SBwl", "SBwlE4")
+
 # run mapscape
-mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, 
-img_ref = img_ref, clone_colours = clone_colours, sample_ids = sample_ids)
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, 
+    sample_locations = sample_locations, mutations = mutations, 
+    img_ref = img_ref, clone_colours = clone_colours, 
+    sample_ids = sample_ids)
 
 # EXAMPLE 3 - Patient 7, McPherson and Roth et al., 2016
 
 # clonal prevalences
-clonal_prev <- read.csv(system.file("extdata", "px7_clonal_prev.csv", package = "mapscape"))
+clonal_prev <- read.csv(system.file("extdata", "px7_clonal_prev.csv", 
+    package = "mapscape"))
+
 # mutations
-mutations <- read.csv(system.file("extdata", "px7_mutations.csv", package = "mapscape"))
+mutations <- read.csv(system.file("extdata", "px7_mutations.csv", 
+    package = "mapscape"))
+
 # locations of each tumour sample on user-provided image
-sample_locations <- read.csv(system.file("extdata", "px7_sample_locations.csv", package = "mapscape"))
+sample_locations <- read.csv(system.file("extdata", 
+    "px7_sample_locations.csv", package = "mapscape"))
+
 # genotype tree edges
-tree_edges <- read.csv(system.file("extdata", "px7_tree.csv", package = "mapscape"))
+tree_edges <- read.csv(system.file("extdata", "px7_tree.csv", 
+    package = "mapscape"))
+
 # image reference
-img_ref <- system.file("extdata", "px7_anatomical_image.png", package = "mapscape")
+img_ref <- system.file("extdata", "px7_anatomical_image.png", 
+    package = "mapscape")
+
 # colours for each clone
 clone_colours <- data.frame(clone_id = c("A","B","C","D","E"), 
-                            colour = c("d0ced0", "2CD0AB", "FFD94B", "FD8EE5", "F8766D"))
+                            colour = c("d0ced0", "2CD0AB", "FFD94B", 
+    "FD8EE5", "F8766D"))
+
 # radial order of samples
-sample_ids <- c("BwlA6", "RPvM", "RUtD1", "RUtD2", "RUtD3", "ROvC4", "ROvC5", "ROvC6", "LOv1","LOvA10","LOvA4","BrnM", "BrnMA1")
+sample_ids <- c("BwlA6", "RPvM", "RUtD1", "RUtD2", "RUtD3", "ROvC4", 
+    "ROvC5", "ROvC6", "LOv1","LOvA10","LOvA4","BrnM", "BrnMA1")
+
 # run mapscape
-mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, mutations = mutations, 
-img_ref = img_ref, clone_colours = clone_colours, sample_ids = sample_ids)
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, 
+    sample_locations = sample_locations, mutations = mutations, 
+    img_ref = img_ref, clone_colours = clone_colours, sample_ids = sample_ids)
 }
 
