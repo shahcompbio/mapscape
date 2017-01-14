@@ -33,7 +33,8 @@ For instance, the first visualization is of metastatic prostate cancer data publ
 
 ```{r, echo=FALSE}
 library(devtools)  
-install_bitbucket("shahlabbcca/mapscape")  
+source("https://bioconductor.org/biocLite.R")
+biocLite("mapscape")
 library(mapscape)  
 # EXAMPLE 1 - Patient A21, Gundem et al., 2015
 
