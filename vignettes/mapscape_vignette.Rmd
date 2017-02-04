@@ -189,6 +189,12 @@ To view the documentation for MapScape, type the following command in R:
 ?mapscape
 ```
 
+or:
+
+```{r, eval=FALSE}
+browseVignettes("mapscape") 
+```
+
 # References
 
 MapScape was developed at the Shah Lab for Computational Cancer Biology at the BC Cancer Research Centre.

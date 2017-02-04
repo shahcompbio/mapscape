@@ -6,26 +6,179 @@ output:
 
 MapScape is a visualization tool for spatial clonal evolution.
 
-To run MapScape, type the following commands in R:
+# Installation 
+
+To install MapScape, type the following commands in R:
 
 ```{r, eval=FALSE}
-install.packages("devtools") # if not already installed  
-library(devtools)  
-install_bitbucket("MO_BCCRC/mapscape")  
-library(mapscape)  
-example(mapscape) # to run examples
+# try http:// if https:// URLs are not supported
+source("https://bioconductor.org/biocLite.R")
+biocLite("mapscape")
+```
+
+# Examples 
+
+Run the examples by: 
+
+```{r, eval=FALSE}
+example("mapscape")
 ```
 
 Three visualizations will appear in your browser (optimized for Chrome).
 
-The first is of metastatic prostate cancer data published in Gundem et al. (2015):
+For instance, the first visualization is of metastatic prostate cancer data published in Gundem et al. (2015):
 
-![](gundem_mapscape.png)
+```{r, echo=FALSE}
+library(devtools)  
+source("https://bioconductor.org/biocLite.R")
+biocLite("mapscape")
+library(mapscape)  
+# EXAMPLE 1 - Patient A21, Gundem et al., 2015
 
-The second and third visualizations are of metastatic ovarian cancer patients 1 and 7 published in McPherson and Roth et al. (2015):
+# clonal prevalences
+clonal_prev <- read.csv(system.file("extdata", "A21_clonal_prev.csv", package = "mapscape"))
+# mutations
+mutations <- read.csv(system.file("extdata", "A21_mutations.csv", package = "mapscape"))
+# locations of each tumour sample on user-provided image
+sample_locations <- read.csv(system.file("extdata", "A21_sample_locations.csv", package = "mapscape"))
+# genotype tree edges
+tree_edges <- read.csv(system.file("extdata", "A21_tree.csv", package = "mapscape"))
+# image reference
+img_ref <- system.file("extdata", "A21_anatomical_image.png", package = "mapscape")
+# radial order of samples
+sample_ids <- c("H","F","J","D","A","I","C","E","G")
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, 
+img_ref = img_ref, sample_ids = sample_ids, show_warnings=FALSE)
+```
 
-![](px1_mcpherson_roth_mapscape.png)
-![](px7_mcpherson_roth_mapscape.png)
+# Required parameters 
+
+The required parameters for MapScape are as follows:
+
+$clonal\_prev$ is a data frame consisting of clonal prevalences for each clone at each time point. The columns in this data frame are:
+
+1. character() $sample\_id$ - id for the tumour sample
+2. character() $clone\_id$ - clone id
+3. numeric() $clonal\_prev$ - clonal prevalence.
+
+$tree\_edges$ is a data frame describing the edges of a rooted clonal phylogeny. The columns in this data frame are:
+
+1. character() $source$ - source node id
+2. character() $target$ - target node id.
+
+$sample\_locations$ is a data frame describing the anatomical locations for each tumour sample. The columns in this data frame are:
+
+1. character() $sample\_id$ - id for the tumour sample
+2. character() $location\_id$ - name of anatomic location for this tumour sample
+3. numeric() (Optional) $x$ - x-coordinate (in pixels) for anatomic location on anatomic image
+4. numeric() (Optional) $y$ - y-coordinate (in pixels) for anatomic location on anatomic image
+
+$img\_ref$ is a reference for the custom anatomical image to use, in PNG format, either a URL to an image hosted online or a path to the image in local file system. 
+
+# Optional parameters 
+
+## Mutations 
+
+$mutations$ is a data frame consisting of the mutations originating in each clone. The columns in this data frame are:
+
+1. character() $chrom$ - chromosome number
+2. numeric() $coord$ - coordinate of mutation on chromosome
+3. character() $clone\_id$ - clone id
+4. character() $sample\_id$ - id for the tumour sample 
+5. numeric() $VAF$ - variant allele frequency of the mutation in the corresponding sample.
+
+If this parameter is provided, a mutation table will appear at the bottom of the view.
+
+## Sample ID order
+
+The parameter $sample\_ids$ is used to specify the order in which the user would like to display the samples radially in the visualization. Compare:
+
+### Default sample layout 
+
+```{r, echo=FALSE}
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, 
+img_ref = img_ref, show_warnings=FALSE)
+```
+
+### Custom sample layout 
+
+```{r, echo=FALSE}
+sample_ids <- c("H","F","J","D","A","I","C","E","G")
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, 
+img_ref = img_ref, sample_ids = sample_ids, show_warnings=FALSE)
+```
+
+## Number of cells in cellular aggregate representation
+
+The $n\_cells$ parameter specifies how many cells should be shown in the cellular aggregate representation of each tumour sample. Compare:
+
+### Default number of cells (100)
+
+```{r, echo=FALSE}
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, img_ref = img_ref, sample_ids = sample_ids, show_warnings=FALSE)
+```
+
+### Custom number of cells (300)
+
+```{r, echo=FALSE}
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, img_ref = img_ref, sample_ids = sample_ids, show_warnings=FALSE, n_cells=300)
+```
+
+## Show or hide low prevalence genotypes 
+
+If $show\_low\_prev\_gtypes$ is set to FALSE, the low-prevalence (<0.01) genotypes will NOT be shown in the phylogenetic tree of each tumour sample.
+If, however, $show\_low\_prev\_gtypes$ is set to TRUE, the low-prevalence genotypes WILL be shown in the phylogenetic tree of each tumour sample as empty circles. Note that some clonality inference methods always assign a non-zero value to each clone in each sample, indicating that there is some (albeit small) probability of that clone existing in the sample. Hence, if this parameter is set to TRUE, it may be that all clones are shown in each tumour sample's phylogeny.
+Compare:
+
+### Show low prevalence genotypes
+
+```{r, echo=FALSE}
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, img_ref = img_ref, sample_ids = sample_ids, show_warnings=FALSE, show_low_prev_gtypes = TRUE)
+```
+
+### Hide low prevalence genotypes (default)
+
+```{r, echo=FALSE}
+# run mapscape
+mapscape(clonal_prev = clonal_prev, tree_edges = tree_edges, sample_locations = sample_locations, img_ref = img_ref, sample_ids = sample_ids, show_warnings=FALSE)
+```
+
+## Titles 
+
+Many titles throughout the view may be altered, including the phylogeny title (parameter $phylogeny\_title$), anatomy title in the legend (parameter $anatomy\_title$), and classification title in the legend (parameter $classification\_title$). 
+
+# Obtaining the data 
+
+E-scape takes as input a clonal phylogeny and clonal prevalences per clone per sample.  At the time of submission many methods have been proposed for obtaining these values, and accurate estimation of these quantities is the focus of ongoing research.  We describe a method for estimating clonal phylogenies and clonal prevalence using PyClone (Roth et al., 2014; source code available at https://bitbucket.org/aroth85/pyclone/wiki/Home) and citup (Malikic et al., 2016; source code available at https://github.com/sfu-compbio/citup).  In brief, PyClone inputs are prepared by processing fastq files resulting from a targeted deep sequencing experiment.  Using samtools mpileup (http://samtools.sourceforge.net/mpileup.shtml), the number of nucleotides matching the reference and non-reference are counted for each targeted SNV.  Copy number is also required for each SNV.  We recommend inferring copy number from whole genome or whole exome sequencing of samples taken from the same anatomic location / timepoint as the samples to which targeted deep sequencing was applied.  Copy number can be inferred using Titan (Ha et al., 2014; source code available at https://github.com/gavinha/TitanCNA).  Sample specific SNV information is compiled into a set of TSV files, one per sample.  The tables includes mutation id, reference and variant read counts, normal copy number, and major and minor tumour copy number (see PyClone readme).  PyClone is run on these files using the `PyClone run_analysis_pipeline` subcommand, and produces the `tables/cluster.tsv` in the working directory.  Citup can be used to infer a clonal phylogeny and clone prevalences from the cellular prevalences produced by PyClone.  The `tables/cluster.tsv` file contains per sample, per SNV cluster estimates of cellular prevalence.  The table is reshaped into a TSV file of cellular prevalences with rows as clusters and columns as samples, and the `mean` of each cluster taken from `tables/cluster.tsv` for the values of the table.  The iterative version of citup is run on the table of cellular frequencies, producing an hdf5 output results file.  Within the hdf5 results, the `/results/optimal` can be used to identify the id of the optimal tree solution.  The clonal phylogeny as an adjacency list is then the `/trees/{tree_solution}/adjacency_list` entry and the clone frequencies are the `/trees/{tree_solution}/clone_freq` entry in the hdf5 file.  The adjacency list can be written as a TSV with the column names `source`, `target` to be input into E-scape, and the clone frequencies should be reshaped such that each row represents a clonal frequency in a specific sample for a specific clone, with the columns representing the time or space ID, the clone ID, and the clonal prevalence.
+
+# Interactivity
+
+Interactive components in main view:
+
+1. Reorder samples by grabbing the sample name or tumour and dragging it radially. 
+2. Hover over anatomic location of interest to view the anatomic location name and the patient data associated with that location. 
+3. Hover over a tree node of a particular sample to view cellular prevalence of that clone in that particular sample. 
+
+Interactive components in legend:
+
+1. Hover over legend tree node to view the clone ID as well as the clone's prevalence at each tumour sample. Any anatomic locations expressing that clone will be highlighted. 
+2. Hover over legend tree branch to view tumour samples expressing all descendant clones. 
+3. Click on legend tree node(s) to view (a) updated mutations table showing novel mutations at that clone(s), and (b) tumour samples expressing the novel mutations at that clone(s). 
+4. Hover over a mixture class (e.g. "pure", "polyphyletic", "monophyletic") to view corresponding tumour samples, and the participating phylogeny in each tumour sample. 
+
+Interactive components in mutation table:
+
+1. Search for any chromosome, coordinate, gene, etc. 
+2. Click on a row in the table, and the view will update to show the tumour samples with that mutation, and the variant allele frequency for that mutation in each tumour sample. 
+3. Sort the table by a column (all columns sortable except the Clone column). 
+
+# Documentation 
 
 To view the documentation for MapScape, type the following command in R:
 
@@ -33,10 +186,24 @@ To view the documentation for MapScape, type the following command in R:
 ?mapscape
 ```
 
+or:
+
+```{r, eval=FALSE}
+browseVignettes("mapscape") 
+```
+
+# References
+
 MapScape was developed at the Shah Lab for Computational Cancer Biology at the BC Cancer Research Centre.
  
 References:  
 
 Gundem, Gunes, et al. "The evolutionary history of lethal metastatic prostate cancer." Nature 520.7547 (2015): 353-357.
 
+Ha, Gavin, et al. "TITAN: inference of copy number architectures in clonal cell populations from tumor whole-genome sequence data." Genome research 24.11 (2014): 1881-1893.
+
+Malikic, Salem, et al. "Clonality inference in multiple tumor samples using phylogeny." Bioinformatics 31.9 (2015): 1349-1356.
+
 McPherson, Andrew, et al. "Divergent modes of clonal spread and intraperitoneal mixing in high-grade serous ovarian cancer." Nature genetics (2016).
+
+Roth, Andrew, et al. "PyClone: statistical inference of clonal population structure in cancer." Nature methods 11.4 (2014): 396-398.
