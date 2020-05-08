@@ -508,9 +508,9 @@ mapscape <- function(clonal_prev,
     
     # warn if more than 10,000 rows in data that the visualization may be slow
     if (nrow(mutation_prevalences) > 10000 && show_warnings) {
-      print("[WARNING] Number of rows in mutations data exceeds 10,000. ",
-        "Resultantly, visualization may be slow. ",
-        "It is recommended to filter the data to a smaller set of mutations.")
+      print(paste0("[WARNING] Number of rows in mutations data exceeds 10,000. ",
+                  "Resultantly, visualization may be slow. ",
+                  "It is recommended to filter the data to a smaller set of mutations."))
     }
 
     # compress results
